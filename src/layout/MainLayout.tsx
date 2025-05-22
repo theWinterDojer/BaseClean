@@ -1,5 +1,5 @@
 import React from 'react';
-import WalletConnectButton from '@/components/WalletConnectButton';
+import WalletConnectButton from '@/shared/components/WalletConnectButton';
 import Link from 'next/link';
 import { useAccount } from 'wagmi';
 
