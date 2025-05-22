@@ -22,7 +22,6 @@ export default function BurnConfirmationModal({
 
   const totalTokens = tokens.length;
   const totalValue = tokens.reduce((sum, token) => sum + getTokenValue(token), 0);
-  const hasValue = totalValue > 0;
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
@@ -46,9 +45,7 @@ export default function BurnConfirmationModal({
             <h3 className="text-white font-medium mb-2">Summary:</h3>
             <div className="bg-gray-800 rounded-md p-3">
               <p className="text-gray-200">Total tokens to burn: <span className="font-medium text-white">{totalTokens}</span></p>
-              {hasValue && (
-                <p className="text-gray-200">Total estimated value: <span className="font-medium text-white">${totalValue.toFixed(2)}</span></p>
-              )}
+              <p className="text-gray-200">Total estimated value: <span className="font-medium text-white">${totalValue.toFixed(2)}</span></p>
             </div>
           </div>
 
@@ -71,11 +68,9 @@ export default function BurnConfirmationModal({
                             {formattedBalance} tokens
                           </div>
                         </div>
-                        {value > 0 && (
-                          <div className="text-yellow-400 font-medium">
-                            ${value.toFixed(2)}
-                          </div>
-                        )}
+                        <div className="text-yellow-400 font-medium">
+                          ${value.toFixed(2)}
+                        </div>
                       </div>
                     </li>
                   );
