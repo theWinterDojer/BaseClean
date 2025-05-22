@@ -19,6 +19,11 @@ const LEGITIMATE_TOKENS: LegitimateTokenMap = {
     '0x6b5caa3711550c862bd35c390e08ad9504854b72': true,
     // Base platform token
     '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913': true, // USDC on Base
+    // Add more known legitimate tokens for Base chain
+    '0x50c5725949a6f0c72e6c4a641f24049a917db0cb': true, // DAI on Base
+    '0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22': true, // cbETH on Base
+    '0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca': true, // USD Coin on Base
+    '0x4158734d47fc9692176b5085e0f52ee0da5d47f1': true, // Compound on Base
   }
 };
 
@@ -31,7 +36,11 @@ const SPAM_KEYWORDS = [
   'shib', 'doge', '.com', '.io', 'www.', 'http', 'https',
   'inu', 'tech', 'finance', 'meme', 'swap', 'game', 'dao',
   'nft', 'protocol', 'app', 'zk', 'dev', 'ai', 'metaverse',
-  'token', 'coin', 'farm', 'yield', 'fomo', 'based'
+  'token', 'coin', 'farm', 'yield', 'fomo', 'based',
+  // Additional keywords for common spam patterns
+  'scam', 'legit', 'trust', 'burn', 'gpt', 'drop', 'fork',
+  'fair', 'safe', 'floki', 'cat', 'dog', 'chatgpt', 'openai',
+  'gem', 'erc20', 'btc', 'eth', 'viral', 'ponzi', 'honeypot'
 ];
 
 // Regex patterns for suspicious naming
@@ -47,13 +56,20 @@ const SUSPICIOUS_NAME_PATTERNS = [
   /[@#$%^&*!]/,               // Special characters often used in spam tokens
   /[A-Z]{6,}/,                // Long all-caps sequences
   /^[a-z0-9]{10,}$/i,         // Long alphanumeric sequences
+  // Additional patterns for better detection
+  /[A-Z]{2,}[0-9]{2,}/,       // Capital letters followed by numbers (common in spam)
+  /airdrop|free|claim/i,      // Direct airdrop words with case insensitivity
+  /[0-9]+x$/i,                // Numbers followed by "x" (like 1000x)
+  /base|arbitrum|optimism/i,  // Chain names (often used to make spam seem legit)
 ];
 
 // Common airdrop amounts often used in spam tokens
 const COMMON_AIRDROP_AMOUNTS = [
   1337, 88888, 69420, 42069, 8008, 7777777, 1000000, 10000, 1234, 12345,
   8888, 9999, 6969, 4200, 4269, 800, 888, 69, 420, 666, 
-  777, 7777, 101010, 123456, 654321
+  777, 7777, 101010, 123456, 654321,
+  // Add more known airdrop amounts
+  12321, 42424, 31337, 999999, 1111111, 7654321, 55555
 ];
 
 /**
@@ -75,29 +91,45 @@ export function useTokenFiltering(
     
     const { contract_ticker_symbol: symbol, contract_name: name } = token;
     
+    // Skip check for tokens with sufficient value (avoiding false positives)
+    const balance = formatBalance(token.balance, token.contract_decimals);
+    const usdValue = parseFloat(calculateTokenValue(balance, token.quote_rate) || '0');
+    if (usdValue > 10) return false;
+    
     // Missing or overly long symbol
     if (!symbol || symbol.length > 8) return true;
     
     // Missing or overly long name
     if (!name || name.length > 20) return true;
     
+    // Some legitimate tokens may use all caps, only consider this spam
+    // for tokens with very low value
+    const isAllCaps = name && name.toUpperCase() === name && name.length > 3;
+    if (isAllCaps && usdValue < 0.5) return true;
+    
     // Suspicious naming patterns
     if (SUSPICIOUS_NAME_PATTERNS.some(pattern => 
       pattern.test(name) || pattern.test(symbol)
     )) return true;
     
-    // Excessive capitalization
-    if (name && name.toUpperCase() === name) return true;
-    
-    // Excessive special characters
-    if (/[^a-zA-Z0-9\s]/.test(name) && 
+    // Excessive special characters, but only for tokens with low value
+    if (usdValue < 1 && /[^a-zA-Z0-9\s]/.test(name) && 
        (name.match(/[^a-zA-Z0-9\s]/g)?.length || 0) >= 3) return true;
     
-    // Spam keywords
-    if (SPAM_KEYWORDS.some(keyword => 
-      name.toLowerCase().includes(keyword.toLowerCase()) ||
-      symbol.toLowerCase().includes(keyword.toLowerCase())
-    )) return true;
+    // Spam keywords - implement a smarter, weighted approach
+    // More matches = higher spam probability
+    let keywordMatches = 0;
+    for (const keyword of SPAM_KEYWORDS) {
+      if (name.toLowerCase().includes(keyword) || symbol.toLowerCase().includes(keyword)) {
+        keywordMatches++;
+        
+        // If we find more than 2 spam keywords or certain high-confidence keywords, consider it spam
+        if (keywordMatches >= 2 || 
+            ['airdrop', 'claim', 'free', 'giveaway'].includes(keyword)) {
+          return true;
+        }
+      }
+    }
     
     return false;
   }, [spamFilters.namingIssues]);
@@ -106,7 +138,11 @@ export function useTokenFiltering(
   const hasValueIssues = useCallback((token: Token, balance: number): boolean => {
     if (!spamFilters.valueIssues) return false;
     
-    const usdValue = calculateTokenValue(balance, token.quote_rate);
+    const usdValue = parseFloat(calculateTokenValue(balance.toString(), token.quote_rate) || '0');
+    
+    // Skip check for tokens with sufficient holdings
+    // Even if value is low, significant holdings might indicate a legitimate token
+    if (balance > 100 && token.quote_rate > 0) return false;
     
     // Zero value
     if (token.quote_rate === 0) return true;
@@ -114,14 +150,18 @@ export function useTokenFiltering(
     // Extremely low value (less than $0.000001)
     if (token.quote_rate < 0.000001) return true;
     
-    // Dust balance
-    if (balance < 0.001) return true;
+    // Dust balance, but only if the token itself has low value
+    if (balance < 0.001 && token.quote_rate < 0.01) return true;
     
     // Low total value
     if (usdValue > 0 && usdValue < 0.1) return true;
     
     // No price data but has a large balance (suspicious "valueless" tokens)
     if (token.quote_rate === 0 && balance > 100000) return true;
+    
+    // Token has unusually high decimals (more than standard 18)
+    // This is often seen in spam tokens trying to appear more valuable
+    if (token.contract_decimals > 18 && token.quote_rate < 0.00001) return true;
     
     return false;
   }, [spamFilters.valueIssues]);
@@ -130,16 +170,22 @@ export function useTokenFiltering(
   const hasAirdropSignals = useCallback((token: Token, balance: number): boolean => {
     if (!spamFilters.airdropSignals) return false;
     
+    // Skip check for tokens with real value
+    const usdValue = parseFloat(calculateTokenValue(balance.toString(), token.quote_rate) || '0');
+    if (usdValue > 5) return false;
+    
     // Exact round numbers are suspicious (like 1000 or 1000000 tokens)
     if (/^[1-9]0*$/.test(balance.toString())) return true;
     
     // Repeating digits (e.g., 11111, 88888)
     if (/^(.)\1{3,}$/.test(balance.toString())) return true;
     
-    // Common airdrop numbers
-    if (COMMON_AIRDROP_AMOUNTS.some(num => 
-      Math.abs(balance - num) < 0.001
-    )) return true;
+    // Common airdrop numbers with improved tolerance to handle slight variations
+    if (COMMON_AIRDROP_AMOUNTS.some(num => {
+      // If the token amount is very close to a known airdrop amount,
+      // treat it as a potential spam signal
+      return Math.abs(balance - num) < 0.5 || Math.abs(balance - num) / num < 0.01;
+    })) return true;
     
     // Weird decimal patterns often seen in airdrops
     if (/\.\d{10,}$/.test(balance.toString())) return true;
@@ -152,6 +198,12 @@ export function useTokenFiltering(
     
     // Tokens with suspicious sequential patterns
     if (/^1234|4321|2345|5432|3456|6543|4567|7654|5678|8765/.test(balance.toString().replace('.', ''))) return true;
+    
+    // Recent trend: Spam tokens with specific balance precision to avoid detection
+    // Check for balances with unusual precision that aren't normal decimal divisions
+    if (balance.toString().includes('.') && 
+        balance.toString().split('.')[1].length > 8 && 
+        !(/0{5,}$/.test(balance.toString()))) return true;
     
     return false;
   }, [spamFilters.airdropSignals]);
@@ -178,6 +230,24 @@ export function useTokenFiltering(
     // Tokens with unusual decimals (non-standard) - but only for low value tokens
     if (token.contract_decimals > 18 && token.quote_rate < 0.00001) return true;
     
+    // Combination of multiple suspicious characteristics
+    let suspiciousFactors = 0;
+    
+    // Factor 1: Unusual balance
+    if (balance > 10000) suspiciousFactors++;
+    
+    // Factor 2: Lack of price info
+    if (token.quote_rate === 0) suspiciousFactors++;
+    
+    // Factor 3: No logo
+    if (!token.logo_url) suspiciousFactors++;
+    
+    // Factor 4: Very low value
+    if (usdValue < 0.01) suspiciousFactors++;
+    
+    // If token exhibits multiple high-risk characteristics, flag it
+    if (suspiciousFactors >= 3) return true;
+    
     return false;
   }, [spamFilters.highRiskIndicators]);
 
@@ -185,7 +255,8 @@ export function useTokenFiltering(
   const isSpamToken = useCallback((token: Token): boolean => {
     // Format balance once for efficiency
     const balance = formatBalance(token.balance, token.contract_decimals);
-    const usdValue = calculateTokenValue(balance, token.quote_rate);
+    const usdValue = parseFloat(calculateTokenValue(balance, token.quote_rate) || '0');
+    const balanceNum = parseFloat(balance);
     
     // Check if token is on the legitimate whitelist - never flag these as spam
     const chainId: ChainId = 8453; // Base chain
@@ -198,11 +269,26 @@ export function useTokenFiltering(
       return false;
     }
     
-    // Check each spam criteria
-    return hasNamingIssues(token) || 
-           hasValueIssues(token, balance) || 
-           hasAirdropSignals(token, balance) || 
-           hasHighRiskIndicators(token, balance, usdValue);
+    // Smarter spam detection that requires multiple criteria for higher confidence
+    // This reduces false positives while maintaining high detection rates
+    let spamSignals = 0;
+    
+    // Count each spam signal
+    if (hasNamingIssues(token)) spamSignals++;
+    if (hasValueIssues(token, balanceNum)) spamSignals++;
+    if (hasAirdropSignals(token, balanceNum)) spamSignals++;
+    if (hasHighRiskIndicators(token, balanceNum, usdValue)) spamSignals++;
+    
+    // If the token has minimal value (<$0.01), 1 signal is enough to flag it
+    if (usdValue < 0.01 && spamSignals >= 1) return true;
+    
+    // For tokens with some value ($0.01-$1), require 2+ signals
+    if (usdValue < 1 && spamSignals >= 2) return true;
+    
+    // For tokens with significant value (>$1), require 3+ signals
+    if (usdValue >= 1 && spamSignals >= 3) return true;
+    
+    return false;
   }, [hasNamingIssues, hasValueIssues, hasAirdropSignals, hasHighRiskIndicators]);
 
   // Filter tokens by maximum value
@@ -211,7 +297,7 @@ export function useTokenFiltering(
     
     return tokens.filter((token) => {
       const displayBalance = formatBalance(token.balance, token.contract_decimals);
-      const value = calculateTokenValue(displayBalance, token.quote_rate);
+      const value = parseFloat(calculateTokenValue(displayBalance, token.quote_rate) || '0');
       return !token.quote_rate || value <= maxValue;
     });
   }, [tokens, maxValue]);
