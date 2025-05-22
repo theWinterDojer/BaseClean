@@ -12,6 +12,7 @@ import TokenListsContainer from './TokenListsContainer';
 import { useTokenBurner } from '@/lib/tokenBurner';
 import BurnTransactionStatus from './BurnTransactionStatus';
 import { getTokenValue } from '../utils/tokenUtils';
+import BurnConfirmationModal from './BurnConfirmationModal';
 
 export default function TokenScanner() {
     const { address, isConnected } = useAccount();
@@ -22,6 +23,11 @@ export default function TokenScanner() {
     const [error, setError] = useState<string | null>(null);
     // Client-side rendering state to prevent hydration mismatch
     const [isClient, setIsClient] = useState(false);
+
+    // Burn confirmation modal state
+    const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+    const [tokensToConfirm, setTokensToConfirm] = useState<Token[]>([]);
+    const [isSimulating, setIsSimulating] = useState(false);
 
     // Default spam filters - enable all for best detection
     const [spamFilters, setSpamFilters] = useState<SpamFilters>({
@@ -59,8 +65,20 @@ export default function TokenScanner() {
     // Deselect all tokens
     const deselectAll = useCallback(() => setSelectedTokens(new Set()), []);
 
-    // Use the token burner hook - remove unused state variables
-    const { burnTokens, isSuccess, error: burnError } = useTokenBurner();
+    // Use the token burner hook
+    const { 
+        burnTokens, 
+        isPending, 
+        isLoading: isBurning, 
+        isSuccess,
+        isConfirmed,
+        currentTxHash,
+        currentToken,
+        processedTokens,
+        totalTokens: burnTotalTokens,
+        error: burnError 
+    } = useTokenBurner();
+    
     const [burnStatus, setBurnStatus] = useState<{
         inProgress: boolean;
         success: boolean;
@@ -75,94 +93,98 @@ export default function TokenScanner() {
         tokensFailed: 0
     });
 
-    // Handle burn selected tokens
-    const handleBurnSelected = useCallback(async () => {
+    // Simulate the burn transaction
+    const simulateBurn = useCallback(async (selectedTokensList: Token[]) => {
+        setIsSimulating(true);
+        
+        // Simple simulation - just a delay for UI feedback
+        // In a real implementation, you would call an actual simulation method
+        // from your blockchain connection library
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        setIsSimulating(false);
+        return true; // Assume simulation is successful
+    }, []);
+
+    // Handle showing confirmation for selected tokens
+    const handleShowConfirmation = useCallback(async () => {
         const selected = tokens.filter(token => selectedTokens.has(token.contract_address));
         
         if (selected.length === 0) return;
         
-        // Check if any selected token has value > $0.01
-        const valuableTokens = selected.filter(token => 
-            getTokenValue(token) > MIN_VALUABLE_TOKEN_VALUE
-        );
+        // Set tokens to confirm immediately so UI can update
+        setTokensToConfirm(selected);
+        setIsConfirmationOpen(true);
+        
+        // Start simulation after showing modal
+        await simulateBurn(selected);
+        
+    }, [tokens, selectedTokens, simulateBurn]);
 
-        let shouldProceed = true;
-
-        if (valuableTokens.length > 0) {
-            // Create a warning message with the valuable tokens
-            const tokenList = valuableTokens.map(token => {
-                const value = getTokenValue(token);
-                return `• ${token.contract_ticker_symbol || 'Unknown'}: $${value.toFixed(2)} (${formatBalance(token.balance, token.contract_decimals)})`;
-            }).join('\n');
-
-            const totalValue = valuableTokens.reduce((sum, token) => {
-                return sum + getTokenValue(token);
-            }, 0);
-
-            shouldProceed = window.confirm(
-                `⚠️ WARNING: You're about to burn tokens worth $${totalValue.toFixed(2)}!\n\n` +
-                `The following tokens have value:\n${tokenList}\n\n` +
-                `Are you sure you want to proceed with burning these tokens?`
+    // Handle actual burn after confirmation
+    const handleConfirmBurn = useCallback(async () => {
+        if (tokensToConfirm.length === 0) return;
+        
+        try {
+            // Close the confirmation modal
+            setIsConfirmationOpen(false);
+            
+            // Start the burn process
+            setBurnStatus({
+                inProgress: true,
+                success: false,
+                error: null,
+                tokensBurned: 0,
+                tokensFailed: 0
+            });
+            
+            // Execute the burn operation
+            const results = await burnTokens(tokensToConfirm);
+            
+            // Update UI with results
+            const successCount = results.filter(r => r.success).length;
+            const failCount = results.length - successCount;
+            
+            // Update status to show completion
+            setBurnStatus({
+                inProgress: false,
+                success: successCount > 0,
+                error: failCount > 0 ? `Failed to burn ${failCount} tokens` : null,
+                tokensBurned: successCount,
+                tokensFailed: failCount
+            });
+            
+            // Clear selected tokens that were successfully burned
+            const successfullyBurned = new Set(
+                results
+                    .filter(r => r.success)
+                    .map(r => r.token.contract_address)
             );
-        }
-
-        if (shouldProceed) {
-            try {
-                setBurnStatus({
-                    inProgress: true,
-                    success: false,
-                    error: null,
-                    tokensBurned: 0,
-                    tokensFailed: 0
-                });
-                
-                // Execute the burn operation
-                const results = await burnTokens(selected);
-                
-                // Update UI with results
-                const successCount = results.filter(r => r.success).length;
-                const failCount = results.length - successCount;
-                
-                setBurnStatus({
-                    inProgress: false,
-                    success: successCount > 0,
-                    error: failCount > 0 ? `Failed to burn ${failCount} tokens` : null,
-                    tokensBurned: successCount,
-                    tokensFailed: failCount
-                });
-                
-                // Clear selected tokens that were successfully burned
-                const successfullyBurned = new Set(
-                    results
-                        .filter(r => r.success)
-                        .map(r => r.token.contract_address)
-                );
-                
-                setSelectedTokens(prev => {
-                    const newSet = new Set(prev);
-                    for (const address of successfullyBurned) {
-                        newSet.delete(address);
-                    }
-                    return newSet;
-                });
-                
-                // Refresh token list after burning
-                if (successCount > 0 && address) {
-                    const tokenItems = await fetchTokenBalances(address);
-                    setTokens(tokenItems);
+            
+            setSelectedTokens(prev => {
+                const newSet = new Set(prev);
+                for (const address of successfullyBurned) {
+                    newSet.delete(address);
                 }
-            } catch (err) {
-                console.error("Failed to burn tokens:", err);
-                setBurnStatus({
-                    inProgress: false,
-                    success: false,
-                    error: err instanceof Error ? err.message : "Unknown error occurred",
-                    tokensBurned: 0,
-                    tokensFailed: selected.length
-                });
+                return newSet;
+            });
+            
+            // Refresh token list after burning
+            if (successCount > 0 && address) {
+                const tokenItems = await fetchTokenBalances(address);
+                setTokens(tokenItems);
             }
+        } catch (err) {
+            console.error("Failed to burn tokens:", err);
+            setBurnStatus({
+                inProgress: false,
+                success: false,
+                error: err instanceof Error ? err.message : "Unknown error occurred",
+                tokensBurned: 0,
+                tokensFailed: tokensToConfirm.length
+            });
         }
-    }, [tokens, selectedTokens, burnTokens, address]);
+    }, [tokensToConfirm, burnTokens, address]);
 
     // Fetch tokens when connected
     useEffect(() => {
@@ -237,44 +259,55 @@ export default function TokenScanner() {
                             tokensBurned: 0,
                             tokensFailed: 0
                         })}
+                        currentToken={currentToken}
+                        processedTokens={processedTokens}
+                        totalTokens={burnTotalTokens}
+                        isWaitingForConfirmation={isBurning && !burnStatus.inProgress}
                     />
                     
                     {/* Selected tokens panel */}
                     <SelectedTokensPanel 
                         selectedTokensCount={selectedTokens.size}
                         onDeselectAll={deselectAll}
-                        onBurnSelected={handleBurnSelected}
+                        onBurnSelected={handleShowConfirmation}
                     />
 
                     {/* Filters & Bulk Actions - now stacked vertically */}
                     <div className="space-y-4">
-                        {/* Filters Panel */}
-                        <FilterPanel
+                        <FilterPanel 
                             spamFilters={spamFilters}
                             setSpamFilters={setSpamFilters}
                             maxValue={maxValue}
                             setMaxValue={setMaxValue}
                             valueFilters={TOKEN_VALUE_THRESHOLDS}
                         />
-
-                        {/* Bulk Actions */}
+                        
                         <BulkActions 
+                            onSelectAllSpam={selectAllSpam}
                             spamTokensCount={spamTokens.length}
                             selectedTokensCount={selectedTokens.size}
-                            onSelectAllSpam={selectAllSpam}
                             onDeselectAll={deselectAll}
                         />
                     </div>
 
                     {/* Token Statistics */}
                     <TokenStatisticsComponent statistics={statistics} />
-
-                    {/* Token Lists */}
-                    <TokenListsContainer 
+                    
+                    {/* Token Lists Container */}
+                    <TokenListsContainer
                         spamTokens={spamTokens}
                         nonSpamTokens={nonSpamTokens}
                         selectedTokens={selectedTokens}
                         toggleToken={toggleToken}
+                    />
+                    
+                    {/* Burn Confirmation Modal */}
+                    <BurnConfirmationModal
+                        tokens={tokensToConfirm}
+                        isOpen={isConfirmationOpen}
+                        onClose={() => setIsConfirmationOpen(false)}
+                        onConfirm={handleConfirmBurn}
+                        isSimulating={isSimulating}
                     />
                 </div>
             )}

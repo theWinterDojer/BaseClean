@@ -12,18 +12,18 @@ export default function BulkActions({
   onDeselectAll
 }: BulkActionsProps) {
   return (
-    <div className="bg-gray-800/40 border border-gray-700 rounded-lg p-5">
-      <h3 className="text-xl font-semibold text-green-300 mb-4 flex items-center gap-2">
+    <div className="bg-gray-800/60 border border-gray-700 rounded-lg p-5">
+      <h3 className="text-lg font-medium text-green-300 mb-4 flex items-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
           <path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z" />
           <path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z" />
         </svg>
         Bulk Actions
       </h3>
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-3">
         <button
           onClick={onSelectAllSpam}
-          className="bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 text-white px-5 py-2.5 rounded-md text-sm font-medium transition-colors shadow-md hover:shadow-lg flex items-center gap-2"
+          className="bg-red-600/80 hover:bg-red-500/80 border border-red-500 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors shadow-sm hover:shadow-md flex items-center gap-2"
           disabled={spamTokensCount === 0}
           aria-label={`Select all ${spamTokensCount} spam tokens`}
         >
@@ -34,7 +34,7 @@ export default function BulkActions({
         </button>
         <button
           onClick={onDeselectAll}
-          className="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2.5 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+          className="bg-gray-700/60 hover:bg-gray-600/60 border border-gray-600 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
           disabled={selectedTokensCount === 0}
           aria-label="Deselect all tokens"
         >

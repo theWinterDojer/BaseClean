@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>BaseClean - Clean your wallet from spam tokens</title>
+        <title>BaseClean</title>
         <meta name="description" content="Easily identify and burn spam tokens on Base blockchain" />
       </Head>
       

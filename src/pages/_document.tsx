@@ -10,7 +10,9 @@ class MyDocument extends Document {
   render() {
     return (
       <Html lang="en">
-        <Head />
+        <Head>
+          <link rel="icon" href="/BaseCleanlogo.png" />
+        </Head>
         <body className="bg-gray-900 text-white">
           <Main />
           <NextScript />

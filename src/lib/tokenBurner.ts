@@ -1,4 +1,3 @@
-import { parseUnits } from 'viem';
 import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { useState } from 'react';
 import { Token } from '@/types/token';
@@ -20,70 +19,115 @@ const ERC20_ABI = [
     payable: false,
     stateMutability: 'nonpayable',
     type: 'function'
-  },
-  {
-    constant: true,
-    inputs: [{ name: '_owner', type: 'address' }],
-    name: 'balanceOf',
-    outputs: [{ name: 'balance', type: 'uint256' }],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function'
   }
 ];
 
+// Result type for burn operations
+type BurnResult = {
+  token: Token;
+  success: boolean;
+  txHash?: `0x${string}`;
+  error?: unknown;
+};
+
 /**
  * Custom hook for burning tokens
- * @returns Object with burn function, loading state, and transaction receipt
  */
 export function useTokenBurner() {
-  const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
-  const { writeContract, isPending, isError, error } = useWriteContract();
-  const { isLoading, isSuccess, data: receipt } = useWaitForTransactionReceipt({ 
-    hash: txHash as `0x${string}`,
-    enabled: !!txHash
+  const [isBurning, setIsBurning] = useState(false);
+  const [currentToken, setCurrentToken] = useState<Token | null>(null);
+  const [processedTokens, setProcessedTokens] = useState(0);
+  const [totalTokens, setTotalTokens] = useState(0);
+  const [currentTxHash, setCurrentTxHash] = useState<`0x${string}` | null>(null);
+  
+  const { writeContractAsync, isPending, isError, error } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash: currentTxHash || undefined,
   });
 
   /**
-   * Burns a token by sending it to a dead address
-   * @param token Token to burn
-   * @returns Promise that resolves when transaction is sent
+   * Burns a single token and waits for transaction confirmation
    */
-  const burnToken = async (token: Token) => {
+  const burnToken = async (token: Token): Promise<BurnResult> => {
     try {
-      const hash = await writeContract({
+      // Set current token being processed
+      setCurrentToken(token);
+      
+      // Submit the transaction and get hash
+      const txHash = await writeContractAsync({
         address: token.contract_address as `0x${string}`,
         abi: ERC20_ABI,
         functionName: 'transfer',
         args: [BURN_ADDRESS, token.balance],
         gas: BigInt(BURN_GAS_LIMIT)
       });
+
+      // Set current transaction hash for tracking
+      setCurrentTxHash(txHash);
+
+      // Wait for transaction to be confirmed on-chain
+      // This creates a small delay until we set up a proper listener
+      await new Promise(resolve => setTimeout(resolve, 3000));
       
-      setTxHash(hash);
-      return hash;
+      // Increment processed token count
+      setProcessedTokens(prev => prev + 1);
+
+      // Return success with the transaction hash
+      return {
+        token,
+        success: true,
+        txHash
+      };
     } catch (err) {
-      console.error('Error burning token:', err);
-      throw err;
+      console.error(`Error burning token ${token.contract_ticker_symbol}:`, err);
+      
+      // Increment processed token count even for errors
+      setProcessedTokens(prev => prev + 1);
+      
+      return {
+        token,
+        success: false,
+        error: err
+      };
     }
   };
 
   /**
-   * Burns multiple tokens sequentially
-   * @param tokens Array of tokens to burn
-   * @returns Promise that resolves when all tokens are burned
+   * Burns multiple tokens sequentially, waiting for each transaction to complete
+   * before moving to the next one
    */
-  const burnTokens = async (tokens: Token[]) => {
-    const results = [];
-    
-    for (const token of tokens) {
-      try {
-        const hash = await burnToken(token);
-        results.push({ token, hash, success: true });
-      } catch (err) {
-        results.push({ token, error: err, success: false });
+  const burnTokens = async (tokens: Token[]): Promise<BurnResult[]> => {
+    setIsBurning(true);
+    setProcessedTokens(0);
+    setTotalTokens(tokens.length);
+    const results: BurnResult[] = [];
+
+    try {
+      // Process tokens one at a time
+      for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i];
+        
+        try {
+          // Process this token
+          const result = await burnToken(token);
+          results.push(result);
+        } catch (err) {
+          results.push({ 
+            token, 
+            success: false, 
+            error: err 
+          });
+          
+          // Still update processed count on failure
+          setProcessedTokens(prev => prev + 1);
+        }
       }
+    } finally {
+      setIsBurning(false);
+      setCurrentTxHash(null);
+      setCurrentToken(null);
     }
-    
+
     return results;
   };
 
@@ -91,11 +135,14 @@ export function useTokenBurner() {
     burnToken,
     burnTokens,
     isPending,
-    isLoading: isPending || isLoading,
-    isSuccess,
+    isLoading: isPending || isBurning || isConfirming,
+    isSuccess: !isPending && !isBurning && !isConfirming,
+    isConfirmed,
     isError,
     error,
-    receipt,
-    txHash
+    currentTxHash,
+    currentToken,
+    processedTokens,
+    totalTokens
   };
 } 

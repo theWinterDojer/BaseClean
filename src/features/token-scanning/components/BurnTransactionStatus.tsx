@@ -1,4 +1,5 @@
 import React from 'react';
+import { Token } from '@/types/token';
 
 interface BurnTransactionStatusProps {
   inProgress: boolean;
@@ -7,6 +8,10 @@ interface BurnTransactionStatusProps {
   tokensBurned: number;
   tokensFailed: number;
   onClose: () => void;
+  currentToken: Token | null;
+  processedTokens: number;
+  totalTokens: number;
+  isWaitingForConfirmation: boolean;
 }
 
 export default function BurnTransactionStatus({
@@ -15,39 +20,75 @@ export default function BurnTransactionStatus({
   error,
   tokensBurned,
   tokensFailed,
-  onClose
+  onClose,
+  currentToken,
+  processedTokens,
+  totalTokens,
+  isWaitingForConfirmation
 }: BurnTransactionStatusProps) {
-  if (!inProgress && !success && !error) {
+  if (!inProgress && !success && !error && !isWaitingForConfirmation) {
     return null;
   }
 
   return (
-    <div className={`rounded-lg p-4 mb-6 shadow-lg ${getBgColor(inProgress, success, error)}`}>
+    <div className={`rounded-lg p-4 mb-6 shadow-lg ${getBgColor(inProgress, success, error, isWaitingForConfirmation)}`}>
       <div className="flex items-start justify-between">
         <div className="flex items-center">
-          {getStatusIcon(inProgress, success, error)}
+          {getStatusIcon(inProgress, success, error, isWaitingForConfirmation)}
           <div className="ml-3">
             <h3 className="text-lg font-medium text-white">
-              {getStatusTitle(inProgress, success, error)}
+              {getStatusTitle(inProgress, success, error, isWaitingForConfirmation)}
             </h3>
             <div className="mt-1 text-sm text-gray-200">
               {inProgress ? (
-                <p>Processing burn transaction...</p>
+                <div>
+                  <p>Processing burn transaction{totalTokens > 1 ? 's' : ''}...</p>
+                  {totalTokens > 1 && (
+                    <p className="text-xs text-gray-300 mt-1">
+                      Processing token {processedTokens + 1} of {totalTokens}
+                      {currentToken && (
+                        <span className="ml-1">
+                          ({currentToken.contract_ticker_symbol || 'Unknown'})
+                        </span>
+                      )}
+                    </p>
+                  )}
+                </div>
+              ) : isWaitingForConfirmation ? (
+                <div>
+                  <p>Waiting for transaction confirmation...</p>
+                  <p className="text-xs text-gray-300 mt-1">
+                    Completed {processedTokens} of {totalTokens} token burns
+                  </p>
+                </div>
               ) : (
                 <>
                   {tokensBurned > 0 && (
-                    <p className="text-green-300">Successfully burned {tokensBurned} tokens</p>
+                    <div>
+                      <p className="text-green-300 font-medium">Successfully burned {tokensBurned} tokens</p>
+                      <p className="text-gray-300 text-xs mt-1">
+                        The tokens have been permanently removed from your wallet.
+                      </p>
+                    </div>
                   )}
                   {tokensFailed > 0 && (
                     <p className="text-red-300">Failed to burn {tokensFailed} tokens</p>
                   )}
                   {error && <p className="text-red-300 mt-1">{error}</p>}
+
+                  {success && tokensBurned > 0 && (
+                    <div className="mt-3 pt-3 border-t border-green-700/30">
+                      <p className="text-blue-300">
+                        Transaction completed successfully on Base network
+                      </p>
+                    </div>
+                  )}
                 </>
               )}
             </div>
           </div>
         </div>
-        {!inProgress && (
+        {!inProgress && !isWaitingForConfirmation && (
           <button
             type="button"
             className="bg-gray-700/60 rounded-md p-1.5 inline-flex items-center justify-center text-gray-300 hover:text-white hover:bg-gray-700"
@@ -65,15 +106,16 @@ export default function BurnTransactionStatus({
 }
 
 // Helper functions to get the appropriate colors and icons based on status
-function getBgColor(inProgress: boolean, success: boolean, error: string | null): string {
+function getBgColor(inProgress: boolean, success: boolean, error: string | null, isWaitingForConfirmation: boolean): string {
   if (inProgress) return 'bg-blue-900/40 border border-blue-700';
+  if (isWaitingForConfirmation) return 'bg-purple-900/40 border border-purple-700';
   if (error) return 'bg-red-900/40 border border-red-700';
   if (success) return 'bg-green-900/40 border border-green-700';
   return 'bg-gray-900/40 border border-gray-700';
 }
 
-function getStatusIcon(inProgress: boolean, success: boolean, error: string | null) {
-  if (inProgress) {
+function getStatusIcon(inProgress: boolean, success: boolean, error: string | null, isWaitingForConfirmation: boolean) {
+  if (inProgress || isWaitingForConfirmation) {
     return (
       <div className="animate-spin h-6 w-6 border-2 border-blue-400 border-t-transparent rounded-full" />
     );
@@ -102,8 +144,9 @@ function getStatusIcon(inProgress: boolean, success: boolean, error: string | nu
   return null;
 }
 
-function getStatusTitle(inProgress: boolean, success: boolean, error: string | null): string {
+function getStatusTitle(inProgress: boolean, success: boolean, error: string | null, isWaitingForConfirmation: boolean): string {
   if (inProgress) return 'Burning Tokens...';
+  if (isWaitingForConfirmation) return 'Confirming Transaction...';
   if (error) return 'Error Burning Tokens';
   if (success) return 'Tokens Burned Successfully';
   return '';
