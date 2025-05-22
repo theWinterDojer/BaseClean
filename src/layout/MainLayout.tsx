@@ -14,7 +14,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 text-white">
       <header className="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700 py-4 sticky top-0 z-10">
         <div className="container mx-auto px-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-4">
             <div className="relative flex-shrink-0 overflow-hidden rounded-full">
               <img 
                 src="/BaseCleanlogo.png" 
@@ -32,16 +32,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
               </h1>
               <p className="text-sm text-gray-400 mt-1.5">Clean your wallet from spam tokens</p>
             </div>
-          </div>
+          </Link>
           
           <div className="flex items-center gap-4">
-            {isConnected && (
-              <nav className="hidden md:flex items-center space-x-1">
-                <Link href="/" className="px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/50 rounded-md transition-colors">
-                  Home
-                </Link>
-              </nav>
-            )}
             <WalletConnectButton />
           </div>
         </div>
