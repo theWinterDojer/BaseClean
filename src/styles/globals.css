@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar styles for virtualized lists */
+.token-list {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(75, 85, 99, 0.5) transparent;
+}
+
+.token-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.token-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.token-list::-webkit-scrollbar-thumb {
+  background-color: rgba(75, 85, 99, 0.5);
+  border-radius: 6px;
+}
+
+/* Optimize rendering for smoother scrolling */
+.token-list {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform;
+}
+
+/* Apply dark theme by default */
+body {
+  @apply bg-gray-900 text-white;
+}
+
+/* Simple reset for box model consistency */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}

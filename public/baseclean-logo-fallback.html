@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BaseClean Logo Generator</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+      background: #1e1e1e;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    .logo-container {
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      background: #46d15e;
+      color: black;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    #dataUrl {
+      max-width: 600px;
+      word-break: break-all;
+      background: #333;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>BaseClean Logo</h1>
+  <div class="logo-container">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="200" height="200">
+      <!-- Circle background -->
+      <circle cx="50" cy="50" r="45" fill="#122b40" />
+      
+      <!-- Stylized 'B' for Base -->
+      <path d="M35 25 L50 25 Q65 25 65 40 L65 45 Q65 55 55 57 Q70 60 70 72 L70 75 Q70 90 55 90 L35 90 Z" fill="none" stroke="#46d15e" stroke-width="5"/>
+      
+      <!-- Inner accent for the 'B' -->
+      <path d="M45 45 Q50 45 50 40 L50 35 Q50 32 45 32 L45 45 Z" fill="#46d15e"/>
+      <path d="M45 83 Q55 83 55 75 L55 65 Q55 58 45 58 L45 83 Z" fill="#46d15e"/>
+      
+      <!-- Horizontal cleaning sweep line -->
+      <path d="M60 55 L85 55" stroke="#46d15e" stroke-width="5" stroke-linecap="round"/>
+      <path d="M60 55 L80 45" stroke="#46d15e" stroke-width="2" stroke-linecap="round"/>
+      <path d="M60 55 L80 65" stroke="#46d15e" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+  
+  <button id="generateBtn">Generate Data URL</button>
+  <div id="dataUrl"></div>
+
+  <script>
+    document.getElementById('generateBtn').addEventListener('click', function() {
+      const svgElement = document.querySelector('svg');
+      const svgData = new XMLSerializer().serializeToString(svgElement);
+      const dataUrl = 'data:image/svg+xml;base64,' + btoa(svgData);
+      
+      const dataUrlElement = document.getElementById('dataUrl');
+      dataUrlElement.textContent = dataUrl;
+      dataUrlElement.style.display = 'block';
+      
+      // Create a link to download as PNG
+      const canvas = document.createElement('canvas');
+      canvas.width = 200;
+      canvas.height = 200;
+      const ctx = canvas.getContext('2d');
+      
+      const img = new Image();
+      img.onload = function() {
+        ctx.drawImage(img, 0, 0);
+        const pngUrl = canvas.toDataURL('image/png');
+        
+        const downloadLink = document.createElement('a');
+        downloadLink.href = pngUrl;
+        downloadLink.download = 'baseclean-logo.png';
+        downloadLink.textContent = 'Download PNG';
+        downloadLink.style.display = 'block';
+        downloadLink.style.margin = '20px 0';
+        downloadLink.style.color = 'white';
+        
+        dataUrlElement.appendChild(document.createElement('br'));
+        dataUrlElement.appendChild(downloadLink);
+      };
+      img.src = dataUrl;
+    });
+  </script>
+</body>
+</html> 
