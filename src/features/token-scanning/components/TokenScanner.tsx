@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAccount } from 'wagmi';
 import { Token, SpamFilters, TokenStatistics } from '@/types/token';
-import { fetchTokenBalances, formatBalance, calculateTokenValue } from '@/lib/api';
+import { fetchTokenBalances, formatBalance } from '@/lib/api';
 import FilterPanel from '@/shared/components/FilterPanel';
 import { useTokenFiltering } from '@/hooks/useTokenFiltering';
 import { TOKEN_VALUE_THRESHOLDS, MIN_VALUABLE_TOKEN_VALUE, UI_TEXT } from '@/constants/tokens';
@@ -11,6 +11,7 @@ import SelectedTokensPanel from './SelectedTokensPanel';
 import TokenListsContainer from './TokenListsContainer';
 import { useTokenBurner } from '@/lib/tokenBurner';
 import BurnTransactionStatus from './BurnTransactionStatus';
+import { getTokenValue } from '../utils/tokenUtils';
 
 export default function TokenScanner() {
     const { address, isConnected } = useAccount();
@@ -58,8 +59,8 @@ export default function TokenScanner() {
     // Deselect all tokens
     const deselectAll = useCallback(() => setSelectedTokens(new Set()), []);
 
-    // Use the token burner hook
-    const { burnTokens, isLoading: isBurning, isPending, isSuccess, error: burnError } = useTokenBurner();
+    // Use the token burner hook - remove unused state variables
+    const { burnTokens, isSuccess, error: burnError } = useTokenBurner();
     const [burnStatus, setBurnStatus] = useState<{
         inProgress: boolean;
         success: boolean;
@@ -81,26 +82,21 @@ export default function TokenScanner() {
         if (selected.length === 0) return;
         
         // Check if any selected token has value > $0.01
-        const valuableTokens = selected.filter(token => {
-            const balance = parseFloat(token.balance) / Math.pow(10, token.contract_decimals);
-            const value = balance * (token.quote_rate || 0);
-            return value > MIN_VALUABLE_TOKEN_VALUE;
-        });
+        const valuableTokens = selected.filter(token => 
+            getTokenValue(token) > MIN_VALUABLE_TOKEN_VALUE
+        );
 
         let shouldProceed = true;
 
         if (valuableTokens.length > 0) {
             // Create a warning message with the valuable tokens
             const tokenList = valuableTokens.map(token => {
-                const balance = parseFloat(token.balance) / Math.pow(10, token.contract_decimals);
-                const value = balance * (token.quote_rate || 0);
+                const value = getTokenValue(token);
                 return `• ${token.contract_ticker_symbol || 'Unknown'}: $${value.toFixed(2)} (${formatBalance(token.balance, token.contract_decimals)})`;
             }).join('\n');
 
-            const totalValue = valuableTokens.reduce((sum: number, token: Token) => {
-                const balance = parseFloat(token.balance) / Math.pow(10, token.contract_decimals);
-                const value = balance * (token.quote_rate || 0);
-                return sum + value;
+            const totalValue = valuableTokens.reduce((sum, token) => {
+                return sum + getTokenValue(token);
             }, 0);
 
             shouldProceed = window.confirm(
