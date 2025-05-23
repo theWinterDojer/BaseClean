@@ -76,11 +76,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
               <div className="flex flex-col items-center md:items-start">
                 <h3 className="text-sm font-semibold text-gray-300 mb-2">Community</h3>
                 <div className="flex flex-col space-y-2">
-                  <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-green-400 transition-colors">
+                  <a href="https://x.com/Base_Clean" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-green-400 transition-colors">
                     Twitter
-                  </a>
-                  <a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-green-400 transition-colors">
-                    Discord
                   </a>
                 </div>
               </div>
@@ -88,7 +85,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
               <div className="flex flex-col items-center md:items-start">
                 <h3 className="text-sm font-semibold text-gray-300 mb-2">About</h3>
                 <div className="flex flex-col space-y-2">
-                  <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-green-400 transition-colors">
+                  <a href="https://github.com/theWinterDojer/BaseClean" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-green-400 transition-colors">
                     GitHub
                   </a>
                 </div>

@@ -148,21 +148,6 @@ export default function FilterPanel({
             </svg>
           }
         >
-          <div className="flex flex-wrap gap-3 mb-3 w-full">
-            <button
-              onClick={() => setAllFilters(true)}
-              className="px-3 py-1.5 bg-green-700/40 border border-green-600/50 rounded-md text-sm font-medium text-green-200 hover:bg-green-700/60 transition-colors"
-            >
-              Enable All
-            </button>
-            <button
-              onClick={() => setAllFilters(false)}
-              className="px-3 py-1.5 bg-gray-700/40 border border-gray-600/50 rounded-md text-sm font-medium text-gray-200 hover:bg-gray-700/60 transition-colors"
-            >
-              Disable All
-            </button>
-          </div>
-          
           <div className="flex flex-wrap gap-3 w-full">
             {(Object.keys(spamFilters) as Array<keyof SpamFilters>).map((key) => {
               const { label, description } = filterLabels[key] || { 
