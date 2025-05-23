@@ -6,7 +6,6 @@ interface TokenSelectionManagerProps {
   spamTokens: Token[];
   selectedTokens: Set<string>;
   onSelectedTokensChange: (newSelection: Set<string>) => void;
-  onBurnSelected: () => void;
 }
 
 /**
@@ -16,7 +15,6 @@ export default function TokenSelectionManager({
   spamTokens,
   selectedTokens,
   onSelectedTokensChange,
-  onBurnSelected,
 }: TokenSelectionManagerProps) {
 
   // Select all spam tokens
@@ -29,19 +27,12 @@ export default function TokenSelectionManager({
     onSelectedTokensChange(new Set());
   }, [onSelectedTokensChange]);
 
-  // Handle burn action for selected tokens
-  const handleBurnSelected = useCallback(() => {
-    if (selectedTokens.size === 0) return;
-    onBurnSelected();
-  }, [selectedTokens.size, onBurnSelected]);
-
   return (
     <BulkActions 
       onSelectAllSpam={selectAllSpam}
       spamTokensCount={spamTokens.length}
       selectedTokensCount={selectedTokens.size}
       onDeselectAll={deselectAll}
-      onBurnSelected={handleBurnSelected}
     />
   );
 } 

@@ -11,6 +11,7 @@ import BurnTransactionStatus from './BurnTransactionStatus';
 import BurnConfirmationModal from './BurnConfirmationModal';
 import TokenDataManager from './TokenDataManager';
 import TokenSelectionManager from './TokenSelectionManager';
+import SelectedTokensPanel from './SelectedTokensPanel';
 
 export default function TokenScanner() {
     const { address } = useAccount();
@@ -104,6 +105,12 @@ export default function TokenScanner() {
                             isWaitingForConfirmation={isWaitingForConfirmation}
                         />
 
+                        {/* Selected Tokens Panel - moved to top for better UX flow */}
+                        <SelectedTokensPanel
+                            selectedTokensCount={selectedTokens.size}
+                            onBurnSelected={handleBurnSelected}
+                        />
+
                         {/* Filter Panel (includes Value Threshold and Spam Detection) */}
                         <FilterPanel 
                             spamFilters={spamFilters}
@@ -113,12 +120,11 @@ export default function TokenScanner() {
                             valueFilters={TOKEN_VALUE_THRESHOLDS}
                         />
                         
-                        {/* Token Selection Management (includes Selected Tokens Panel and Bulk Actions) */}
+                        {/* Token Selection Management (includes Bulk Actions only) */}
                         <TokenSelectionManager
                             spamTokens={spamTokens}
                             selectedTokens={selectedTokens}
                             onSelectedTokensChange={setSelectedTokens}
-                            onBurnSelected={handleBurnSelected}
                         />
 
                         {/* Token Statistics */}
