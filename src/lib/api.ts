@@ -31,32 +31,7 @@ if (typeof window !== 'undefined') {
   try {
     const cachedLogos = localStorage.getItem('token_logo_cache');
     if (cachedLogos) {
-      // Parse the cached logos
       const cachedLogoData = JSON.parse(cachedLogos);
-      
-      // Clean up problematic URLs before using the cache
-      const problematicPatterns = [
-        /uniswap\/assets\/master\/blockchains\/base\/assets\/0xA9A489EA2Ba0E0Af84150f88D1c33C866f466A80/i,
-        /githubusercontent\.com.*\/base\/assets\//i
-      ];
-      
-      // Filter out problematic URLs
-      let hasRemovedEntries = false;
-      Object.keys(cachedLogoData).forEach(address => {
-        const url = cachedLogoData[address];
-        if (typeof url === 'string' && problematicPatterns.some(pattern => pattern.test(url))) {
-          delete cachedLogoData[address];
-          hasRemovedEntries = true;
-          console.log(`Removed problematic cached logo URL for ${address}`);
-        }
-      });
-      
-      // Save cleaned cache if needed
-      if (hasRemovedEntries) {
-        localStorage.setItem('token_logo_cache', JSON.stringify(cachedLogoData));
-      }
-      
-      // Use the cleaned cache
       Object.assign(TOKEN_LOGO_CACHE, cachedLogoData);
     }
   } catch (e) {
@@ -68,10 +43,8 @@ if (typeof window !== 'undefined') {
  * Save token logo URL to cache including localStorage
  */
 const saveToCache = (address: string, url: string): void => {
-  // Always update in-memory cache
   TOKEN_LOGO_CACHE[address] = url;
   
-  // Update localStorage if available (client-side only)
   if (typeof window !== 'undefined') {
     try {
       localStorage.setItem('token_logo_cache', JSON.stringify(TOKEN_LOGO_CACHE));
@@ -86,9 +59,7 @@ const saveToCache = (address: string, url: string): void => {
  */
 function safeEncode(str: string): string {
   try {
-    // First, UTF-8 encode the string to handle special characters
     const utf8Bytes = new TextEncoder().encode(str);
-    // Convert to base64 using only visible ASCII
     const base64 = btoa(
       Array.from(utf8Bytes)
         .map(byte => String.fromCharCode(byte))
@@ -97,81 +68,81 @@ function safeEncode(str: string): string {
     return base64;
   } catch (error) {
     console.warn('Error in safeEncode:', error);
-    
-    // Last resort fallback - create a simpler encoded string
     try {
-      // Use only ASCII characters that are safe for base64
       return btoa(str.replace(/[^\x00-\x7F]/g, '_'));
     } catch (e) {
-      // Ultra-safe fallback if everything fails
       return 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgaGVpZ2h0PSI0MCIgd2lkdGg9IjQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iIzYwN0Q4QiIvPjx0ZXh0IHg9IjIwIiB5PSIyNSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+WDwvdGV4dD48L3N2Zz4=';
     }
   }
 }
 
 /**
- * Most reliable token logo sources for Base L2 tokens
- * These are prioritized by reliability and CORS compatibility
+ * Enhanced token logo sources with better Base blockchain coverage
+ * Prioritized by reliability, speed, and CORS compatibility
  */
 const TOKEN_LOGO_SOURCES = [
   // 1. Zapper API - Most reliable for Base tokens
   (address: string) => `https://storage.googleapis.com/zapper-fi-assets/tokens/base/${address}.png`,
   
-  // 2. DeFi Llama Icon Service - Very reliable for multiple chains
+  // 2. DeFi Llama Icon Service - Very reliable for multiple chains  
+  (address: string) => `https://icons.llama.fi/icons/tokens/8453/${address}?w=64&h=64`,
+  
+  // 3. Alternative DeFi Llama format
   (address: string) => `https://icons.llama.fi/base/${address}.png`,
   
-  // 3. Base Chain Explorer Icons
+  // 4. Web3Icons CDN - New comprehensive source
+  (address: string) => `https://cdn.jsdelivr.net/gh/0xa3k5/web3icons@latest/raw-svgs/tokens/branded/${address.toUpperCase().substring(2, 6)}.svg`,
+  
+  // 5. Base Chain Explorer Icons
   (address: string) => `https://basescan.org/token/images/${address}.png`,
   
-  // 4. 1inch Token Repository - Good coverage for many tokens
+  // 6. CoinGecko API (requires different approach but very reliable)
+  (address: string) => `https://api.coingecko.com/api/v3/coins/base/contract/${address}`,
+  
+  // 7. 1inch Token Repository
   (address: string) => `https://tokens.1inch.io/${address}.png`,
   
-  // 5. Trustwallet Assets - Community maintained
+  // 8. Moralis Token API format
+  (address: string) => `https://api.moralis.io/token/logo/${address}`,
+  
+  // 9. Trustwallet Assets - Community maintained
   (address: string) => `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/base/assets/${address}/logo.png`,
 ];
 
 /**
  * Addresses that should always use SVG fallbacks
- * These are tokens with persistent image loading issues
  */
 const ALWAYS_USE_FALLBACK = new Set([
-  '0xa9a489ea2ba0e0af84150f88d1c33c866f466a80', // ZORA token
+  '0xa9a489ea2ba0e0af84150f88d1c33c866f466a80', // ZORA token - known issues
 ]);
 
 /**
  * Well-known token addresses with verified icon URLs
  */
 const COMMON_TOKENS: Record<string, string> = {
-  // Major tokens by address (lowercase for consistency)
-  '0x4200000000000000000000000000000000000006': 'https://storage.googleapis.com/zapper-fi-assets/tokens/ethereum/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2.png', // ETH on Base
-  '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913': 'https://storage.googleapis.com/zapper-fi-assets/tokens/base/0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.png', // USDC on Base
-  '0x50c5725949a6f0c72e6c4a641f24049a917db0cb': 'https://storage.googleapis.com/zapper-fi-assets/tokens/base/0x50c5725949a6f0c72e6c4a641f24049a917db0cb.png', // DAI on Base
-  '0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca': 'https://storage.googleapis.com/zapper-fi-assets/tokens/base/0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca.png', // USDbC
+  // Major Base tokens by address (lowercase)
+  '0x4200000000000000000000000000000000000006': 'https://icons.llama.fi/icons/tokens/8453/0x4200000000000000000000000000000000000006?w=64&h=64', // ETH
+  '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913': 'https://icons.llama.fi/icons/tokens/8453/0x833589fcd6edb6e08f4c7c32d4f71b54bda02913?w=64&h=64', // USDC
+  '0x50c5725949a6f0c72e6c4a641f24049a917db0cb': 'https://icons.llama.fi/icons/tokens/8453/0x50c5725949a6f0c72e6c4a641f24049a917db0cb?w=64&h=64', // DAI
+  '0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca': 'https://icons.llama.fi/icons/tokens/8453/0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca?w=64&h=64', // USDbC
   
-  // By symbol for quick lookups
-  'eth': 'https://storage.googleapis.com/zapper-fi-assets/tokens/ethereum/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2.png',
-  'weth': 'https://storage.googleapis.com/zapper-fi-assets/tokens/ethereum/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2.png',
-  'usdc': 'https://storage.googleapis.com/zapper-fi-assets/tokens/base/0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.png',
-  'usdt': 'https://storage.googleapis.com/zapper-fi-assets/tokens/ethereum/0xdac17f958d2ee523a2206206994597c13d831ec7.png',
-  'dai': 'https://storage.googleapis.com/zapper-fi-assets/tokens/base/0x50c5725949a6f0c72e6c4a641f24049a917db0cb.png',
-  'usdbc': 'https://storage.googleapis.com/zapper-fi-assets/tokens/base/0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca.png',
+  // By symbol
+  'eth': 'https://icons.llama.fi/icons/tokens/8453/0x4200000000000000000000000000000000000006?w=64&h=64',
+  'weth': 'https://icons.llama.fi/icons/tokens/8453/0x4200000000000000000000000000000000000006?w=64&h=64',
+  'usdc': 'https://icons.llama.fi/icons/tokens/8453/0x833589fcd6edb6e08f4c7c32d4f71b54bda02913?w=64&h=64',
+  'usdt': 'https://icons.llama.fi/icons/tokens/1/0xdac17f958d2ee523a2206206994597c13d831ec7?w=64&h=64',
+  'dai': 'https://icons.llama.fi/icons/tokens/8453/0x50c5725949a6f0c72e6c4a641f24049a917db0cb?w=64&h=64',
 };
 
 /**
  * Generate a fallback SVG image when no external image is available
- * @param address Token contract address
- * @param symbol Token symbol 
- * @returns Data URI for SVG image
  */
 function generateFallbackImage(address: string, symbol: string = ''): string {
   const initialChar = symbol && symbol.length > 0 ? 
     symbol.substring(0, Math.min(2, symbol.length)).toUpperCase() : 
     address.substring(2, 4).toUpperCase();
   
-  // Generate a deterministic color from the address
   const addressSeed = parseInt(address.substring(2, 10), 16);
-  
-  // Color palette based on material design
   const colors = [
     '#F44336', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5',
     '#2196F3', '#03A9F4', '#00BCD4', '#009688', '#4CAF50',
@@ -181,24 +152,48 @@ function generateFallbackImage(address: string, symbol: string = ''): string {
   const colorIndex = addressSeed % colors.length;
   const bgColor = colors[colorIndex];
   
-  // Create a simple SVG with the token initials
   const svgContent = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
   <circle cx="20" cy="20" r="20" fill="${bgColor}"/>
   <text x="20" y="25" font-family="Arial, sans-serif" font-size="${initialChar.length > 1 ? '14' : '16'}" font-weight="bold" text-anchor="middle" fill="white">${initialChar}</text>
 </svg>`;
   
-  // Create a data URI with the SVG and encode it safely
   const dataUri = `data:image/svg+xml;base64,${safeEncode(svgContent.trim())}`;
   saveToCache(address, dataUri);
   return dataUri;
 }
 
 /**
- * Simplified token logo resolver with reliable fallbacks
- * @param address Token contract address
- * @param symbol Token symbol
- * @returns URL to token logo or fallback image data URI
+ * Test if URL returns a valid image
+ */
+async function testImageUrl(url: string, timeout: number = 800): Promise<boolean> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, { 
+      method: 'HEAD', 
+      signal: controller.signal,
+      mode: 'cors'
+    });
+    
+    clearTimeout(timeoutId);
+    
+    // Check if response is ok and content type is an image
+    if (response.ok) {
+      const contentType = response.headers.get('content-type');
+      return contentType ? contentType.startsWith('image/') : true;
+    }
+    
+    return false;
+  } catch (err) {
+    clearTimeout(timeoutId);
+    return false;
+  }
+}
+
+/**
+ * Enhanced token logo resolver with comprehensive fallback strategy
  */
 export async function getTokenLogoUrl(address: string, symbol: string = ''): Promise<string> {
   const cleanAddress = address?.toLowerCase();
@@ -208,93 +203,95 @@ export async function getTokenLogoUrl(address: string, symbol: string = ''): Pro
     return generateFallbackImage('0x000000', symbol);
   }
 
-  // Special case: Always use fallbacks for problematic tokens
-  if (ALWAYS_USE_FALLBACK.has(cleanAddress)) {
-    return generateFallbackImage(cleanAddress, cleanSymbol);
-  }
-
-  // 1. Check cache first (highest priority for speed)
+  // 1. Check cache first
   if (TOKEN_LOGO_CACHE[cleanAddress]) {
     return TOKEN_LOGO_CACHE[cleanAddress];
   }
 
-  // 2. Check for well-known tokens
+  // 2. Special case: Always use fallbacks for problematic tokens
+  if (ALWAYS_USE_FALLBACK.has(cleanAddress)) {
+    return generateFallbackImage(cleanAddress, cleanSymbol);
+  }
+
+  // 3. Check for well-known tokens
   if (COMMON_TOKENS[cleanAddress]) {
     const url = COMMON_TOKENS[cleanAddress];
     saveToCache(cleanAddress, url);
     return url;
   }
   
-  // 3. Check by symbol if available
+  // 4. Check by symbol if available
   if (cleanSymbol && COMMON_TOKENS[cleanSymbol]) {
     const url = COMMON_TOKENS[cleanSymbol];
     saveToCache(cleanAddress, url);
     return url;
   }
   
-  // 4. Generate fallback image for tokens with common spam symbols
-  // This avoids network requests for likely spam tokens
+  // 5. More conservative spam filtering - only skip obvious spam
   if (cleanSymbol) {
-    const spamIndicators = ['airdrop', 'free', 'elon', 'musk', 'trump', 'pepe', 'doge', 
-      'shib', 'inu', 'claim', 'give', 'moon', 'pump', 'dump', 'reward', 'prize', 'win'];
-    
-    if (spamIndicators.some(indicator => cleanSymbol.includes(indicator))) {
+    const highConfidenceSpam = ['airdrop', 'claim', 'free', 'giveaway', 'reward'];
+    if (highConfidenceSpam.some(spam => cleanSymbol.includes(spam))) {
       const fallback = generateFallbackImage(cleanAddress, cleanSymbol);
       saveToCache(cleanAddress, fallback);
       return fallback;
     }
   }
   
-  // 5. For efficiency, we'll only try the most reliable sources
-  // This reduces network requests for less reliable sources
-  const reliableSources = TOKEN_LOGO_SOURCES.slice(0, 2); // Only use first 2 most reliable sources
+  // 6. Try multiple sources with enhanced logic
+  const maxSourcesToTry = 4; // Increased from 2 to get better coverage
+  const sourcesToTry = TOKEN_LOGO_SOURCES.slice(0, maxSourcesToTry);
   
-  for (const getSourceUrl of reliableSources) {
+  for (const getSourceUrl of sourcesToTry) {
     try {
       const url = getSourceUrl(cleanAddress);
       
-      // Use AbortController for faster timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 300); // Short timeout
-      
-      try {
-        const response = await fetch(url, { 
-          method: 'HEAD', 
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (response.ok) {
+      // Special handling for CoinGecko API
+      if (url.includes('api.coingecko.com')) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 1000);
+          
+          const response = await fetch(url, { signal: controller.signal });
+          clearTimeout(timeoutId);
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.image && data.image.small) {
+              const imageUrl = data.image.small;
+              saveToCache(cleanAddress, imageUrl);
+              return imageUrl;
+            }
+          }
+        } catch (err) {
+          // Continue to next source
+        }
+      } else {
+        // Regular image URL testing
+        const isValid = await testImageUrl(url);
+        if (isValid) {
           saveToCache(cleanAddress, url);
           return url;
         }
-      } catch (err) {
-        // If aborted or any other error, continue to next source
-        clearTimeout(timeoutId);
       }
     } catch (error) {
       // Continue to next source
     }
   }
 
-  // 6. Fall back to generated SVG if all sources fail
+  // 7. Final fallback to generated SVG
   const fallbackImage = generateFallbackImage(cleanAddress, cleanSymbol);
   saveToCache(cleanAddress, fallbackImage);
   return fallbackImage;
 }
 
 /**
- * Clears the token logo cache completely
- * Call this if you encounter persistent image loading issues
+ * Clear the token logo cache
  */
 export function clearTokenLogoCache(): void {
-  // Clear in-memory cache
   for (const key of Object.keys(TOKEN_LOGO_CACHE)) {
     delete TOKEN_LOGO_CACHE[key];
   }
   
-  // Clear localStorage cache if available
   if (typeof window !== 'undefined') {
     try {
       localStorage.removeItem('token_logo_cache');

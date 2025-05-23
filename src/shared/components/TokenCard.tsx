@@ -13,20 +13,23 @@ interface TokenCardProps {
 
 /**
  * TokenImage Component
- * Dedicated component for handling token images with built-in fallback
+ * Enhanced component for handling token images with better error handling and retry logic
  */
 const TokenImage = memo(function TokenImage({ 
   address, 
   symbol, 
-  isSpam 
+  isSpam,
+  logoUrl: initialLogoUrl
 }: { 
   address: string; 
   symbol: string;
   isSpam?: boolean;
+  logoUrl?: string;
 }) {
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [imageUrl, setImageUrl] = useState<string | null>(initialLogoUrl || null);
+  const [isLoading, setIsLoading] = useState(!initialLogoUrl);
   const [hasError, setHasError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Generate initials for fallback
   const getInitials = useCallback(() => {
@@ -36,46 +39,83 @@ const TokenImage = memo(function TokenImage({
     return address.substring(2, 4).toUpperCase();
   }, [symbol, address]);
 
-  // Load image with error handling
+  // Load image with error handling and retry logic
   useEffect(() => {
     let mounted = true;
-    setIsLoading(true);
     
-    const loadImage = async () => {
-      try {
-        const url = await getTokenLogoUrl(address, symbol);
-        if (mounted) {
-          setImageUrl(url);
-          setIsLoading(false);
-        }
-      } catch (error) {
-        if (mounted) {
-          setHasError(true);
-          setIsLoading(false);
-        }
-      }
-    };
+    // If we already have an initial logo URL, try to use it
+    if (initialLogoUrl && !hasError) {
+      setImageUrl(initialLogoUrl);
+      setIsLoading(false);
+      return;
+    }
     
-    loadImage();
+    // Only fetch if we don't have a URL or need to retry
+    if (!imageUrl || (hasError && retryCount < 2)) {
+      setIsLoading(true);
+      setHasError(false);
+      
+      const loadImage = async () => {
+        try {
+          const url = await getTokenLogoUrl(address, symbol);
+          if (mounted) {
+            setImageUrl(url);
+            setIsLoading(false);
+          }
+        } catch (error) {
+          console.debug(`Failed to load image for ${symbol || address}:`, error);
+          if (mounted) {
+            setHasError(true);
+            setIsLoading(false);
+          }
+        }
+      };
+      
+      loadImage();
+    }
     
     return () => {
-      mounted = false; // Clean up to prevent setting state after unmount
+      mounted = false;
     };
-  }, [address, symbol]);
+  }, [address, symbol, initialLogoUrl, retryCount, hasError, imageUrl]);
 
   const handleError = useCallback(() => {
-    setHasError(true);
+    console.debug(`Image error for ${symbol || address}, retry count: ${retryCount}`);
+    
+    // If we haven't exceeded retry limit, try again
+    if (retryCount < 2) {
+      setRetryCount(prev => prev + 1);
+      setImageUrl(null); // This will trigger a reload
+    } else {
+      setHasError(true);
+    }
+  }, [symbol, address, retryCount]);
+
+  const handleLoad = useCallback(() => {
+    setHasError(false);
+    setIsLoading(false);
   }, []);
 
   if (isLoading) {
     return (
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
         <div className="w-5 h-5 border-2 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
       </div>
     );
   }
 
-  if (hasError || !imageUrl) {
+  if (hasError || !imageUrl || imageUrl.startsWith('data:image/svg+xml')) {
+    // For SVG data URIs, we can still try to display them
+    if (imageUrl && imageUrl.startsWith('data:image/svg+xml')) {
+      return (
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url("${imageUrl}")` }}
+        />
+      );
+    }
+    
+    // Fallback to initials
     return (
       <div className={`absolute inset-0 flex items-center justify-center text-white font-bold text-lg 
         ${isSpam ? 'bg-red-500' : 'bg-blue-500'}`}>
@@ -92,7 +132,10 @@ const TokenImage = memo(function TokenImage({
       height={48}
       className="object-cover"
       onError={handleError}
+      onLoad={handleLoad}
       unoptimized
+      placeholder="blur"
+      blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjNGNEY2Ii8+Cjwvc3ZnPgo="
     />
   );
 });
@@ -149,6 +192,7 @@ const TokenCard = memo(function TokenCard({
             address={token.contract_address} 
             symbol={token.contract_ticker_symbol} 
             isSpam={isSpam}
+            logoUrl={token.logo_url}
           />
         </div>
         
