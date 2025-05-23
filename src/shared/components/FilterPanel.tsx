@@ -46,17 +46,19 @@ const FilterCategory: React.FC<FilterCategoryProps> = ({
   highlighted = false,
   icon
 }) => (
-  <div className={`space-y-3 ${highlighted ? 'bg-blue-900/20 border border-blue-800 p-4 rounded-lg' : ''}`}>
-    <h4 className={`${titleColor} font-medium ${highlighted ? 'text-lg' : ''} flex items-center gap-2`}>
-      {icon || (highlighted && (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm1 3a1 1 0 100 2h4a1 1 0 100-2H4zm0 3a1 1 0 100 2h4a1 1 0 100-2H4zm10-3a1 1 0 100 2 1 1 0 000-2zm0 3a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
-        </svg>
-      ))}
-      {title}
-    </h4>
+  <div className={`space-y-4 ${highlighted ? 'bg-blue-900/20 border border-blue-800 p-4 rounded-lg' : ''}`}>
+    <div>
+      <h4 className={`${titleColor} text-lg font-semibold flex items-center gap-2`}>
+        {icon || (highlighted && (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm1 3a1 1 0 100 2h4a1 1 0 100-2H4zm0 3a1 1 0 100 2h4a1 1 0 100-2H4zm10-3a1 1 0 100 2 1 1 0 000-2zm0 3a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
+          </svg>
+        ))}
+        {title}
+      </h4>
+      {description && <p className="text-xs text-gray-400 mt-1">{description}</p>}
+    </div>
     <div className="flex flex-wrap gap-2">{children}</div>
-    {description && <p className="text-xs text-gray-400 mt-1">{description}</p>}
   </div>
 );
 
@@ -68,20 +70,20 @@ export default function FilterPanel({
   valueFilters
 }: FilterPanelProps) {
   const filterLabels = useMemo(() => ({
-    namingIssues: {
-      label: 'Suspicious names/symbols',
-      description: 'Missing/excessive/suspicious naming or spam keywords'
-    },
     valueIssues: {
-      label: 'Low/zero value tokens',
+      label: 'Low/Zero Value Tokens',
       description: 'Zero value, dust balances, or very low total value'
+    },
+    namingIssues: {
+      label: 'Suspicious Names/Symbols',
+      description: 'Missing/excessive/suspicious naming or spam keywords'
     },
     airdropSignals: {
       label: 'Airdrops/Junk',
       description: 'Suspicious token amounts and common airdrop patterns'
     },
     highRiskIndicators: {
-      label: 'High risk indicators',
+      label: 'High Risk Indicators',
       description: 'Tokens with high likelihood of being scams or having no value'
     }
   }), []);
@@ -101,7 +103,7 @@ export default function FilterPanel({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Value Threshold Section - Now more prominent */}
       <FilterCategory 
         title="Value Threshold"
@@ -115,7 +117,7 @@ export default function FilterPanel({
           </svg>
         }
       >
-        <div className="flex flex-wrap gap-2 mt-2">
+        <div className="flex flex-wrap gap-2">
           {valueFilters.map((value) => (
             <FilterButton
               key={value}
@@ -142,6 +144,7 @@ export default function FilterPanel({
           title="Spam Detection"
           titleColor="text-green-300"
           description="Enable detection rules to identify potential spam tokens"
+          highlighted={false}
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -149,8 +152,8 @@ export default function FilterPanel({
           }
         >
           <div className="flex flex-wrap gap-3 w-full">
-            {(Object.keys(spamFilters) as Array<keyof SpamFilters>).map((key) => {
-              const { label, description } = filterLabels[key] || { 
+            {['valueIssues', 'namingIssues', 'airdropSignals', 'highRiskIndicators'].map((key) => {
+              const { label, description } = filterLabels[key as keyof SpamFilters] || { 
                 label: key, 
                 description: ''
               };
@@ -160,7 +163,7 @@ export default function FilterPanel({
                   key={key}
                   htmlFor={`filter-${key}`}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer transition-colors ${
-                    spamFilters[key] 
+                    spamFilters[key as keyof SpamFilters] 
                       ? 'bg-green-700/60 border border-green-600 shadow-sm' 
                       : 'bg-gray-700/60 border border-gray-600 hover:bg-gray-700/80'
                   }`}
@@ -169,9 +172,9 @@ export default function FilterPanel({
                   <input
                     id={`filter-${key}`}
                     type="checkbox"
-                    checked={!!spamFilters[key]}
+                    checked={!!spamFilters[key as keyof SpamFilters]}
                     className="h-4 w-4 rounded accent-green-500"
-                    onChange={() => toggleFilter(key)}
+                    onChange={() => toggleFilter(key as keyof SpamFilters)}
                   />
                   <span className="text-sm">{label}</span>
                 </label>

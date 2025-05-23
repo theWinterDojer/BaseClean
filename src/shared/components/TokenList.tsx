@@ -107,10 +107,6 @@ export default function TokenList({
                 Total: ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </span>
             </div>
-            
-            <div className="text-sm text-gray-400"> {/* Increased text size */}
-              Scroll to view all
-            </div>
           </div>
 
           {/* Fixed size virtualized list for performance */}

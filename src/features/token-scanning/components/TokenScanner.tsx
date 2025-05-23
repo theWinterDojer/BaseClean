@@ -218,7 +218,7 @@ export default function TokenScanner() {
     };
 
     return (
-        <section className="mt-4 space-y-6" aria-labelledby="wallet-token-management">
+        <section className="mt-4 space-y-5" aria-labelledby="wallet-token-management">
             {/* Not connected message - only show on client to avoid hydration mismatch */}
             {isClient && !isConnected && (
                 <div className="bg-blue-900/30 border border-blue-700 text-white p-5 rounded-lg flex items-center justify-center">
@@ -244,7 +244,7 @@ export default function TokenScanner() {
                     <div className="animate-spin rounded-full h-12 w-12 border-t-3 border-b-3 border-green-500" aria-label="Loading..."></div>
                 </div>
             ) : (isClient && isConnected) && (
-                <div className="space-y-6">
+                <div className="space-y-5">
                     {/* Burn Transaction Status */}
                     <BurnTransactionStatus
                         inProgress={burnStatus.inProgress}
@@ -272,23 +272,22 @@ export default function TokenScanner() {
                         onBurnSelected={handleShowConfirmation}
                     />
 
-                    {/* Filters & Bulk Actions - now stacked vertically */}
-                    <div className="space-y-4">
-                        <FilterPanel 
-                            spamFilters={spamFilters}
-                            setSpamFilters={setSpamFilters}
-                            maxValue={maxValue}
-                            setMaxValue={setMaxValue}
-                            valueFilters={TOKEN_VALUE_THRESHOLDS}
-                        />
-                        
-                        <BulkActions 
-                            onSelectAllSpam={selectAllSpam}
-                            spamTokensCount={spamTokens.length}
-                            selectedTokensCount={selectedTokens.size}
-                            onDeselectAll={deselectAll}
-                        />
-                    </div>
+                    {/* Filter Panel */}
+                    <FilterPanel 
+                        spamFilters={spamFilters}
+                        setSpamFilters={setSpamFilters}
+                        maxValue={maxValue}
+                        setMaxValue={setMaxValue}
+                        valueFilters={TOKEN_VALUE_THRESHOLDS}
+                    />
+                    
+                    {/* Bulk Actions */}
+                    <BulkActions 
+                        onSelectAllSpam={selectAllSpam}
+                        spamTokensCount={spamTokens.length}
+                        selectedTokensCount={selectedTokens.size}
+                        onDeselectAll={deselectAll}
+                    />
 
                     {/* Token Statistics */}
                     <TokenStatisticsComponent statistics={statistics} />

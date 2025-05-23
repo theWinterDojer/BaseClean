@@ -7,7 +7,7 @@ interface TokenStatisticsProps {
 export default function TokenStatistics({ statistics }: TokenStatisticsProps) {
   return (
     <div className="bg-gray-800/20 border border-gray-700 p-5 rounded-lg">
-      <h3 className="text-xl font-semibold text-white mb-4">Wallet Summary</h3>
+      <h3 className="text-lg font-semibold text-white mb-4">Wallet Summary</h3>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {/* Total Tokens */}
         <div className="flex flex-col">

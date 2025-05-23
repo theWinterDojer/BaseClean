@@ -30,7 +30,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                   <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-[#0052FF] to-transparent rounded"></span>
                 </span>
               </h1>
-              <p className="text-sm text-gray-400 mt-1.5">Clean your wallet. Clean your Base.</p>
+              <p className="text-sm text-gray-400 mt-1.5">Clean your wallet. Strengthen your Base.</p>
             </div>
           </Link>
           
