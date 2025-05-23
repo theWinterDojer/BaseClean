@@ -1,6 +1,8 @@
 # BaseClean
 
-A Next.js application for scanning and cleaning spam ERC-20 tokens from Base wallets.
+BaseClean is a web application for scanning and burning unwanted or spam ERC-20 tokens from Base blockchain wallets.
+
+**🚀 Visit [baseclean.io](https://baseclean.io) to use the application**
 
 ## Overview
 
@@ -11,7 +13,62 @@ BaseClean helps users identify and burn unwanted spam tokens that often clutter 
 - Filter tokens by various criteria
 - Safely burn unwanted tokens
 
-## Directory Structure
+## Key Features
+
+- **Token Scanning**: Automatically scans wallets for all ERC-20 tokens
+- **Spam Detection**: Uses multiple heuristics to identify potential spam tokens
+- **Value Filtering**: Filter tokens by their USD value
+- **Bulk Actions**: Select and burn multiple tokens at once
+- **Safety Checks**: Prevents accidental burning of valuable tokens
+
+## Using BaseClean
+
+1. Visit [baseclean.io](https://baseclean.io)
+2. Connect your wallet using the Connect button
+3. Browse your tokens and identify unwanted ones
+4. Select tokens to burn and confirm the transaction
+5. Enjoy a cleaner wallet!
+
+## Contributing
+
+Interested in contributing to BaseClean? Follow these steps to set up the project locally:
+
+### Prerequisites
+
+- Node.js 16.x or higher
+- npm or yarn
+
+### Local Development Setup
+
+1. Clone the repository
+```bash
+git clone https://github.com/theWinterDojer/BaseClean.git
+cd baseclean
+```
+
+2. Install dependencies
+```bash
+npm install
+# or
+yarn
+```
+
+3. Set up environment variables
+```bash
+cp .env.example .env.local
+```
+Edit `.env.local` and add your API keys.
+
+4. Start the development server
+```bash
+npm run dev
+# or
+yarn dev
+```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## Project Structure
 
 The project follows a well-organized directory structure:
 
@@ -38,51 +95,6 @@ baseclean/
 │   └── utils/         # Shared utility functions
 ```
 
-## Key Features
-
-- **Token Scanning**: Automatically scans wallets for all ERC-20 tokens
-- **Spam Detection**: Uses multiple heuristics to identify potential spam tokens
-- **Value Filtering**: Filter tokens by their USD value
-- **Bulk Actions**: Select and burn multiple tokens at once
-- **Safety Checks**: Prevents accidental burning of valuable tokens
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 16.x or higher
-- Yarn or npm
-
-### Installation
-
-1. Clone the repository
-```bash
-git clone https://github.com/yourusername/baseclean.git
-cd baseclean
-```
-
-2. Install dependencies
-```bash
-npm install
-# or
-yarn
-```
-
-3. Set up environment variables
-```bash
-cp .env.example .env.local
-```
-Edit `.env.local` and add your API keys.
-
-4. Start the development server
-```bash
-npm run dev
-# or
-yarn dev
-```
-
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
-
 ## Development Guidelines
 
 ### Adding New Features
@@ -100,19 +112,6 @@ npm test
 yarn test
 ```
 
-## License
-
-MIT
-
-## Features
-
-- 🔄 Connect your Base blockchain wallet securely
-- 🔍 View all tokens in your wallet with balances and values
-- 🚫 Identify spam tokens based on customizable criteria
-- 🧹 Bulk select and clean unwanted tokens
-- 📊 Filter tokens by value, type, and more
-- 🛠️ Customizable spam detection settings
-
 ## Tech Stack
 
 - **Frontend**: React, Next.js, TypeScript
@@ -120,18 +119,9 @@ MIT
 - **Blockchain Integration**: Wagmi, RainbowKit
 - **API**: Covalent API for token data
 
-## Configuration
-
-You can customize the spam detection filters in the UI:
-
-- **Symbol Length**: Filter tokens with no symbol or overly long symbols
-- **Name Length**: Filter tokens with no name or overly long names
-- **Zero Value**: Filter tokens with zero USD value
-- **Dust Balance**: Filter tokens with very small balances (< 0.01)
-
 ## Deployment
 
-This app can be deployed to Vercel, Netlify, or any other platform supporting Next.js:
+The application is deployed to production using Vercel. For contributors wanting to deploy their own instance:
 
 ```bash
 npm run build
