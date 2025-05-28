@@ -22,6 +22,12 @@ BASESCAN_API_KEY=your_basescan_api_key_here
 Run these commands to ensure everything works:
 
 ```bash
+# Navigate to contracts directory first
+cd contracts
+
+# Install dependencies (if not already done)
+npm install
+
 # Clean and compile
 npm run compile
 

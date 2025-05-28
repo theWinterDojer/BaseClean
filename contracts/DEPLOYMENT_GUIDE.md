@@ -32,6 +32,12 @@ COINMARKETCAP_API_KEY=your_coinmarketcap_api_key
 
 ### 1.3 Verify Setup
 ```bash
+# Navigate to contracts directory first
+cd contracts
+
+# Install dependencies
+npm install
+
 # Compile contract
 npm run compile
 
