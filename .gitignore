@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/contracts/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -12,6 +13,7 @@
 
 # testing
 /coverage
+/contracts/coverage
 
 # next.js
 /.next/
@@ -43,3 +45,19 @@ next-env.d.ts
 # local development scripts
 restart-dev.ps1
 restart-dev.bat
+
+# Contract compilation artifacts
+/contracts/artifacts
+/contracts/cache
+/contracts/typechain-types
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+Thumbs.db
+.DS_Store

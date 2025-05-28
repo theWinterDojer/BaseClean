@@ -92,16 +92,6 @@ export default function FilterPanel({
     setSpamFilters(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // Quick filter presets
-  const setAllFilters = (value: boolean) => {
-    setSpamFilters({
-      namingIssues: value,
-      valueIssues: value,
-      airdropSignals: value,
-      highRiskIndicators: value
-    });
-  };
-
   return (
     <div className="space-y-5">
       {/* Value Threshold Section - Now more prominent */}

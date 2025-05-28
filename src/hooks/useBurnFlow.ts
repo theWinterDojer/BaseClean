@@ -53,7 +53,7 @@ export function useBurnFlow() {
     currentToken,
     processedTokens,
     totalTokens: burnTotalTokens,
-    error: burnError 
+    // error: burnError 
   } = useTokenBurner();
 
   // Simulate the burn transaction

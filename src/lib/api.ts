@@ -34,7 +34,7 @@ if (typeof window !== 'undefined') {
       const cachedLogoData = JSON.parse(cachedLogos);
       Object.assign(TOKEN_LOGO_CACHE, cachedLogoData);
     }
-  } catch (e) {
+  } catch (_e) {
     console.debug('Failed to load token logo cache from localStorage');
   }
 }
@@ -48,7 +48,7 @@ const saveToCache = (address: string, url: string): void => {
   if (typeof window !== 'undefined') {
     try {
       localStorage.setItem('token_logo_cache', JSON.stringify(TOKEN_LOGO_CACHE));
-    } catch (e) {
+    } catch (_e) {
       console.debug('Failed to save token logo cache to localStorage');
     }
   }
@@ -70,7 +70,7 @@ function safeEncode(str: string): string {
     console.warn('Error in safeEncode:', error);
     try {
       return btoa(str.replace(/[^\x00-\x7F]/g, '_'));
-    } catch (e) {
+    } catch (_e) {
       return 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgaGVpZ2h0PSI0MCIgd2lkdGg9IjQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iIzYwN0Q4QiIvPjx0ZXh0IHg9IjIwIiB5PSIyNSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+WDwvdGV4dD48L3N2Zz4=';
     }
   }
@@ -186,7 +186,7 @@ async function testImageUrl(url: string, timeout: number = 800): Promise<boolean
     }
     
     return false;
-  } catch (err) {
+  } catch (_err) {
     clearTimeout(timeoutId);
     return false;
   }
@@ -262,7 +262,7 @@ export async function getTokenLogoUrl(address: string, symbol: string = ''): Pro
               return imageUrl;
             }
           }
-        } catch (err) {
+        } catch (_err) {
           // Continue to next source
         }
       } else {
@@ -273,7 +273,7 @@ export async function getTokenLogoUrl(address: string, symbol: string = ''): Pro
           return url;
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Continue to next source
     }
   }
