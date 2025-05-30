@@ -8,15 +8,13 @@ interface BurnConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  isSimulating: boolean;
 }
 
 export default function BurnConfirmationModal({
   tokens,
   isOpen,
   onClose,
-  onConfirm,
-  isSimulating
+  onConfirm
 }: BurnConfirmationModalProps) {
   if (!isOpen) return null;
 
@@ -79,7 +77,7 @@ export default function BurnConfirmationModal({
             </div>
           </div>
 
-          <div className="flex justify-end gap-3">
+          <div className="flex gap-3 justify-end">
             <button
               type="button"
               className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors"
@@ -89,18 +87,10 @@ export default function BurnConfirmationModal({
             </button>
             <button
               type="button"
-              className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-md transition-colors flex items-center"
+              className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-md transition-colors"
               onClick={onConfirm}
-              disabled={isSimulating}
             >
-              {isSimulating ? (
-                <>
-                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                  Simulating...
-                </>
-              ) : (
-                <>Burn Tokens</>
-              )}
+              Burn Tokens
             </button>
           </div>
         </div>

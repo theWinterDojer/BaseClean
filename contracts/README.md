@@ -46,7 +46,7 @@ Create a `.env` file in the contracts directory:
 PRIVATE_KEY=your_private_key_here
 
 # BaseScan API key for contract verification
-BASESCAN_API_KEY=your_basescan_api_key_here
+ETHERSCAN_API_KEY=your_etherscan_api_key_here
 
 # Optional: CoinMarketCap API key for gas reporting
 COINMARKETCAP_API_KEY=your_coinmarketcap_api_key_here

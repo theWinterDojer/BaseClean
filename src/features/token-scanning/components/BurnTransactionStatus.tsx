@@ -1,153 +1,267 @@
 import React from 'react';
-import { Token } from '@/types/token';
+import { BurnFlowStatus } from '@/hooks/useBurnFlow';
 
 interface BurnTransactionStatusProps {
-  inProgress: boolean;
-  success: boolean;
-  error: string | null;
-  tokensBurned: number;
-  tokensFailed: number;
+  burnStatus: BurnFlowStatus;
   onClose: () => void;
-  currentToken: Token | null;
-  processedTokens: number;
-  totalTokens: number;
   isWaitingForConfirmation: boolean;
 }
 
 export default function BurnTransactionStatus({
-  inProgress,
-  success,
-  error,
-  tokensBurned,
-  tokensFailed,
+  burnStatus,
   onClose,
-  currentToken,
-  processedTokens,
-  totalTokens,
   isWaitingForConfirmation
 }: BurnTransactionStatusProps) {
+  const { 
+    inProgress, 
+    success, 
+    error, 
+    tokensBurned,
+    tokensFailed,
+    tokensRejectedByUser,
+    hasUserRejections,
+    currentStep,
+    currentStepMessage,
+    processedTokens,
+    totalTokens,
+    burnResults
+  } = burnStatus;
+
   if (!inProgress && !success && !error && !isWaitingForConfirmation) {
     return null;
   }
 
-  return (
-    <div className={`rounded-lg p-4 mb-6 shadow-lg ${getBgColor(inProgress, success, error, isWaitingForConfirmation)}`}>
-      <div className="flex items-start justify-between">
-        <div className="flex items-center">
-          {getStatusIcon(inProgress, success, error, isWaitingForConfirmation)}
-          <div className="ml-3">
-            <h3 className="text-lg font-medium text-white">
-              {getStatusTitle(inProgress, success, error, isWaitingForConfirmation)}
-            </h3>
-            <div className="mt-1 text-sm text-gray-200">
-              {inProgress ? (
-                <div>
-                  <p>Processing burn transaction{totalTokens > 1 ? 's' : ''}...</p>
-                  {totalTokens > 1 && (
-                    <p className="text-xs text-gray-300 mt-1">
-                      Processing token {processedTokens + 1} of {totalTokens}
-                      {currentToken && (
-                        <span className="ml-1">
-                          ({currentToken.contract_ticker_symbol || 'Unknown'})
-                        </span>
-                      )}
-                    </p>
-                  )}
-                </div>
-              ) : isWaitingForConfirmation ? (
-                <div>
-                  <p>Waiting for transaction confirmation...</p>
-                  <p className="text-xs text-gray-300 mt-1">
-                    Completed {processedTokens} of {totalTokens} token burns
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {tokensBurned > 0 && (
-                    <div>
-                      <p className="text-green-300 font-medium">Successfully burned {tokensBurned} tokens</p>
-                      <p className="text-gray-300 text-xs mt-1">
-                        The tokens have been permanently removed from your wallet.
-                      </p>
-                    </div>
-                  )}
-                  {tokensFailed > 0 && (
-                    <p className="text-red-300">Failed to burn {tokensFailed} tokens</p>
-                  )}
-                  {error && <p className="text-red-300 mt-1">{error}</p>}
+  // Categorize results
+  const successfulBurns = burnResults?.filter(r => r.success && r.txHash) || [];
+  const userRejections = burnResults?.filter(r => r.isUserRejection) || [];
+  const actualFailures = burnResults?.filter(r => !r.success && !r.isUserRejection) || [];
 
-                  {success && tokensBurned > 0 && (
-                    <div className="mt-3 pt-3 border-t border-green-700/30">
-                      <p className="text-blue-300">
-                        Transaction completed successfully on Base network
-                      </p>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
+  return (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
+          {!inProgress && (
+            <h3 className="text-lg font-semibold text-white">
+              {isWaitingForConfirmation && 'Confirm Transaction'}
+              {success && 'Burn Complete!'}
+              {error && 'Burn Failed'}
+            </h3>
+          )}
+          {(success || error) && (
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-200 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
-        {!inProgress && !isWaitingForConfirmation && (
-          <button
-            type="button"
-            className="bg-gray-700/60 rounded-md p-1.5 inline-flex items-center justify-center text-gray-300 hover:text-white hover:bg-gray-700"
-            onClick={onClose}
-          >
-            <span className="sr-only">Dismiss</span>
-            <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </button>
+
+        {/* Waiting for confirmation */}
+        {isWaitingForConfirmation && (
+          <div className="text-center py-4">
+            <div className="mb-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto"></div>
+            </div>
+            <p className="text-sm text-gray-300 mb-2">
+              Please confirm the transaction in your wallet
+            </p>
+            <p className="text-xs text-gray-400">
+              Burning {totalTokens} token{totalTokens > 1 ? 's' : ''} with direct transfers
+            </p>
+            <p className="text-xs text-blue-300 mt-2">
+              💡 You can cancel in your wallet if you change your mind
+            </p>
+          </div>
+        )}
+
+        {/* Burn in progress */}
+        {inProgress && (
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-400"></div>
+              <span className="text-sm font-medium text-white">
+                Burning {totalTokens} token{totalTokens > 1 ? 's' : ''}
+              </span>
+            </div>
+
+            {/* Progress bar */}
+            {currentStep === 'burning' && (
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm text-gray-300">
+                  <span>Progress</span>
+                  <span>{processedTokens}/{totalTokens}</span>
+                </div>
+                <div className="w-full bg-gray-700 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-blue-400 h-2 rounded-full transition-all duration-300"
+                    style={{ width: totalTokens > 0 ? `${(processedTokens / totalTokens) * 100}%` : '0%' }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-400 text-center">
+                  Each token will prompt a burn transfer. No contract approvals necessary.
+                </p>
+                <p className="text-xs text-blue-300 text-center">
+                  You can cancel any transaction in your wallet
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Success state */}
+        {success && (
+          <div className="text-center py-4">
+            <div className="mb-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-green-900/30 border border-green-700 flex items-center justify-center">
+                <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+            <h4 className="text-lg font-semibold text-green-400 mb-2">
+              🎉 Burn Process Complete!
+            </h4>
+            
+            {/* Text summary */}
+            <p className="text-sm text-gray-300 mb-4">
+              {(() => {
+                const parts = [];
+                if (tokensBurned > 0) {
+                  parts.push(`Successfully burned ${tokensBurned} token${tokensBurned !== 1 ? 's' : ''}`);
+                }
+                if (tokensRejectedByUser > 0) {
+                  parts.push(`${tokensRejectedByUser} cancelled by user`);
+                }
+                if (tokensFailed > 0) {
+                  parts.push(`${tokensFailed} failed`);
+                }
+                
+                if (parts.length === 0) {
+                  return 'No tokens were processed';
+                } else if (parts.length === 1) {
+                  return parts[0];
+                } else if (parts.length === 2) {
+                  return parts.join(' • ');
+                } else {
+                  return `${parts[0]} • ${parts[1]} • ${parts[2]}`;
+                }
+              })()}
+            </p>
+            
+            {/* User rejections section */}
+            {userRejections.length > 0 && (
+              <div className="mb-4 text-left">
+                <h5 className="text-sm font-medium text-yellow-300 mb-2 flex items-center">
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  Cancelled by You:
+                </h5>
+                <div className="max-h-24 overflow-y-auto bg-yellow-900/20 border border-yellow-700 rounded-lg p-3 space-y-1">
+                  {userRejections.map((result, index) => (
+                    <div key={index} className="text-xs text-yellow-300">
+                      {result.token.contract_ticker_symbol || `Token ${index + 1}`}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-yellow-400 mt-1">
+                  These tokens weren't burned because you cancelled the transactions. You can try again anytime.
+                </p>
+              </div>
+            )}
+
+            {/* Actual failures section */}
+            {actualFailures.length > 0 && (
+              <div className="mb-4 text-left">
+                <h5 className="text-sm font-medium text-red-300 mb-2">Failed Transactions:</h5>
+                <div className="max-h-32 overflow-y-auto bg-red-900/20 border border-red-700 rounded-lg p-3 space-y-2">
+                  {actualFailures.map((result, index) => (
+                    <div key={result.txHash || index} className="text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-red-300 truncate">
+                          {result.token.contract_ticker_symbol || `Token ${index + 1}`}
+                        </span>
+                        {result.txHash && (
+                          <a
+                            href={`https://basescan.org/tx/${result.txHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-red-400 hover:text-red-300 underline ml-2 flex-shrink-0 transition-colors"
+                          >
+                            View Tx
+                          </a>
+                        )}
+                      </div>
+                      {result.errorMessage && (
+                        <p className="text-red-400 text-xs mt-1">{result.errorMessage}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Transaction links */}
+            {successfulBurns.length > 0 && (
+              <div className="mb-4 text-left">
+                <h5 className="text-sm font-medium text-gray-200 mb-2">Successful Transactions:</h5>
+                <div className="max-h-32 overflow-y-auto bg-gray-800 rounded-lg p-3 space-y-2">
+                  {successfulBurns.map((result, index) => (
+                    <div key={result.txHash} className="flex items-center justify-between text-xs">
+                      <span className="text-gray-300 truncate">
+                        {result.token.contract_ticker_symbol || `Token ${index + 1}`}
+                      </span>
+                      <a
+                        href={`https://basescan.org/tx/${result.txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:text-blue-300 underline ml-2 flex-shrink-0 transition-colors"
+                      >
+                        View Tx
+                      </a>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  Click "View Tx" to see the burn transaction on BaseScan
+                </p>
+              </div>
+            )}
+            
+            <button
+              onClick={onClose}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        )}
+
+        {/* Error state */}
+        {error && (
+          <div className="text-center py-4">
+            <div className="mb-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-red-900/30 border border-red-700 flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+            </div>
+            <h4 className="text-lg font-semibold text-red-400 mb-2">Burn Failed</h4>
+            <p className="text-sm text-gray-300 mb-4">{error}</p>
+            <button
+              onClick={onClose}
+              className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors"
+            >
+              Close
+            </button>
+          </div>
         )}
       </div>
     </div>
   );
-}
-
-// Helper functions to get the appropriate colors and icons based on status
-function getBgColor(inProgress: boolean, success: boolean, error: string | null, isWaitingForConfirmation: boolean): string {
-  if (inProgress) return 'bg-blue-900/40 border border-blue-700';
-  if (isWaitingForConfirmation) return 'bg-purple-900/40 border border-purple-700';
-  if (error) return 'bg-red-900/40 border border-red-700';
-  if (success) return 'bg-green-900/40 border border-green-700';
-  return 'bg-gray-900/40 border border-gray-700';
-}
-
-function getStatusIcon(inProgress: boolean, success: boolean, error: string | null, isWaitingForConfirmation: boolean) {
-  if (inProgress || isWaitingForConfirmation) {
-    return (
-      <div className="animate-spin h-6 w-6 border-2 border-blue-400 border-t-transparent rounded-full" />
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className="flex-shrink-0 h-6 w-6 text-red-400">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </div>
-    );
-  }
-  
-  if (success) {
-    return (
-      <div className="flex-shrink-0 h-6 w-6 text-green-400">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
-      </div>
-    );
-  }
-  
-  return null;
-}
-
-function getStatusTitle(inProgress: boolean, success: boolean, error: string | null, isWaitingForConfirmation: boolean): string {
-  if (inProgress) return 'Burning Tokens...';
-  if (isWaitingForConfirmation) return 'Confirming Transaction...';
-  if (error) return 'Error Burning Tokens';
-  if (success) return 'Tokens Burned Successfully';
-  return '';
 } 

@@ -10,7 +10,7 @@ dotenv.config();
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.19",
+    version: "0.8.28",
     settings: {
       optimizer: {
         enabled: true,
@@ -30,11 +30,11 @@ const config: HardhatUserConfig = {
       gasPrice: 1000000000, // 1 gwei
     },
     
-    // Base Goerli Testnet
-    "base-goerli": {
-      url: "https://goerli.base.org",
+    // Base Sepolia Testnet
+    "base-sepolia": {
+      url: "https://sepolia.base.org",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 84531,
+      chainId: 84532,
       gasPrice: 1000000000, // 1 gwei
     },
     
@@ -46,10 +46,7 @@ const config: HardhatUserConfig = {
   
   // Contract verification
   etherscan: {
-    apiKey: {
-      base: process.env.BASESCAN_API_KEY || "",
-      "base-goerli": process.env.BASESCAN_API_KEY || "",
-    },
+    apiKey: process.env.ETHERSCAN_API_KEY || "",
     customChains: [
       {
         network: "base",
@@ -60,11 +57,11 @@ const config: HardhatUserConfig = {
         }
       },
       {
-        network: "base-goerli",
-        chainId: 84531,
+        network: "base-sepolia",
+        chainId: 84532,
         urls: {
-          apiURL: "https://api-goerli.basescan.org/api",
-          browserURL: "https://goerli.basescan.org"
+          apiURL: "https://api-sepolia.basescan.org/api",
+          browserURL: "https://sepolia.basescan.org"
         }
       }
     ]

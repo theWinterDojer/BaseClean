@@ -64,7 +64,7 @@ npx hardhat verify --network base 0xYOUR_CONTRACT_ADDRESS
 **Environment Setup:**
 - [ ] Dedicated deployment wallet created
 - [ ] Wallet funded with ~0.01 ETH
-- [ ] `.env` file configured with PRIVATE_KEY and BASESCAN_API_KEY
+- [ ] `.env` file configured with PRIVATE_KEY and ETHERSCAN_API_KEY
 - [ ] BaseScan API key obtained
 
 **Testing:**

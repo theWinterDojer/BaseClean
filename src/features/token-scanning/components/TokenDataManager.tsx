@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useChainId } from 'wagmi';
 import { Token } from '@/types/token';
 import { fetchTokenBalances } from '@/lib/api';
 import { UI_TEXT } from '@/constants/tokens';
@@ -21,6 +21,7 @@ interface TokenDataManagerProps {
  */
 export default function TokenDataManager({ onTokensLoaded, children }: TokenDataManagerProps) {
   const { address, isConnected } = useAccount();
+  const chainId = useChainId();
   const [tokens, setTokens] = useState<Token[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +32,7 @@ export default function TokenDataManager({ onTokensLoaded, children }: TokenData
     setIsClient(true);
   }, []);
 
-  // Fetch tokens when connected
+  // Fetch tokens when connected or chain changes
   useEffect(() => {
     if (!isConnected || !address) return;
     
@@ -40,7 +41,7 @@ export default function TokenDataManager({ onTokensLoaded, children }: TokenData
       setError(null);
       
       try {
-        const tokenItems = await fetchTokenBalances(address);
+        const tokenItems = await fetchTokenBalances(address, chainId);
         setTokens(tokenItems);
         onTokensLoaded(tokenItems);
       } catch (err) {
@@ -52,7 +53,7 @@ export default function TokenDataManager({ onTokensLoaded, children }: TokenData
     };
 
     getTokens();
-  }, [address, isConnected, onTokensLoaded]);
+  }, [address, isConnected, chainId, onTokensLoaded]);
 
   // Update tokens when they change externally (e.g., after burning)
   const updateTokens = (newTokens: Token[]) => {

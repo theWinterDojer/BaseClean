@@ -34,7 +34,7 @@ if (typeof window !== 'undefined') {
       const cachedLogoData = JSON.parse(cachedLogos);
       Object.assign(TOKEN_LOGO_CACHE, cachedLogoData);
     }
-  } catch (_e) {
+  } catch {
     console.debug('Failed to load token logo cache from localStorage');
   }
 }
@@ -48,7 +48,7 @@ const saveToCache = (address: string, url: string): void => {
   if (typeof window !== 'undefined') {
     try {
       localStorage.setItem('token_logo_cache', JSON.stringify(TOKEN_LOGO_CACHE));
-    } catch (_e) {
+    } catch {
       console.debug('Failed to save token logo cache to localStorage');
     }
   }
@@ -66,11 +66,11 @@ function safeEncode(str: string): string {
         .join('')
     );
     return base64;
-  } catch (error) {
-    console.warn('Error in safeEncode:', error);
+  } catch {
+    console.warn('Error in safeEncode:');
     try {
       return btoa(str.replace(/[^\x00-\x7F]/g, '_'));
-    } catch (_e) {
+    } catch {
       return 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgaGVpZ2h0PSI0MCIgd2lkdGg9IjQwIj48Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iIzYwN0Q4QiIvPjx0ZXh0IHg9IjIwIiB5PSIyNSIgZm9udC1zaXplPSIxNiIgZmlsbD0iI2ZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+WDwvdGV4dD48L3N2Zz4=';
     }
   }
@@ -186,7 +186,7 @@ async function testImageUrl(url: string, timeout: number = 800): Promise<boolean
     }
     
     return false;
-  } catch (_err) {
+  } catch {
     clearTimeout(timeoutId);
     return false;
   }
@@ -262,7 +262,7 @@ export async function getTokenLogoUrl(address: string, symbol: string = ''): Pro
               return imageUrl;
             }
           }
-        } catch (_err) {
+        } catch {
           // Continue to next source
         }
       } else {
@@ -273,7 +273,7 @@ export async function getTokenLogoUrl(address: string, symbol: string = ''): Pro
           return url;
         }
       }
-    } catch (_error) {
+    } catch {
       // Continue to next source
     }
   }
@@ -296,19 +296,20 @@ export function clearTokenLogoCache(): void {
     try {
       localStorage.removeItem('token_logo_cache');
       console.log('Token logo cache successfully cleared');
-    } catch (e) {
-      console.error('Failed to clear token logo cache from localStorage', e);
+    } catch {
+      console.error('Failed to clear token logo cache from localStorage');
     }
   }
 }
 
 /**
- * Fetches token balances for a given address
+ * Fetches token balances for a given address on Base Mainnet
  * 
  * @param address - The wallet address to fetch balances for
+ * @param chainId - The chain ID (8453 for Base Mainnet, ignored since we only support Base now)
  * @returns Promise<Token[]> - Array of tokens or empty array on error
  */
-export const fetchTokenBalances = async (address: string): Promise<Token[]> => {
+export const fetchTokenBalances = async (address: string, chainId?: number): Promise<Token[]> => {
   if (!address) {
     console.error('No address provided to fetchTokenBalances');
     return [];
@@ -320,8 +321,12 @@ export const fetchTokenBalances = async (address: string): Promise<Token[]> => {
       throw new Error('API key not configured');
     }
 
+    // We only support Base Mainnet now
+    const networkEndpoint = 'base-mainnet';
+    console.log(`Fetching token balances from ${networkEndpoint} for chain ${chainId || 8453}`);
+
     const res = await fetch(
-      `https://api.covalenthq.com/v1/base-mainnet/address/${address}/balances_v2/?key=${BLOCKCHAIN_API_KEY}`,
+      `https://api.covalenthq.com/v1/${networkEndpoint}/address/${address}/balances_v2/?key=${BLOCKCHAIN_API_KEY}`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -382,8 +387,8 @@ export const fetchTokenBalances = async (address: string): Promise<Token[]> => {
               token.price_source = 'coingecko';
               return token;
             }
-          } catch (err) {
-            console.debug(`Failed to fetch alternative price data for ${token.contract_ticker_symbol}:`, err);
+          } catch {
+            console.debug(`Failed to fetch alternative price data for ${token.contract_ticker_symbol}:`);
           }
         }
         
@@ -392,8 +397,8 @@ export const fetchTokenBalances = async (address: string): Promise<Token[]> => {
     );
 
     return processedTokens;
-  } catch (err) {
-    console.error('Failed to fetch tokens:', err);
+  } catch {
+    console.error('Failed to fetch tokens:');
     return [];
   }
 };
@@ -416,8 +421,8 @@ async function fetchDefiLlamaPrice(address: string): Promise<number> {
     const priceKey = `base:${address.toLowerCase()}`;
     
     return data.coins?.[priceKey]?.price || 0;
-  } catch (err) {
-    console.debug(`DefiLlama price fetch failed for ${address}:`, err);
+  } catch {
+    console.debug(`DefiLlama price fetch failed for ${address}:`);
     return 0;
   }
 }
@@ -444,8 +449,8 @@ async function fetchCoinGeckoPrice(address: string): Promise<number> {
     
     const data = await response.json();
     return data[address.toLowerCase()]?.usd || 0;
-  } catch (err) {
-    console.debug(`CoinGecko price fetch failed for ${address}:`, err);
+  } catch {
+    console.debug(`CoinGecko price fetch failed for ${address}:`);
     return 0;
   }
 }
@@ -482,8 +487,8 @@ export function formatBalance(balance: string, decimals: number): string {
     } else {
       return '0';
     }
-  } catch (error) {
-    console.error('Error formatting balance:', error);
+  } catch {
+    console.error('Error formatting balance:');
     return '0';
   }
 }
@@ -517,8 +522,8 @@ export function calculateTokenValue(balance: string, quoteRate: number): string 
     } else {
       return '0.00';
     }
-  } catch (error) {
-    console.error('Error calculating token value:', error);
+  } catch {
+    console.error('Error calculating token value:');
     return '';
   }
 } 

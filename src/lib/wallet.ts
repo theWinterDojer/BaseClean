@@ -14,7 +14,7 @@ if (!WALLET_CONNECT_PROJECT_ID) {
 
 /**
  * RainbowKit and Wagmi configuration for wallet connection
- * Uses Base blockchain as the primary chain
+ * Supports Base mainnet only
  */
 export const config = getDefaultConfig({
   appName: 'BaseClean',

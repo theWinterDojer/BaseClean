@@ -13,8 +13,8 @@
 # Your deployment wallet private key (64 characters, no 0x prefix)
 PRIVATE_KEY=your_deployment_wallet_private_key_here
 
-# Your BaseScan API key for contract verification
-BASESCAN_API_KEY=your_basescan_api_key_here
+# Your Etherscan API key for contract verification
+ETHERSCAN_API_KEY=your_etherscan_api_key_here
 ```
 
 ### **STEP 2: Pre-Deployment Tests**

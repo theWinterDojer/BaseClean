@@ -17,32 +17,19 @@ export const SUPPORTED_CHAINS = {
       default: { name: 'BaseScan', url: 'https://basescan.org' },
     },
   },
-  BASE_GOERLI: {
-    id: 84531,
-    name: 'Base Goerli',
-    network: 'base-goerli',
-    nativeCurrency: {
-      decimals: 18,
-      name: 'Ethereum',
-      symbol: 'ETH',
-    },
-    rpcUrls: {
-      public: { http: ['https://goerli.base.org'] },
-      default: { http: ['https://goerli.base.org'] },
-    },
-    blockExplorers: {
-      etherscan: { name: 'BaseScan', url: 'https://goerli.basescan.org' },
-      default: { name: 'BaseScan', url: 'https://goerli.basescan.org' },
-    },
-    testnet: true,
-  },
 };
 
 export const DEFAULT_CHAIN = SUPPORTED_CHAINS.BASE;
 
+// Environment configuration
+export const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+export const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
+
+// Now we always use Base Mainnet since we removed testnet support
+export const RECOMMENDED_CHAIN = SUPPORTED_CHAINS.BASE;
+
 export const RPC_URLS = {
   [SUPPORTED_CHAINS.BASE.id]: SUPPORTED_CHAINS.BASE.rpcUrls.default.http[0],
-  [SUPPORTED_CHAINS.BASE_GOERLI.id]: SUPPORTED_CHAINS.BASE_GOERLI.rpcUrls.default.http[0],
 };
 
 export const COVALENT_API_KEY = process.env.NEXT_PUBLIC_COVALENT_API_KEY || '';
@@ -50,17 +37,11 @@ export const COVALENT_API_KEY = process.env.NEXT_PUBLIC_COVALENT_API_KEY || '';
 export const WALLET_CONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '';
 
 // Gas limits for different operations
-export const BURN_GAS_LIMIT = 100000; // Default gas limit for burn transactions 
-export const BATCH_BURN_GAS_LIMIT = 150000; // Gas limit per token in batch operations
-export const APPROVAL_GAS_LIMIT = 80000; // Gas limit for token approvals
+export const BURN_GAS_LIMIT = 100000;
+export const BATCH_BURN_GAS_LIMIT = 150000;
+export const APPROVAL_GAS_LIMIT = 80000;
 
-// BatchBurner contract addresses (will be populated after deployment)
-export const BATCH_BURNER_ADDRESSES = {
-  [SUPPORTED_CHAINS.BASE.id]: process.env.NEXT_PUBLIC_BATCH_BURNER_ADDRESS_MAINNET || '',
-  [SUPPORTED_CHAINS.BASE_GOERLI.id]: process.env.NEXT_PUBLIC_BATCH_BURNER_ADDRESS_TESTNET || '',
-} as const;
-
-// Dead address for token burning
+// Dead address for token burning - where tokens go to die
 export const BURN_ADDRESS = '0x000000000000000000000000000000000000dEaD';
 
 // Security configuration

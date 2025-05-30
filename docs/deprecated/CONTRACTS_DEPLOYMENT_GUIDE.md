@@ -23,8 +23,8 @@ Create `.env` file in contracts directory:
 # Deployment wallet private key (dedicated wallet only!)
 PRIVATE_KEY=your_deployment_wallet_private_key
 
-# BaseScan API key for verification (get from basescan.org/apis)
-BASESCAN_API_KEY=your_basescan_api_key
+# Etherscan API key for verification (works for Base - get from etherscan.io/apis)
+ETHERSCAN_API_KEY=your_etherscan_api_key
 
 # Optional: CoinMarketCap API for gas reporting
 COINMARKETCAP_API_KEY=your_coinmarketcap_api_key
@@ -50,15 +50,15 @@ npm run test
 
 ---
 
-## 🧪 PHASE 2: Base Goerli Testnet Deployment
+## 🧪 PHASE 2: Base Sepolia Testnet Deployment
 
 ### 2.1 Get Testnet ETH
-- Visit: https://www.alchemy.com/faucets/base-goerli
+- Visit: https://www.alchemy.com/faucets/base-sepolia
 - Get ~0.01 ETH for testing
 
 ### 2.2 Deploy to Testnet
 ```bash
-# Deploy to Base Goerli testnet
+# Deploy to Base Sepolia testnet
 npm run deploy:testnet
 ```
 
@@ -71,7 +71,7 @@ npm run verify:testnet
 ### 2.4 Record Testnet Address
 ```
 Testnet Contract: [SAVE_ADDRESS_HERE]
-Testnet Explorer: https://goerli.basescan.org/address/[CONTRACT_ADDRESS]
+Testnet Explorer: https://sepolia.basescan.org/address/[CONTRACT_ADDRESS]
 ```
 
 ---
@@ -105,7 +105,7 @@ Testnet Explorer: https://goerli.basescan.org/address/[CONTRACT_ADDRESS]
 - [ ] Contract verified on testnet
 - [ ] Deployment wallet funded (~0.005 ETH)
 - [ ] Private key secured
-- [ ] BaseScan API key ready
+- [ ] Etherscan API key ready
 
 ### 4.2 Deploy to Base Mainnet
 ```bash
@@ -159,6 +159,7 @@ echo "Mainnet Contract: [CONTRACT_ADDRESS]" >> deployment_record.txt
 ```typescript
 // Update baseclean/src/config/web3.ts
 NEXT_PUBLIC_BATCH_BURNER_ADDRESS_MAINNET=0x[CONTRACT_ADDRESS]
+NEXT_PUBLIC_BATCH_BURNER_ADDRESS_TESTNET=0xc0a4D1A2c85B1Da29d1Ebc038941Cd8883357325
 ```
 
 ### 6.2 Frontend Testing

@@ -1,9 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { Token, SpamFilters, TokenStatistics } from '@/types/token';
 import FilterPanel from '@/shared/components/FilterPanel';
 import { useTokenFiltering } from '@/hooks/useTokenFiltering';
 import { useBurnFlow } from '@/hooks/useBurnFlow';
+import { useSelectedTokens } from '@/contexts/SelectedTokensContext';
 import { TOKEN_VALUE_THRESHOLDS } from '@/constants/tokens';
 import TokenStatisticsComponent from './TokenStatistics';
 import TokenListsContainer from './TokenListsContainer';
@@ -11,13 +12,19 @@ import BurnTransactionStatus from './BurnTransactionStatus';
 import BurnConfirmationModal from './BurnConfirmationModal';
 import TokenDataManager from './TokenDataManager';
 import TokenSelectionManager from './TokenSelectionManager';
-import SelectedTokensPanel from './SelectedTokensPanel';
 
-export default function TokenScanner() {
+interface TokenScannerProps {
+    onTokensUpdate?: (tokens: Token[]) => void;
+    onBurnHandlerUpdate?: (handler: (selectedTokensList: Token[]) => void) => void;
+}
+
+export default function TokenScanner({ onTokensUpdate, onBurnHandlerUpdate }: TokenScannerProps = {}) {
     const { address } = useAccount();
     const [tokens, setTokens] = useState<Token[]>([]);
-    const [selectedTokens, setSelectedTokens] = useState<Set<string>>(new Set());
     const [maxValue, setMaxValue] = useState<number | null>(10);
+
+    // Use the global selected tokens context
+    const { selectedTokens, selectedTokensCount, toggleToken, setSelectedTokens } = useSelectedTokens();
 
     // Default spam filters - enable all for best detection
     const [spamFilters, setSpamFilters] = useState<SpamFilters>({
@@ -43,72 +50,71 @@ export default function TokenScanner() {
     // Handle tokens loaded from TokenDataManager
     const handleTokensLoaded = useCallback((loadedTokens: Token[]) => {
         setTokens(loadedTokens);
-    }, []);
+        onTokensUpdate?.(loadedTokens);
+    }, [onTokensUpdate]);
 
-    // Handle burn confirmation
-    const handleBurnSelected = useCallback(async () => {
-        const selectedTokensList = tokens.filter(token => 
-            selectedTokens.has(token.contract_address)
-        );
+    // Handle burn confirmation with proper null checks
+    const handleBurnSelected = useCallback(async (selectedTokensList: Token[]) => {
+        // Ensure we have valid tokens and the array is not null/undefined
+        if (!selectedTokensList || !Array.isArray(selectedTokensList) || selectedTokensList.length === 0) {
+            console.warn('No tokens selected for burning');
+            return;
+        }
         await showConfirmation(selectedTokensList);
-    }, [tokens, selectedTokens, showConfirmation]);
+    }, [showConfirmation]);
+
+    // Expose burn handler to parent component only after tokens are loaded
+    useEffect(() => {
+        // Only expose the handler if we have tokens loaded and the callback exists
+        if (onBurnHandlerUpdate && tokens.length > 0) {
+            onBurnHandlerUpdate(handleBurnSelected);
+        }
+    }, [handleBurnSelected, onBurnHandlerUpdate, tokens.length]);
 
     // Handle burn execution
     const handleConfirmBurn = useCallback(async (updateTokens: (tokens: Token[]) => void) => {
         if (!address) return;
         
-        await executeBurn(
-            address,
-            updateTokens,
-            setSelectedTokens
-        );
-    }, [address, executeBurn]);
+        try {
+            await executeBurn(
+                address,
+                updateTokens,
+                setSelectedTokens
+            );
+        } catch (error) {
+            // This catch block ensures any unhandled errors in the burn process
+            // are captured and don't bubble up to React's error boundary
+            console.error('Error in burn execution:', error);
+            
+            // The error should already be handled by the useBurnFlow hook,
+            // but this provides an additional safety net
+        }
+    }, [address, executeBurn, setSelectedTokens]);
 
     // Statistics data for display
     const statistics: TokenStatistics = {
         totalTokens: tokens.length,
         spamTokens: spamTokens.length,
         regularTokens: nonSpamTokens.length,
-        selectedTokens: selectedTokens.size,
+        selectedTokens: selectedTokensCount,
         spamPercentage: tokens.length > 0 ? Math.round((spamTokens.length / tokens.length) * 100) : 0
     };
-
-    // Toggle individual token selection
-    const toggleToken = useCallback((contractAddress: string) => {
-        setSelectedTokens(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(contractAddress)) {
-                newSet.delete(contractAddress);
-            } else {
-                newSet.add(contractAddress);
-            }
-            return newSet;
-        });
-    }, []);
 
     return (
         <TokenDataManager onTokensLoaded={handleTokensLoaded}>
             {({ loading, isConnected, isClient, updateTokens }) => (
                 isClient && isConnected && !loading && (
                     <div className="space-y-5">
+                        {/* Spacer for fixed sticky header when tokens are selected */}
+                        {selectedTokensCount > 0 && (
+                            <div className="h-12" />
+                        )}
+
                         {/* Burn Transaction Status */}
                         <BurnTransactionStatus
-                            inProgress={burnStatus.inProgress}
-                            success={burnStatus.success}
-                            error={burnStatus.error}
-                            tokensBurned={burnStatus.tokensBurned}
-                            tokensFailed={burnStatus.tokensFailed}
+                            burnStatus={burnStatus}
                             onClose={resetBurnStatus}
-                            currentToken={burnStatus.currentToken}
-                            processedTokens={burnStatus.processedTokens}
-                            totalTokens={burnStatus.totalTokens}
                             isWaitingForConfirmation={isWaitingForConfirmation}
-                        />
-
-                        {/* Selected Tokens Panel - moved to top for better UX flow */}
-                        <SelectedTokensPanel
-                            selectedTokensCount={selectedTokens.size}
-                            onBurnSelected={handleBurnSelected}
                         />
 
                         {/* Filter Panel (includes Value Threshold and Spam Detection) */}
@@ -144,7 +150,6 @@ export default function TokenScanner() {
                             isOpen={burnStatus.isConfirmationOpen}
                             onClose={closeConfirmation}
                             onConfirm={() => handleConfirmBurn(updateTokens)}
-                            isSimulating={burnStatus.isSimulating}
                         />
                     </div>
                 )

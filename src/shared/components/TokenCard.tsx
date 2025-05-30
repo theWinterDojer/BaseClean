@@ -1,7 +1,8 @@
-import { Token } from '@/types/token';
-import { formatBalance, calculateTokenValue, getTokenLogoUrl } from '@/lib/api';
-import { useState, useEffect, memo, useCallback } from 'react';
+import React, { useState, memo, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { Token } from '@/types/token';
+import { formatBalance } from '@/lib/api';
+import { getTokenLogoUrl } from '@/lib/api';
 
 interface TokenCardProps {
   token: Token;
@@ -150,7 +151,6 @@ const TokenCard = memo(function TokenCard({
   const [hover, setHover] = useState(false);
   
   const formattedBalance = formatBalance(token.balance, token.contract_decimals);
-  const tokenValue = calculateTokenValue(token.balance, token.quote_rate);
 
   // Calculate actual numeric value for display
   const numericValue = (() => {
