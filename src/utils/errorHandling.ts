@@ -24,19 +24,32 @@ export function isUserRejectionError(error: unknown): boolean {
   if (!error) return false;
   
   const errorString = error.toString().toLowerCase();
-  const errorMessage = (error as any)?.message?.toLowerCase() || '';
+  const errorMessage = (error as { message?: string })?.message?.toLowerCase() || '';
+  const errorName = (error as { name?: string })?.name?.toLowerCase() || '';
   
   return (
+    // Check error string content
     errorString.includes('user rejected') ||
     errorString.includes('user denied') ||
     errorString.includes('user cancelled') ||
     errorString.includes('user canceled') ||
     errorString.includes('rejected by user') ||
     errorString.includes('denied by user') ||
+    // Check error message content
     errorMessage.includes('user rejected') ||
     errorMessage.includes('user denied') ||
     errorMessage.includes('user cancelled') ||
-    errorMessage.includes('user canceled')
+    errorMessage.includes('user canceled') ||
+    errorMessage.includes('rejected by user') ||
+    errorMessage.includes('denied by user') ||
+    // Check for specific error types
+    errorName.includes('userrejected') ||
+    errorName.includes('actionrejected') ||
+    // Check for ContractFunctionExecutionError with user rejection message
+    (errorString.includes('contractfunctionexecutionerror') && errorString.includes('user rejected')) ||
+    // Additional viem-specific patterns
+    errorString.includes('user rejected the request') ||
+    errorMessage.includes('user rejected the request')
   );
 }
 
@@ -47,7 +60,7 @@ export function isInsufficientFundsError(error: unknown): boolean {
   if (!error) return false;
   
   const errorString = error.toString().toLowerCase();
-  const errorMessage = (error as any)?.message?.toLowerCase() || '';
+  const errorMessage = (error as { message?: string })?.message?.toLowerCase() || '';
   
   return (
     errorString.includes('insufficient funds') ||
@@ -66,7 +79,7 @@ export function isNetworkError(error: unknown): boolean {
   if (!error) return false;
   
   const errorString = error.toString().toLowerCase();
-  const errorMessage = (error as any)?.message?.toLowerCase() || '';
+  const errorMessage = (error as { message?: string })?.message?.toLowerCase() || '';
   
   return (
     errorString.includes('network error') ||
@@ -145,7 +158,7 @@ export function parseWalletError(error: unknown): ParsedError {
   }
 
   // Fallback for unknown errors
-  const message = (error as any)?.message || error.toString();
+  const message = (error as { message?: string })?.message || error.toString();
   return {
     type: 'UNKNOWN',
     message,

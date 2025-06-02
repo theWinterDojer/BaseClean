@@ -21,6 +21,9 @@ export default function BurnConfirmationModal({
   const totalTokens = tokens.length;
   const totalValue = tokens.reduce((sum, token) => sum + getTokenValue(token), 0);
 
+  // Check if any tokens have significant value
+  const hasSignificantValue = totalValue > 1.0; // $1 threshold
+
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
       <div className="bg-gray-900 rounded-lg border border-gray-700 shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
@@ -39,11 +42,22 @@ export default function BurnConfirmationModal({
             </p>
           </div>
 
+          {/* Additional value warning if tokens have significant value */}
+          {hasSignificantValue && (
+            <div className="bg-yellow-900/30 border border-yellow-700 rounded-md p-4 mb-6">
+              <p className="text-white font-medium">💰 Value Warning!</p>
+              <p className="text-gray-300 text-sm mt-1">
+                You are about to burn tokens worth <span className="font-bold text-yellow-400">${totalValue.toFixed(2)}</span>. 
+                Please double-check that you really want to destroy these valuable tokens.
+              </p>
+            </div>
+          )}
+
           <div className="mb-6">
             <h3 className="text-white font-medium mb-2">Summary:</h3>
             <div className="bg-gray-800 rounded-md p-3">
               <p className="text-gray-200">Total tokens to burn: <span className="font-medium text-white">{totalTokens}</span></p>
-              <p className="text-gray-200">Total estimated value: <span className="font-medium text-white">${totalValue.toFixed(2)}</span></p>
+              <p className="text-gray-200">Total estimated value: <span className={`font-medium ${hasSignificantValue ? 'text-yellow-400' : 'text-white'}`}>${totalValue.toFixed(2)}</span></p>
             </div>
           </div>
 
@@ -66,7 +80,7 @@ export default function BurnConfirmationModal({
                             {formattedBalance} tokens
                           </div>
                         </div>
-                        <div className="text-yellow-400 font-medium">
+                        <div className={`font-medium ${value > 0.1 ? 'text-yellow-400' : 'text-gray-300'}`}>
                           ${value.toFixed(2)}
                         </div>
                       </div>
@@ -77,7 +91,8 @@ export default function BurnConfirmationModal({
             </div>
           </div>
 
-          <div className="flex gap-3 justify-end">
+          {/* Cancel button on left, Burn button on right for safety */}
+          <div className="flex gap-3">
             <button
               type="button"
               className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md transition-colors"
@@ -87,7 +102,7 @@ export default function BurnConfirmationModal({
             </button>
             <button
               type="button"
-              className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-md transition-colors"
+              className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-md transition-colors ml-auto"
               onClick={onConfirm}
             >
               Burn Tokens

@@ -1,6 +1,7 @@
 import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
 import { useEffect } from 'react';
+import { useRouter } from 'next/router';
 
 import '@rainbow-me/rainbowkit/styles.css';
 import { WagmiConfig } from 'wagmi';
@@ -9,11 +10,38 @@ import { config } from '@/lib/wallet';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import WalletErrorBoundary from '@/components/WalletErrorBoundary';
+import DisclaimerModal from '@/components/DisclaimerModal';
+import { useDisclaimer } from '@/hooks/useDisclaimer';
 import { parseWalletError, isUserRejectionError } from '@/utils/errorHandling';
 
 const queryClient = new QueryClient();
 
-export default function App({ Component, pageProps }: AppProps) {
+function AppContent(props: AppProps) {
+  const { showDisclaimer, isLoading, handleAgree } = useDisclaimer();
+  const { Component, pageProps } = props;
+  const router = useRouter();
+
+  // Don't show disclaimer on terms-of-service page
+  const shouldShowDisclaimer = showDisclaimer && router.pathname !== '/terms-of-service';
+
+  // Don't render anything while checking disclaimer status
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <DisclaimerModal isOpen={shouldShowDisclaimer} onAgree={handleAgree} />
+      <Component {...pageProps} />
+    </>
+  );
+}
+
+export default function App(props: AppProps) {
   // Global error handler for unhandled promise rejections (like wallet errors)
   useEffect(() => {
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
@@ -27,7 +55,9 @@ export default function App({ Component, pageProps }: AppProps) {
           errorString.includes('user rejected') ||
           errorString.includes('user denied') ||
           errorString.includes('contract') ||
-          errorString.includes('transaction')
+          errorString.includes('transaction') ||
+          // Specifically catch ContractFunctionExecutionError with user rejection
+          (errorString.includes('contractfunctionexecutionerror') && errorString.includes('user rejected'))
         );
         
         if (isWalletError) {
@@ -36,11 +66,13 @@ export default function App({ Component, pageProps }: AppProps) {
           
           const parsedError = parseWalletError(error);
           
-          // Log for debugging but don't show scary console errors
-          console.log('Wallet error (handled gracefully):', parsedError.userFriendlyMessage);
+          // Only log non-user-rejection errors
+          if (parsedError.type !== 'USER_REJECTED') {
+            console.log('Wallet error (handled gracefully):', parsedError.userFriendlyMessage);
+          }
           
-          // If it's a user rejection, we can silently handle it
-          if (parsedError.type === 'USER_REJECTED') {
+          // For user rejections, log minimal info only in development
+          if (parsedError.type === 'USER_REJECTED' && process.env.NODE_ENV === 'development') {
             console.log('User cancelled transaction - this is normal behavior');
           }
           
@@ -66,7 +98,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <WagmiConfig config={config}>
         <RainbowKitProvider>
           <WalletErrorBoundary>
-            <Component {...pageProps} />
+            <AppContent {...props} />
           </WalletErrorBoundary>
         </RainbowKitProvider>
       </WagmiConfig>

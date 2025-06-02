@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { getTokenLogoUrl, clearTokenLogoCache } from '@/lib/api';
 
 /**
@@ -44,7 +44,7 @@ export default function TokenImageTest() {
           loadTime: endTime - startTime,
           success: !url.startsWith('data:image/svg+xml') // SVG means fallback was used
         });
-      } catch (error) {
+      } catch {
         const endTime = Date.now();
         results.push({
           address: token.address,

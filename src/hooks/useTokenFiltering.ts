@@ -140,12 +140,12 @@ export function useTokenFiltering(
     
     const usdValue = parseFloat(calculateTokenValue(balance.toString(), token.quote_rate) || '0');
     
-    // Skip check for tokens with sufficient holdings
-    // Even if value is low, significant holdings might indicate a legitimate token
-    if (balance > 100 && token.quote_rate > 0) return false;
+    // Zero value tokens should ALWAYS be flagged when this filter is enabled
+    if (token.quote_rate === 0 || usdValue === 0) return true;
     
-    // Zero value
-    if (token.quote_rate === 0) return true;
+    // Skip further checks for tokens with sufficient holdings AND actual value
+    // This prevents legitimate tokens with low price but high holdings from being flagged
+    if (balance > 100 && token.quote_rate > 0 && usdValue > 1.0) return false;
     
     // Extremely low value (less than $0.000001)
     if (token.quote_rate < 0.000001) return true;
@@ -153,8 +153,8 @@ export function useTokenFiltering(
     // Dust balance, but only if the token itself has low value
     if (balance < 0.001 && token.quote_rate < 0.01) return true;
     
-    // Low total value
-    if (usdValue > 0 && usdValue < 0.1) return true;
+    // Low total value - adjusted threshold to $1.00
+    if (usdValue > 0 && usdValue < 1.0) return true;
     
     // No price data but has a large balance (suspicious "valueless" tokens)
     if (token.quote_rate === 0 && balance > 100000) return true;
@@ -279,14 +279,15 @@ export function useTokenFiltering(
     if (hasAirdropSignals(token, balanceNum)) spamSignals++;
     if (hasHighRiskIndicators(token, balanceNum, usdValue)) spamSignals++;
     
-    // If the token has minimal value (<$0.01), 1 signal is enough to flag it
-    if (usdValue < 0.01 && spamSignals >= 1) return true;
+    // Adjusted thresholds to match new $1.00 low-value standard
+    // If the token has low value (<$1.00), 1 signal is enough to flag it
+    if (usdValue < 1.0 && spamSignals >= 1) return true;
     
-    // For tokens with some value ($0.01-$1), require 2+ signals
-    if (usdValue < 1 && spamSignals >= 2) return true;
+    // For tokens with moderate value ($1.00-$5.00), require 2+ signals
+    if (usdValue < 5.0 && spamSignals >= 2) return true;
     
-    // For tokens with significant value (>$1), require 3+ signals
-    if (usdValue >= 1 && spamSignals >= 3) return true;
+    // For tokens with significant value (>$5.00), require 3+ signals
+    if (usdValue >= 5.0 && spamSignals >= 3) return true;
     
     return false;
   }, [hasNamingIssues, hasValueIssues, hasAirdropSignals, hasHighRiskIndicators]);

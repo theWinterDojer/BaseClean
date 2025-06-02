@@ -6,7 +6,7 @@ import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 type TokenListProps = {
   tokens: Token[];
   selectedTokens: Set<string>;
-  toggleToken: (address: string) => void;
+  toggleToken: (address: string, tokens?: Token[]) => void;
   isSpam?: boolean;
 };
 
@@ -17,7 +17,7 @@ export default function TokenList({
   isSpam = false
 }: TokenListProps) {
   const [listHeight, setListHeight] = useState(500); // Increased default height
-  const itemSize = 100; // Increased from 90 to 100px for more breathing room
+  const itemSize = 100; // Reverted back to original 100px spacing
   
   // List key is used to force re-render of the virtualized list when necessary
   const [listKey, setListKey] = useState(0);
@@ -51,7 +51,7 @@ export default function TokenList({
   const handleSelectAll = useCallback(() => {
     tokens.forEach(token => {
       if (!selectedTokens.has(token.contract_address)) {
-        toggleToken(token.contract_address);
+        toggleToken(token.contract_address, tokens);
       }
     });
   }, [tokens, toggleToken, selectedTokens]);
@@ -60,10 +60,15 @@ export default function TokenList({
   const handleDeselectAll = useCallback(() => {
     tokens.forEach(token => {
       if (selectedTokens.has(token.contract_address)) {
-        toggleToken(token.contract_address);
+        toggleToken(token.contract_address, tokens);
       }
     });
   }, [tokens, toggleToken, selectedTokens]);
+
+  // Create a wrapper function to pass tokens array
+  const handleTokenToggle = useCallback((address: string) => {
+    toggleToken(address, tokens);
+  }, [toggleToken, tokens]);
   
   // Optimized row renderer component
   const RowComponent = memo(({ index, style }: { index: number; style: React.CSSProperties }) => {
@@ -72,12 +77,12 @@ export default function TokenList({
     if (!token) return null;
     
     return (
-      <div style={{...style, paddingBottom: '10px'}}>
+      <div style={style}>
         <TokenCard
           token={token}
           isSpam={isSpam}
           isSelected={selectedTokens.has(token.contract_address)}
-          onToggle={toggleToken}
+          onToggle={handleTokenToggle}
         />
       </div>
     );
@@ -141,18 +146,22 @@ export default function TokenList({
             </span>
             
             <div className="flex gap-2">
-              {selectedCount < tokens.length && (
+              {/* Only show Select All button for spam tokens */}
+              {isSpam && selectedCount < tokens.length && (
                 <button 
                   onClick={handleSelectAll}
-                  className={`text-sm px-4 py-2 rounded-md ${
-                    isSpam
-                      ? 'bg-blue-700/70 hover:bg-blue-600 text-white'
-                      : 'bg-blue-700/70 hover:bg-blue-600 text-white'
-                  } transition-colors`}
+                  className="text-sm px-4 py-2 rounded-md bg-blue-700/70 hover:bg-blue-600 text-white transition-colors"
                   aria-label={`Select all ${tokens.length} tokens in this list`}
                 >
                   Select All
                 </button>
+              )}
+              
+              {/* Show warning text for regular tokens instead of Select All button */}
+              {!isSpam && (
+                <span className="text-sm text-yellow-400 font-medium px-2 py-1">
+                  ⚠️ Use precaution selecting here
+                </span>
               )}
               
               {selectedCount > 0 && (
@@ -170,4 +179,4 @@ export default function TokenList({
       )}
     </div>
   );
-} 
+}

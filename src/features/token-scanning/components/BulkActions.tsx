@@ -35,7 +35,7 @@ export default function BulkActions({
         </button>
         <button
           onClick={onDeselectAll}
-          className="bg-gray-700/60 hover:bg-gray-600/60 border border-gray-600 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+          className="bg-blue-600/80 hover:bg-blue-500/80 border border-blue-500 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors shadow-sm hover:shadow-md flex items-center gap-2"
           disabled={selectedTokensCount === 0}
           aria-label="Deselect all tokens"
         >

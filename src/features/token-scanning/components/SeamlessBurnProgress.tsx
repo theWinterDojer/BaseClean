@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Token } from '@/types/token';
 import { DirectBurnResult } from '@/lib/directBurner';
 
@@ -25,15 +25,8 @@ export default function SeamlessBurnProgress({
   isComplete,
   hasErrors
 }: SeamlessBurnProgressProps) {
-  const [currentStep, setCurrentStep] = useState(0);
   const [showDetails, setShowDetails] = useState(false);
   
-  useEffect(() => {
-    if (processedCount > 0) {
-      setCurrentStep(processedCount);
-    }
-  }, [processedCount]);
-
   if (!isOpen) return null;
 
   const progressPercentage = totalCount > 0 ? (processedCount / totalCount) * 100 : 0;

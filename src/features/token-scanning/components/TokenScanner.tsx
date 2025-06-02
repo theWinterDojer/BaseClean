@@ -1,8 +1,9 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useAccount } from 'wagmi';
 import { Token, SpamFilters, TokenStatistics } from '@/types/token';
 import FilterPanel from '@/shared/components/FilterPanel';
 import { useTokenFiltering } from '@/hooks/useTokenFiltering';
+import { useScamSniffer } from '@/hooks/useScamSniffer';
 import { useBurnFlow } from '@/hooks/useBurnFlow';
 import { useSelectedTokens } from '@/contexts/SelectedTokensContext';
 import { TOKEN_VALUE_THRESHOLDS } from '@/constants/tokens';
@@ -12,15 +13,11 @@ import BurnTransactionStatus from './BurnTransactionStatus';
 import BurnConfirmationModal from './BurnConfirmationModal';
 import TokenDataManager from './TokenDataManager';
 import TokenSelectionManager from './TokenSelectionManager';
+import StickySelectedTokensBarContainer from '@/shared/components/StickySelectedTokensBarContainer';
 
-interface TokenScannerProps {
-    onTokensUpdate?: (tokens: Token[]) => void;
-    onBurnHandlerUpdate?: (handler: (selectedTokensList: Token[]) => void) => void;
-}
-
-export default function TokenScanner({ onTokensUpdate, onBurnHandlerUpdate }: TokenScannerProps = {}) {
+export default function TokenScanner() {
     const { address } = useAccount();
-    const [tokens, setTokens] = useState<Token[]>([]);
+    const [rawTokens, setRawTokens] = useState<Token[]>([]);
     const [maxValue, setMaxValue] = useState<number | null>(10);
 
     // Use the global selected tokens context
@@ -34,6 +31,12 @@ export default function TokenScanner({ onTokensUpdate, onBurnHandlerUpdate }: To
         highRiskIndicators: true
     });
 
+    // Enhance tokens with ScamSniffer data
+    const { 
+        tokens: scamSnifferEnhancedTokens, 
+        isLoading: scamSnifferLoading
+    } = useScamSniffer(rawTokens);
+
     // Use the extracted burn flow hook
     const {
         burnStatus,
@@ -44,14 +47,14 @@ export default function TokenScanner({ onTokensUpdate, onBurnHandlerUpdate }: To
         isWaitingForConfirmation,
     } = useBurnFlow();
 
-    // Filter tokens using the existing hook
-    const { spamTokens, nonSpamTokens } = useTokenFiltering(tokens, spamFilters, maxValue);
+    // Filter tokens using the existing hook with ScamSniffer-enhanced tokens
+    const { spamTokens, nonSpamTokens } = useTokenFiltering(scamSnifferEnhancedTokens, spamFilters, maxValue);
 
     // Handle tokens loaded from TokenDataManager
     const handleTokensLoaded = useCallback((loadedTokens: Token[]) => {
-        setTokens(loadedTokens);
-        onTokensUpdate?.(loadedTokens);
-    }, [onTokensUpdate]);
+        setRawTokens(loadedTokens);
+        console.log(`TokenScanner: Loaded ${loadedTokens.length} raw tokens for ScamSniffer checking`);
+    }, []);
 
     // Handle burn confirmation with proper null checks
     const handleBurnSelected = useCallback(async (selectedTokensList: Token[]) => {
@@ -62,14 +65,6 @@ export default function TokenScanner({ onTokensUpdate, onBurnHandlerUpdate }: To
         }
         await showConfirmation(selectedTokensList);
     }, [showConfirmation]);
-
-    // Expose burn handler to parent component only after tokens are loaded
-    useEffect(() => {
-        // Only expose the handler if we have tokens loaded and the callback exists
-        if (onBurnHandlerUpdate && tokens.length > 0) {
-            onBurnHandlerUpdate(handleBurnSelected);
-        }
-    }, [handleBurnSelected, onBurnHandlerUpdate, tokens.length]);
 
     // Handle burn execution
     const handleConfirmBurn = useCallback(async (updateTokens: (tokens: Token[]) => void) => {
@@ -91,69 +86,88 @@ export default function TokenScanner({ onTokensUpdate, onBurnHandlerUpdate }: To
         }
     }, [address, executeBurn, setSelectedTokens]);
 
-    // Statistics data for display
+    // Statistics data for display (using ScamSniffer-enhanced tokens)
     const statistics: TokenStatistics = {
-        totalTokens: tokens.length,
+        totalTokens: scamSnifferEnhancedTokens.length,
         spamTokens: spamTokens.length,
         regularTokens: nonSpamTokens.length,
         selectedTokens: selectedTokensCount,
-        spamPercentage: tokens.length > 0 ? Math.round((spamTokens.length / tokens.length) * 100) : 0
+        spamPercentage: scamSnifferEnhancedTokens.length > 0 ? Math.round((spamTokens.length / scamSnifferEnhancedTokens.length) * 100) : 0
     };
 
     return (
-        <TokenDataManager onTokensLoaded={handleTokensLoaded}>
-            {({ loading, isConnected, isClient, updateTokens }) => (
-                isClient && isConnected && !loading && (
-                    <div className="space-y-5">
-                        {/* Spacer for fixed sticky header when tokens are selected */}
-                        {selectedTokensCount > 0 && (
-                            <div className="h-12" />
-                        )}
-
-                        {/* Burn Transaction Status */}
-                        <BurnTransactionStatus
-                            burnStatus={burnStatus}
-                            onClose={resetBurnStatus}
-                            isWaitingForConfirmation={isWaitingForConfirmation}
-                        />
-
-                        {/* Filter Panel (includes Value Threshold and Spam Detection) */}
-                        <FilterPanel 
-                            spamFilters={spamFilters}
-                            setSpamFilters={setSpamFilters}
-                            maxValue={maxValue}
-                            setMaxValue={setMaxValue}
-                            valueFilters={TOKEN_VALUE_THRESHOLDS}
-                        />
-                        
-                        {/* Token Selection Management (includes Bulk Actions only) */}
-                        <TokenSelectionManager
-                            spamTokens={spamTokens}
-                            selectedTokens={selectedTokens}
-                            onSelectedTokensChange={setSelectedTokens}
-                        />
-
-                        {/* Token Statistics */}
-                        <TokenStatisticsComponent statistics={statistics} />
-                        
-                        {/* Token Lists Container */}
-                        <TokenListsContainer
-                            spamTokens={spamTokens}
-                            nonSpamTokens={nonSpamTokens}
-                            selectedTokens={selectedTokens}
-                            toggleToken={toggleToken}
-                        />
-                        
-                        {/* Burn Confirmation Modal */}
-                        <BurnConfirmationModal
-                            tokens={burnStatus.tokensToConfirm}
-                            isOpen={burnStatus.isConfirmationOpen}
-                            onClose={closeConfirmation}
-                            onConfirm={() => handleConfirmBurn(updateTokens)}
-                        />
-                    </div>
-                )
+        <>
+            {/* Global Sticky Header - appears when tokens are selected */}
+            {selectedTokensCount > 0 && (
+                <div className="fixed top-16 left-0 right-0 z-20">
+                    <StickySelectedTokensBarContainer 
+                        tokens={scamSnifferEnhancedTokens}
+                        onBurnSelected={handleBurnSelected}
+                    />
+                </div>
             )}
-        </TokenDataManager>
+            
+            <TokenDataManager onTokensLoaded={handleTokensLoaded}>
+                {({ loading, isConnected, isClient, updateTokens }) => (
+                    isClient && isConnected && !loading && (
+                        <div className="space-y-5">
+                            {/* Spacer for fixed sticky header when tokens are selected */}
+                            {selectedTokensCount > 0 && (
+                                <div className="h-12" />
+                            )}
+
+                            {/* ScamSniffer Loading Indicator (subtle) */}
+                            {scamSnifferLoading && (
+                                <div className="text-xs text-gray-500 text-center py-1">
+                                    🔍 Checking tokens against ScamSniffer database...
+                                </div>
+                            )}
+
+                            {/* Burn Transaction Status */}
+                            <BurnTransactionStatus
+                                burnStatus={burnStatus}
+                                onClose={resetBurnStatus}
+                                isWaitingForConfirmation={isWaitingForConfirmation}
+                            />
+
+                            {/* Filter Panel (includes Value Threshold and Spam Detection) */}
+                            <FilterPanel 
+                                spamFilters={spamFilters}
+                                setSpamFilters={setSpamFilters}
+                                maxValue={maxValue}
+                                setMaxValue={setMaxValue}
+                                valueFilters={TOKEN_VALUE_THRESHOLDS}
+                            />
+                            
+                            {/* Token Selection Management (includes Bulk Actions only) */}
+                            <TokenSelectionManager
+                                spamTokens={spamTokens}
+                                selectedTokens={selectedTokens}
+                                onSelectedTokensChange={setSelectedTokens}
+                            />
+
+                            {/* Token Statistics */}
+                            <TokenStatisticsComponent statistics={statistics} />
+                            
+                            {/* Token Lists Container */}
+                            <TokenListsContainer
+                                spamTokens={spamTokens}
+                                nonSpamTokens={nonSpamTokens}
+                                selectedTokens={selectedTokens}
+                                toggleToken={toggleToken}
+                            />
+                            
+                            {/* Burn Confirmation Modal */}
+                            <BurnConfirmationModal
+                                tokens={burnStatus.tokensToConfirm}
+                                isOpen={burnStatus.isConfirmationOpen}
+                                onClose={closeConfirmation}
+                                onConfirm={() => handleConfirmBurn(updateTokens)}
+                            />
+                        </div>
+                    )
+                )}
+            </TokenDataManager>
+        </>
     );
 } 

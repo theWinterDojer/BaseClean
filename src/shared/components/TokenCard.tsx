@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Token } from '@/types/token';
 import { formatBalance } from '@/lib/api';
 import { getTokenLogoUrl } from '@/lib/api';
+import { SimpleScamSnifferIndicator } from '@/components/ScamSnifferIndicator';
 
 interface TokenCardProps {
   token: Token;
@@ -105,23 +106,24 @@ const TokenImage = memo(function TokenImage({
     );
   }
 
-  if (hasError || !imageUrl || imageUrl.startsWith('data:image/svg+xml')) {
-    // For SVG data URIs, we can still try to display them
-    if (imageUrl && imageUrl.startsWith('data:image/svg+xml')) {
-      return (
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url("${imageUrl}")` }}
-        />
-      );
-    }
-    
-    // Fallback to initials
+  if (hasError || !imageUrl) {
+    // Fallback to initials only if we truly have no image URL
     return (
       <div className={`absolute inset-0 flex items-center justify-center text-white font-bold text-lg 
         ${isSpam ? 'bg-red-500' : 'bg-blue-500'}`}>
         {getInitials()}
       </div>
+    );
+  }
+
+  // Handle SVG data URIs (our enhanced fallbacks) with proper rendering
+  if (imageUrl.startsWith('data:image/svg+xml')) {
+    return (
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url("${imageUrl}")` }}
+        title={symbol || 'Token'}
+      />
     );
   }
 
@@ -173,7 +175,7 @@ const TokenCard = memo(function TokenCard({
 
   return (
     <div 
-      className={`p-4 rounded-lg cursor-pointer transition-all duration-200 ${
+      className={`p-4 rounded-lg cursor-pointer transition-all duration-200 group mb-1 ${
         isSelected 
           ? isSpam 
             ? 'bg-red-100 dark:bg-red-900/30 border-2 border-red-300 dark:border-red-700'
@@ -187,7 +189,7 @@ const TokenCard = memo(function TokenCard({
       onMouseLeave={() => setHover(false)}
     >
       <div className="flex items-center">
-        <div className="relative w-12 h-12 mr-4 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 shadow-sm">
+        <div className="relative w-12 h-12 mr-4 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 shadow-sm flex-shrink-0">
           <TokenImage 
             address={token.contract_address} 
             symbol={token.contract_ticker_symbol} 
@@ -196,20 +198,25 @@ const TokenCard = memo(function TokenCard({
           />
         </div>
         
-        <div className="flex-grow">
+        <div className="flex-grow min-w-0">
           <div className="flex justify-between items-start mb-1">
-            <div className="font-medium text-gray-900 dark:text-gray-100">
-              {token.contract_ticker_symbol || token.contract_name || token.contract_address.substring(0, 8)}
+            <div className="flex items-center font-medium text-gray-900 dark:text-gray-100 min-w-0 flex-grow mr-2">
+              <span className="truncate">
+                {token.contract_ticker_symbol || token.contract_name || token.contract_address.substring(0, 8)}
+              </span>
+              <div className="flex-shrink-0 ml-1">
+                <SimpleScamSnifferIndicator isFlagged={token.scamSnifferFlagged ?? false} />
+              </div>
             </div>
-            <div className={`text-sm font-medium ${numericValue > 0.01 ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
+            <div className={`text-sm font-medium flex-shrink-0 ${numericValue > 0.01 ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
               ${numericValue > 0 ? numericValue.toFixed(2) : '0.00'}
             </div>
           </div>
           <div className="flex justify-between items-end">
-            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight truncate max-w-[160px]">
+            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight truncate flex-grow mr-2">
               {token.contract_name || token.contract_address.substring(0, 10)}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight">
+            <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight flex-shrink-0">
               {formattedBalance}
             </div>
           </div>

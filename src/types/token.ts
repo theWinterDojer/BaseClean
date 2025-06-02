@@ -18,8 +18,10 @@ export type Token = {
   logo_url?: string;
   /** Original URL from API response (for fallback) */
   original_logo_url?: string;
-  /** Source of the price data (covalent, defillama, coingecko) */
-  price_source?: string;
+  /** Source of the price data (defillama or none) */
+  price_source?: 'defillama' | 'none' | string;
+  /** Whether this token is flagged by ScamSniffer as potentially malicious */
+  scamSnifferFlagged?: boolean;
 };
 
 /**

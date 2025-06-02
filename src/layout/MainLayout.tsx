@@ -3,6 +3,7 @@ import Image from 'next/image';
 import WalletConnectButton from '@/shared/components/WalletConnectButton';
 import Link from 'next/link';
 import { SelectedTokensProvider } from '@/contexts/SelectedTokensContext';
+import { ScamSnifferStatusIndicator } from '@/components/ScamSnifferStatusIndicator';
 
 type MainLayoutProps = {
   children: React.ReactNode;
@@ -68,6 +69,24 @@ export default function MainLayout({ children, stickyHeaderContent }: MainLayout
                 </div>
               </div>
               
+              {/* ScamSniffer Attribution - Center */}
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <span>Enhanced by</span>
+                  <a 
+                    href="https://x.com/realScamSniffer" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-gray-400 hover:text-green-400 transition-colors"
+                  >
+                    <span className="text-sm">👃</span>
+                    <span className="font-medium">ScamSniffer</span>
+                  </a>
+                  <span>community intelligence</span>
+                </div>
+                <ScamSnifferStatusIndicator />
+              </div>
+              
               <div className="grid grid-cols-3 gap-8">
                 <div className="flex flex-col items-center md:items-start">
                   <h3 className="text-sm font-semibold text-gray-300 mb-2">Resources</h3>
@@ -96,6 +115,9 @@ export default function MainLayout({ children, stickyHeaderContent }: MainLayout
                     <a href="https://github.com/theWinterDojer/BaseClean" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-green-400 transition-colors">
                       GitHub
                     </a>
+                    <Link href="/terms-of-service" className="text-xs text-gray-400 hover:text-green-400 transition-colors">
+                      Terms of Service
+                    </Link>
                   </div>
                 </div>
               </div>

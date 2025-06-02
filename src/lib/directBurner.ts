@@ -65,13 +65,26 @@ export function useDirectTokenBurner() {
     try {
       // Call transfer() directly on the token contract
       // This transfers from user's wallet to burn address - NO APPROVAL NEEDED!
-      const txHash = await writeContractAsync({
-        address: token.contract_address as `0x${string}`,
-        abi: ERC20_TRANSFER_ABI,
-        functionName: 'transfer',
-        args: [BURN_ADDRESS as `0x${string}`, BigInt(token.balance)],
-        gas: BigInt(BURN_GAS_LIMIT),
-      });
+      let txHash: `0x${string}`;
+      
+      try {
+        txHash = await writeContractAsync({
+          address: token.contract_address as `0x${string}`,
+          abi: ERC20_TRANSFER_ABI,
+          functionName: 'transfer',
+          args: [BURN_ADDRESS as `0x${string}`, BigInt(token.balance)],
+          gas: BigInt(BURN_GAS_LIMIT),
+        });
+      } catch (writeError) {
+        // Immediately check if this is a user rejection and handle it gracefully
+        const isRejection = isUserRejectionError(writeError);
+        if (isRejection) {
+          // Log as info, not error, since this is normal user behavior
+          console.log(`User cancelled burn transaction for token ${token.contract_address}`);
+        }
+        // Re-throw the error to be handled by the outer catch block
+        throw writeError;
+      }
 
       // Wait for transaction to be mined and check if it was successful
       try {
@@ -117,11 +130,17 @@ export function useDirectTokenBurner() {
       }
       
     } catch (err) {
-      console.error(`Error burning token ${token.contract_address}:`, err);
-      
-      // Parse the error for better handling
+      // Parse the error for better handling first
       const parsedError = parseWalletError(err);
       const isRejection = isUserRejectionError(err);
+      
+      // Only log actual errors, not user rejections (which are normal behavior)
+      if (!isRejection) {
+        console.error(`Error burning token ${token.contract_address}:`, err);
+      } else {
+        // Log user rejections as info only for debugging purposes
+        console.log(`User cancelled burn transaction for token ${token.contract_address}`);
+      }
       
       const result: DirectBurnResult = {
         token,

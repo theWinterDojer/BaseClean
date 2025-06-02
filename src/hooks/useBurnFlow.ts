@@ -61,7 +61,6 @@ export function useBurnFlow() {
   
   const { 
     burnSingleToken,
-    burnMultipleTokens,
     isBurning, 
     currentToken,
     burnResults,

@@ -1,13 +1,10 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount } from 'wagmi';
 
 /**
  * Custom RainbowKit wallet connect button component
  * Provides wallet connection functionality with enhanced styling
  */
 export default function WalletConnectButton() {
-  const { isConnected } = useAccount();
-
   return (
     <ConnectButton.Custom>
       {({

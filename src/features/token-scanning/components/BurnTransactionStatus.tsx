@@ -19,9 +19,7 @@ export default function BurnTransactionStatus({
     tokensBurned,
     tokensFailed,
     tokensRejectedByUser,
-    hasUserRejections,
     currentStep,
-    currentStepMessage,
     processedTokens,
     totalTokens,
     burnResults
@@ -169,7 +167,7 @@ export default function BurnTransactionStatus({
                   ))}
                 </div>
                 <p className="text-xs text-yellow-400 mt-1">
-                  These tokens weren't burned because you cancelled the transactions. You can try again anytime.
+                  These tokens weren&apos;t burned because you cancelled the transactions. You can try again anytime.
                 </p>
               </div>
             )}
@@ -227,7 +225,7 @@ export default function BurnTransactionStatus({
                   ))}
                 </div>
                 <p className="text-xs text-gray-400 mt-2">
-                  Click "View Tx" to see the burn transaction on BaseScan
+                  Click &quot;View Tx&quot; to see the burn transaction on BaseScan
                 </p>
               </div>
             )}

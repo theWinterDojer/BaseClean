@@ -12,12 +12,19 @@ export default function StickySelectedTokensBarContainer({
   tokens,
   onBurnSelected
 }: StickySelectedTokensBarContainerProps) {
-  const { selectedTokens, selectedTokensCount } = useSelectedTokens();
+  const { selectedTokens, selectedTokensCount, clearSelectedTokens } = useSelectedTokens();
 
   const handleBurnSelected = useCallback(() => {
     const selectedTokensList = tokens.filter(token => 
       selectedTokens.has(token.contract_address)
     );
+    
+    // Only proceed if we have tokens selected
+    if (selectedTokensList.length === 0) {
+      console.warn('No tokens selected for burning');
+      return;
+    }
+    
     onBurnSelected(selectedTokensList);
   }, [tokens, selectedTokens, onBurnSelected]);
 
@@ -25,6 +32,7 @@ export default function StickySelectedTokensBarContainer({
     <StickySelectedTokensBar
       selectedTokensCount={selectedTokensCount}
       onBurnSelected={handleBurnSelected}
+      onDeselectAll={clearSelectedTokens}
     />
   );
 } 

@@ -13,7 +13,6 @@ export default function OneClickBurnButton({
   disabled = false
 }: OneClickBurnButtonProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
 
   const tokenCount = selectedTokens.length;
   

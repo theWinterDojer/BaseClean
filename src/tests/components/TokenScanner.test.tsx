@@ -77,7 +77,7 @@ jest.mock('@/lib/api', () => ({
       logo_url: ''
     }
   ]),
-  formatBalance: jest.fn().mockImplementation((balance, decimals) => {
+  formatBalance: jest.fn().mockImplementation((_balance, _decimals) => {
     return '1.00';
   }),
   calculateTokenValue: jest.fn().mockImplementation((balance, rate) => {

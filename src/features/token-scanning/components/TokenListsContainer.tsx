@@ -6,7 +6,7 @@ interface TokenListsContainerProps {
   spamTokens: Token[];
   nonSpamTokens: Token[];
   selectedTokens: Set<string>;
-  toggleToken: (contractAddress: string) => void;
+  toggleToken: (contractAddress: string, tokens?: Token[]) => void;
 }
 
 export default function TokenListsContainer({

@@ -119,6 +119,42 @@ npm run type-check   # TypeScript validation
 npm test             # Run test suite (when implemented)
 ```
 
+## ⚠️ **Disclaimer & Safety Features**
+
+BaseClean includes a comprehensive disclaimer system to ensure users understand the risks and responsibilities of token burning.
+
+### **🛡️ First-Time User Experience:**
+1. **Disclaimer Modal** appears on first visit to the application
+2. **Risk Acknowledgment** - Users must explicitly agree to terms before proceeding
+3. **Persistent Agreement** - Agreement is stored locally, only shown once per user
+4. **Professional Disclaimer** - Clear explanation of risks and responsibilities
+
+### **📋 Disclaimer Content:**
+The disclaimer covers critical points including:
+- User responsibility for all burning actions
+- Permanent and irreversible nature of token burning
+- No liability for mistakes, misclicks, or technical errors
+- Explicit release of BaseClean and developers from claims
+- Emphasis on careful review before transactions
+
+### **🔧 Development & Testing:**
+
+```bash
+# Reset disclaimer during development:
+# 1. Open browser console (F12)
+# 2. Run: resetDisclaimer()
+# 3. Refresh page to see disclaimer again
+
+# OR clear localStorage manually:
+# localStorage.removeItem('baseClean_disclaimer_agreed')
+```
+
+**Technical Implementation:**
+- `src/components/DisclaimerModal.tsx` - Modal component with disclaimer content
+- `src/hooks/useDisclaimer.ts` - State management for disclaimer display
+- `src/utils/disclaimer.ts` - Utility functions for disclaimer persistence
+- Automatically integrated into `src/pages/_app.tsx` for global coverage
+
 ## 🎯 **Perfect Use Cases**
 
 ### **🗑️ Token Cleanup:**
