@@ -1,76 +1,16 @@
 import { useMemo, useCallback } from 'react';
 import { Token, SpamFilters } from '@/types/token';
 import { formatBalance, calculateTokenValue } from '@/lib/api';
+import { 
+  LEGITIMATE_TOKENS, 
+  SPAM_KEYWORDS, 
+  SUSPICIOUS_NAME_PATTERNS, 
+  COMMON_AIRDROP_AMOUNTS,
+  SPAM_SIGNALS 
+} from '@/constants/tokens';
 
 // Types
 type ChainId = number;
-type AddressMap = Record<string, boolean>;
-type LegitimateTokenMap = Record<ChainId, AddressMap>;
-
-// Constants
-// Whitelist of legitimate tokens that should never be flagged as spam
-const LEGITIMATE_TOKENS: LegitimateTokenMap = {
-  // Base chain (8453)
-  8453: {
-    // ETH on Base
-    '0x4200000000000000000000000000000000000006': true,
-    'eth': true, // Symbolic reference for ETH
-    // Zora token
-    '0x6b5caa3711550c862bd35c390e08ad9504854b72': true,
-    // Base platform token
-    '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913': true, // USDC on Base
-    // Add more known legitimate tokens for Base chain
-    '0x50c5725949a6f0c72e6c4a641f24049a917db0cb': true, // DAI on Base
-    '0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22': true, // cbETH on Base
-    '0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca': true, // USD Coin on Base
-    '0x4158734d47fc9692176b5085e0f52ee0da5d47f1': true, // Compound on Base
-  }
-};
-
-// Common spam keywords found in many airdrop/scam tokens
-const SPAM_KEYWORDS = [
-  'airdrop', 'claim', 'reward', 'free', 'gift', 'bonus',
-  'elon', 'musk', 'trump', 'pump', 'moon', '1000x',
-  'twitter', 'discord', 'telegram', 'promo', 'giveaway',
-  'launch', 'presale', 'ico', 'whitelist', 'defi', 'safemoon',
-  'shib', 'doge', '.com', '.io', 'www.', 'http', 'https',
-  'inu', 'tech', 'finance', 'meme', 'swap', 'game', 'dao',
-  'nft', 'protocol', 'app', 'zk', 'dev', 'ai', 'metaverse',
-  'token', 'coin', 'farm', 'yield', 'fomo', 'based',
-  // Additional keywords for common spam patterns
-  'scam', 'legit', 'trust', 'burn', 'gpt', 'drop', 'fork',
-  'fair', 'safe', 'floki', 'cat', 'dog', 'chatgpt', 'openai',
-  'gem', 'erc20', 'btc', 'eth', 'viral', 'ponzi', 'honeypot'
-];
-
-// Regex patterns for suspicious naming
-const SUSPICIOUS_NAME_PATTERNS = [
-  /\.(com|io|xyz|org|net|fi)\b/i, // Domain names
-  /https?:\/\//i,             // URLs
-  /t\.me\//i,                 // Telegram links
-  /\d{5,}/,                   // Long numbers
-  /\$+[a-z]+\$+/i,            // Dollar signs wrapping text
-  /[0-9]{4,}/,                // Year-like numbers
-  /\([^)]*\)/,                // Text in parentheses (often contains instructions)
-  /v[0-9]+(\.[0-9]+)*/i,      // Version numbers (v1, v2.0 etc.)
-  /[@#$%^&*!]/,               // Special characters often used in spam tokens
-  /[A-Z]{6,}/,                // Long all-caps sequences
-  /^[a-z0-9]{10,}$/i,         // Long alphanumeric sequences
-  // Additional patterns for better detection
-  /[A-Z]{2,}[0-9]{2,}/,       // Capital letters followed by numbers (common in spam)
-  /airdrop|free|claim/i,      // Direct airdrop words with case insensitivity
-  /[0-9]+x$/i,                // Numbers followed by "x" (like 1000x)
-  /base|arbitrum|optimism/i,  // Chain names (often used to make spam seem legit)
-];
-
-// Common airdrop amounts often used in spam tokens
-const COMMON_AIRDROP_AMOUNTS = [
-  1337, 88888, 69420, 42069, 8008, 7777777, 1000000, 10000, 1234, 12345,
-  8888, 9999, 6969, 4200, 4269, 800, 888, 69, 420, 666, 
-  777, 7777, 101010, 123456, 654321,
-  // Add more known airdrop amounts
-  12321, 42424, 31337, 999999, 1111111, 7654321, 55555
-];
 
 /**
  * Custom hook to filter tokens based on spam criteria and maximum value
@@ -97,10 +37,10 @@ export function useTokenFiltering(
     if (usdValue > 10) return false;
     
     // Missing or overly long symbol
-    if (!symbol || symbol.length > 8) return true;
+    if (!symbol || symbol.length > SPAM_SIGNALS.NAMING.MAX_SYMBOL_LENGTH) return true;
     
     // Missing or overly long name
-    if (!name || name.length > 20) return true;
+    if (!name || name.length > SPAM_SIGNALS.NAMING.MAX_NAME_LENGTH) return true;
     
     // Some legitimate tokens may use all caps, only consider this spam
     // for tokens with very low value
@@ -145,16 +85,16 @@ export function useTokenFiltering(
     
     // Skip further checks for tokens with sufficient holdings AND actual value
     // This prevents legitimate tokens with low price but high holdings from being flagged
-    if (balance > 100 && token.quote_rate > 0 && usdValue > 1.0) return false;
+    if (balance > 100 && token.quote_rate > 0 && usdValue > SPAM_SIGNALS.VALUE.LOW_VALUE_THRESHOLD) return false;
     
     // Extremely low value (less than $0.000001)
-    if (token.quote_rate < 0.000001) return true;
+    if (token.quote_rate < SPAM_SIGNALS.VALUE.MIN_QUOTE_RATE) return true;
     
     // Dust balance, but only if the token itself has low value
     if (balance < 0.001 && token.quote_rate < 0.01) return true;
     
-    // Low total value - adjusted threshold to $1.00
-    if (usdValue > 0 && usdValue < 1.0) return true;
+    // Low total value - using threshold from constants
+    if (usdValue > 0 && usdValue < SPAM_SIGNALS.VALUE.LOW_VALUE_THRESHOLD) return true;
     
     // No price data but has a large balance (suspicious "valueless" tokens)
     if (token.quote_rate === 0 && balance > 100000) return true;
@@ -191,7 +131,7 @@ export function useTokenFiltering(
     if (/\.\d{10,}$/.test(balance.toString())) return true;
     
     // Any token with extremely large integer balance (often junk)
-    if (balance > 10000000 && token.quote_rate < 0.000001) return true;
+    if (balance > 10000000 && token.quote_rate < SPAM_SIGNALS.VALUE.MIN_QUOTE_RATE) return true;
     
     // Tokens with exactly 1.0 balance are often airdrops
     if (Math.abs(balance - 1.0) < 0.000001) return true;
@@ -246,7 +186,7 @@ export function useTokenFiltering(
     if (usdValue < 0.01) suspiciousFactors++;
     
     // If token exhibits multiple high-risk characteristics, flag it
-    if (suspiciousFactors >= 3) return true;
+    if (suspiciousFactors >= SPAM_SIGNALS.HIGH_RISK.MIN_SUSPICIOUS_FACTORS) return true;
     
     return false;
   }, [spamFilters.highRiskIndicators]);
@@ -279,11 +219,11 @@ export function useTokenFiltering(
     if (hasAirdropSignals(token, balanceNum)) spamSignals++;
     if (hasHighRiskIndicators(token, balanceNum, usdValue)) spamSignals++;
     
-    // Adjusted thresholds to match new $1.00 low-value standard
-    // If the token has low value (<$1.00), 1 signal is enough to flag it
-    if (usdValue < 1.0 && spamSignals >= 1) return true;
+    // Adjusted thresholds using constants
+    // If the token has low value, 1 signal is enough to flag it
+    if (usdValue < SPAM_SIGNALS.VALUE.LOW_VALUE_THRESHOLD && spamSignals >= 1) return true;
     
-    // For tokens with moderate value ($1.00-$5.00), require 2+ signals
+    // For tokens with moderate value, require 2+ signals
     if (usdValue < 5.0 && spamSignals >= 2) return true;
     
     // For tokens with significant value (>$5.00), require 3+ signals

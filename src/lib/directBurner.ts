@@ -67,12 +67,36 @@ export function useDirectTokenBurner() {
       // This transfers from user's wallet to burn address - NO APPROVAL NEEDED!
       let txHash: `0x${string}`;
       
+      // Convert balance to proper BigInt format
+      // token.balance might be in scientific notation (e.g., "5.8451e+22")
+      // We need to convert it to a proper integer string first
+      let balanceBigInt: bigint;
+      try {
+        // If balance is in scientific notation, convert it properly
+        const balanceString = token.balance.toString();
+        if (balanceString.includes('e') || balanceString.includes('E')) {
+          // Convert scientific notation to full number string
+          const balanceNumber = Number(balanceString);
+          if (!Number.isFinite(balanceNumber)) {
+            throw new Error(`Invalid balance value: ${balanceString}`);
+          }
+          // Convert to integer string (no decimals)
+          balanceBigInt = BigInt(Math.floor(balanceNumber));
+        } else {
+          // Direct conversion for normal string numbers
+          balanceBigInt = BigInt(balanceString);
+        }
+      } catch (balanceError) {
+        console.error(`Error converting balance to BigInt for token ${token.contract_address}:`, balanceError);
+        throw new Error(`Invalid token balance format: ${token.balance}`);
+      }
+      
       try {
         txHash = await writeContractAsync({
           address: token.contract_address as `0x${string}`,
           abi: ERC20_TRANSFER_ABI,
           functionName: 'transfer',
-          args: [BURN_ADDRESS as `0x${string}`, BigInt(token.balance)],
+          args: [BURN_ADDRESS as `0x${string}`, balanceBigInt],
           gas: BigInt(BURN_GAS_LIMIT),
         });
       } catch (writeError) {
@@ -244,11 +268,33 @@ export function useIndividualTokenBurner() {
    */
   const burnTokenWithMonitoring = async (token: Token): Promise<DirectBurnResult> => {
     try {
+      // Convert balance to proper BigInt format
+      // token.balance might be in scientific notation (e.g., "5.8451e+22")
+      let balanceBigInt: bigint;
+      try {
+        const balanceString = token.balance.toString();
+        if (balanceString.includes('e') || balanceString.includes('E')) {
+          // Convert scientific notation to full number string
+          const balanceNumber = Number(balanceString);
+          if (!Number.isFinite(balanceNumber)) {
+            throw new Error(`Invalid balance value: ${balanceString}`);
+          }
+          // Convert to integer string (no decimals)
+          balanceBigInt = BigInt(Math.floor(balanceNumber));
+        } else {
+          // Direct conversion for normal string numbers
+          balanceBigInt = BigInt(balanceString);
+        }
+      } catch (balanceError) {
+        console.error(`Error converting balance to BigInt for token ${token.contract_address}:`, balanceError);
+        throw new Error(`Invalid token balance format: ${token.balance}`);
+      }
+      
       const txHash = await writeContractAsync({
         address: token.contract_address as `0x${string}`,
         abi: ERC20_TRANSFER_ABI,
         functionName: 'transfer',
-        args: [BURN_ADDRESS as `0x${string}`, BigInt(token.balance)],
+        args: [BURN_ADDRESS as `0x${string}`, balanceBigInt],
         gas: BigInt(BURN_GAS_LIMIT),
       });
 

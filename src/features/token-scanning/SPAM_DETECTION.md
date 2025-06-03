@@ -7,10 +7,10 @@ BaseClean uses a sophisticated **rule-based multi-signal detection system** comb
 ## Architecture
 
 ### Core Implementation
-- **Primary Logic**: `src/hooks/useTokenFiltering.ts`
+- **Primary Logic**: `src/hooks/useTokenFiltering.ts` (single source of truth for all spam detection)
 - **ScamSniffer Integration**: `src/lib/scamSniffer.ts` & `src/hooks/useScamSniffer.ts`
-- **Utility Functions**: `src/features/token-scanning/utils/tokenUtils.ts`
-- **Constants**: `src/constants/tokens.ts`
+- **Centralized Constants**: `src/constants/tokens.ts` (all spam detection constants)
+- **Utility Functions**: `src/features/token-scanning/utils/tokenUtils.ts` (value calculations only)
 - **Type Definitions**: `src/types/token.ts`
 
 ### Multi-Signal Detection Approach
