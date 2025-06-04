@@ -1,8 +1,9 @@
 import React from 'react';
 import Image from 'next/image';
 import WalletConnectButton from '@/shared/components/WalletConnectButton';
+import HeaderTabNavigation from '@/shared/components/HeaderTabNavigation';
 import Link from 'next/link';
-import { SelectedTokensProvider } from '@/contexts/SelectedTokensContext';
+import { SelectedItemsProvider } from '@/contexts/SelectedItemsContext';
 import { ScamSnifferStatusIndicator } from '@/components/ScamSnifferStatusIndicator';
 
 type MainLayoutProps = {
@@ -12,7 +13,7 @@ type MainLayoutProps = {
 
 export default function MainLayout({ children, stickyHeaderContent }: MainLayoutProps) {
   return (
-    <SelectedTokensProvider>
+    <SelectedItemsProvider>
       <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 text-white">
         <header className="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700 py-4 sticky top-0 z-10">
           <div className="container mx-auto px-4 flex items-center justify-between">
@@ -38,13 +39,23 @@ export default function MainLayout({ children, stickyHeaderContent }: MainLayout
               </div>
             </Link>
             
+            {/* Tab Navigation in Header */}
+            <div className="hidden md:flex flex-1 justify-center">
+              <HeaderTabNavigation />
+            </div>
+            
             <div className="flex items-center gap-4">
               <WalletConnectButton />
             </div>
           </div>
+          
+          {/* Mobile Tab Navigation */}
+          <div className="md:hidden mt-4 px-4">
+            <HeaderTabNavigation />
+          </div>
         </header>
         
-        {/* Sticky Selected Tokens Bar - positioned between header and content */}
+        {/* Sticky Selected Items Bar - positioned between header and content */}
         {stickyHeaderContent}
         
         <main className="container mx-auto px-4 py-8">
@@ -125,6 +136,6 @@ export default function MainLayout({ children, stickyHeaderContent }: MainLayout
           </div>
         </footer>
       </div>
-    </SelectedTokensProvider>
+    </SelectedItemsProvider>
   );
 } 

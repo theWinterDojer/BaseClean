@@ -1,6 +1,7 @@
+import React from 'react';
 import { useCallback } from 'react';
 import { Token } from '@/types/token';
-import { useSelectedTokens } from '@/contexts/SelectedTokensContext';
+import { useSelectedTokens } from '@/contexts/SelectedItemsContext';
 import StickySelectedTokensBar from './StickySelectedTokensBar';
 
 interface StickySelectedTokensBarContainerProps {

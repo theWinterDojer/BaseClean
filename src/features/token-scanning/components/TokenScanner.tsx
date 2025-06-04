@@ -5,7 +5,7 @@ import FilterPanel from '@/shared/components/FilterPanel';
 import { useTokenFiltering } from '@/hooks/useTokenFiltering';
 import { useScamSniffer } from '@/hooks/useScamSniffer';
 import { useBurnFlow } from '@/hooks/useBurnFlow';
-import { useSelectedTokens } from '@/contexts/SelectedTokensContext';
+import { useSelectedTokens } from '@/contexts/SelectedItemsContext';
 import { TOKEN_VALUE_THRESHOLDS } from '@/constants/tokens';
 import TokenStatisticsComponent from './TokenStatistics';
 import TokenListsContainer from './TokenListsContainer';
