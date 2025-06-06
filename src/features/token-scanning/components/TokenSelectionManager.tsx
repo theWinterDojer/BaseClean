@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { Token } from '@/types/token';
+import { useSelectedItems } from '@/contexts/SelectedItemsContext';
 import BulkActions from './BulkActions';
 
 interface TokenSelectionManagerProps {
@@ -17,15 +18,28 @@ export default function TokenSelectionManager({
   onSelectedTokensChange,
 }: TokenSelectionManagerProps) {
 
-  // Select all spam tokens
-  const selectAllSpam = useCallback(() => {
-    onSelectedTokensChange(new Set(spamTokens.map(t => t.contract_address)));
-  }, [spamTokens, onSelectedTokensChange]);
+  // Get direct access to the context to work around the setSelectedTokens limitation
+  const { setSelectedItems, selectedItems, clearSelectedTokens } = useSelectedItems();
 
-  // Deselect all tokens
+  // Select all spam tokens - work directly with selectedItems to avoid Set<string> limitations
+  const selectAllSpam = useCallback(() => {
+    // Get current non-token items (e.g., NFTs)
+    const currentNonTokenItems = selectedItems.filter(item => item.type !== 'token');
+    
+    // Create token items for all spam tokens
+    const spamTokenItems = spamTokens.map(token => ({
+      type: 'token' as const,
+      data: token
+    }));
+    
+    // Set the new selection with non-tokens plus all spam tokens
+    setSelectedItems([...currentNonTokenItems, ...spamTokenItems]);
+  }, [spamTokens, selectedItems, setSelectedItems]);
+
+  // Deselect all tokens - use the working clearSelectedTokens method
   const deselectAll = useCallback(() => {
-    onSelectedTokensChange(new Set());
-  }, [onSelectedTokensChange]);
+    clearSelectedTokens();
+  }, [clearSelectedTokens]);
 
   return (
     <BulkActions 

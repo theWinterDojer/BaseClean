@@ -112,10 +112,11 @@ export default function NFTBurnConfirmationModal({
                             className="inline-flex items-center justify-center w-8 h-8 bg-blue-600 hover:bg-blue-500 rounded-full transition-colors"
                             title="View on OpenSea"
                           >
-                            <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                              <circle cx="12" cy="12" r="10"/>
-                              <path d="M8.5 14.5L12 6l3.5 8.5H8.5z" fill="white"/>
-                            </svg>
+                            <img 
+                              src="/opensealogo.png" 
+                              alt="OpenSea"
+                              className="w-4 h-4"
+                            />
                           </a>
                         </div>
                       </div>

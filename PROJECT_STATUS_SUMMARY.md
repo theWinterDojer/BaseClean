@@ -382,6 +382,42 @@
 
 **PHASE 5C COMPLETE!** Ready for Phase 6 (NFT progress tracking) or Phase 7 (unified burning) 🚀
 
+### Phase 5D: NFT Metadata Refresh Button ✅ COMPLETE
+**Objective:** Add refresh metadata button next to grid controls for manual NFT data refresh
+
+#### Feature Implementation:
+- ✅ **Refresh Metadata Button**: Added to left of grid size controls as requested
+- ✅ **Bulk Refresh**: Refreshes all NFT metadata at once using existing `refreshNFTs()` function
+- ✅ **Cache Clearing**: Clears both image and metadata cache with `clearNFTImageCache()` for fresh data
+- ✅ **Visual Feedback**: Shows "Refreshing..." with spinning icon when loading
+- ✅ **Proper UX**: Button disabled during refresh to prevent duplicate requests
+
+#### Technical Implementation:
+- **✅ UPDATED**: `src/features/nft-scanning/components/NFTDataManager.tsx`
+  - Added `refreshNFTs` function to component interface 
+  - Extracted `fetchNFTData` with proper `useCallback` memoization
+  - Added dependency array management for optimal re-renders
+- **✅ UPDATED**: `src/features/nft-scanning/components/NFTScanner.tsx`
+  - Added `clearNFTImageCache` import from nftApi
+  - Created `handleRefreshMetadata` function that clears cache then refreshes
+  - Added refresh button with consistent styling next to GridSizeControl
+  - Proper loading state management and visual feedback
+
+#### Button Features:
+- **🔄 Smart States**: "Refresh Metadata" → "Refreshing..." with spinning icon
+- **🎨 Consistent Design**: Matches app's button styling with proper light/dark theme support
+- **♿ Accessibility**: Proper ARIA labels and disabled states
+- **📱 Responsive**: Works correctly on mobile and desktop layouts
+- **🛡️ Safe**: Prevents multiple simultaneous refresh operations
+
+#### Results Achieved:
+- 🎯 **Easy Metadata Refresh**: One-click bulk refresh of all NFT metadata and images
+- 🔄 **Cache Management**: Proper clearing of stale cached data for fresh API calls
+- 🚀 **Better UX**: Clear visual feedback during refresh operations
+- ✅ **Reliable Architecture**: Uses existing proven infrastructure with proper error handling
+
+**METADATA REFRESH COMPLETE!** 🔄 Users can now easily refresh all NFT data with one click! ✨
+
 ---
 
 ## Recent Improvements (Previous Sessions)

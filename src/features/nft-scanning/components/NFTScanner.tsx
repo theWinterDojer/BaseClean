@@ -4,6 +4,7 @@ import { NFT } from '@/types/nft';
 import { useSelectedItems } from '@/contexts/SelectedItemsContext';
 import { useNFTFiltering } from '@/hooks/useNFTFiltering';
 import { useDirectBurner } from '@/lib/directBurner';
+import { clearNFTImageCache } from '@/lib/nftApi';
 import NFTDataManager from './NFTDataManager';
 import NFTListsContainer from './NFTListsContainer';
 import NFTStatistics from './NFTStatistics';
@@ -119,17 +120,49 @@ export default function NFTScanner() {
     Array.from(selectedNFTs).map(nft => `${nft.contract_address}-${nft.token_id}`)
   );
 
+  // Handle refresh metadata
+  const handleRefreshMetadata = useCallback((refreshFn: () => void) => {
+    // Clear cached images and metadata for fresh data
+    clearNFTImageCache();
+    // Trigger refresh of NFT data
+    refreshFn();
+  }, []);
+
   return (
     <NFTDataManager onNFTsLoaded={handleNFTsLoaded}>
-      {({ nfts, loading, error, isConnected, isClient, updateNFTs }) => (
+      {({ nfts, loading, error, isConnected, isClient, updateNFTs, refreshNFTs }) => (
         <>
           {/* Add bottom padding when NFTs are selected to prevent overlap with floating bar */}
           <div className={`flex flex-col lg:flex-row gap-6 ${selectedNFTsCount > 0 ? 'pb-24' : ''}`}>
             {/* Main Content */}
             <div className="flex-1">
-              {/* Grid Size Control */}
+              {/* Header Controls */}
               {allNFTs.length > 0 && (
-                <div className="mb-4 flex justify-end items-center">
+                <div className="mb-4 flex justify-between items-center">
+                  {/* Refresh Metadata Button */}
+                  <button
+                    onClick={() => handleRefreshMetadata(refreshNFTs)}
+                    disabled={loading}
+                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title="Refresh NFT metadata and images"
+                  >
+                    <svg 
+                      className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+                      />
+                    </svg>
+                    {loading ? 'Refreshing...' : 'Refresh Metadata'}
+                  </button>
+
+                  {/* Grid Size Control */}
                   <GridSizeControl 
                     currentSize={gridSize}
                     onSizeChange={setGridSize}

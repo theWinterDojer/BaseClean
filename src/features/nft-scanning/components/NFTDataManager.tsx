@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAccount, useChainId } from 'wagmi';
 import { NFT } from '@/types/nft';
 import { fetchNFTs } from '@/lib/nftApi';
-import { NFT_UI_TEXT } from '@/constants/nfts';
 
 interface NFTDataManagerProps {
   onNFTsLoaded: (nfts: NFT[]) => void;
@@ -13,6 +12,7 @@ interface NFTDataManagerProps {
     isConnected: boolean;
     isClient: boolean;
     updateNFTs: (newNFTs: NFT[]) => void;
+    refreshNFTs: () => void;
   }) => React.ReactNode;
 }
 
@@ -33,30 +33,36 @@ export default function NFTDataManager({ onNFTsLoaded, children }: NFTDataManage
     setIsClient(true);
   }, []);
 
-  // Fetch NFTs when connected or chain changes
-  useEffect(() => {
+  // Fetch NFTs function (extracted for reuse)
+  const fetchNFTData = useCallback(async () => {
     if (!isConnected || !address) return;
     
-    const getNFTs = async () => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        // Fetch NFTs from Base and Zora networks
-        const supportedChains = [8453, 7777777]; // Base and Zora
-        const nftItems = await fetchNFTs(address, supportedChains);
-        setNFTs(nftItems);
-        onNFTsLoaded(nftItems);
-      } catch (err) {
-        console.error('Failed to fetch NFTs:', err);
-        setError('Failed to load NFTs. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Fetch NFTs from Base and Zora networks
+      const supportedChains = [8453, 7777777]; // Base and Zora
+      const nftItems = await fetchNFTs(address, supportedChains);
+      setNFTs(nftItems);
+      onNFTsLoaded(nftItems);
+    } catch (err) {
+      console.error('Failed to fetch NFTs:', err);
+      setError('Failed to load NFTs. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [address, isConnected, onNFTsLoaded]);
 
-    getNFTs();
-  }, [address, isConnected, chainId, onNFTsLoaded]);
+  // Fetch NFTs when connected or chain changes
+  useEffect(() => {
+    fetchNFTData();
+  }, [fetchNFTData, chainId]);
+
+  // Manual refresh function
+  const refreshNFTs = useCallback(() => {
+    fetchNFTData();
+  }, [fetchNFTData]);
 
   // Update NFTs when they change externally (e.g., after burning)
   const updateNFTs = (newNFTs: NFT[]) => {
@@ -73,6 +79,7 @@ export default function NFTDataManager({ onNFTsLoaded, children }: NFTDataManage
         isConnected,
         isClient,
         updateNFTs,
+        refreshNFTs,
       })}
     </>
   );
