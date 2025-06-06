@@ -6,7 +6,6 @@ import { NFTFilterOptions } from '@/hooks/useNFTFiltering';
 interface NFTStatisticsProps {
   nfts: NFT[];
   allNFTs?: NFT[]; // All NFTs (unfiltered) for showing full collection stats
-  selectedNFTs: Set<string>;
   selectedNetworks?: Set<number>; // Currently selected networks for filtering
   onNetworkToggle?: (chainId: number) => void; // Handler for network filter toggle
   // Basic filtering props
@@ -30,7 +29,6 @@ interface NFTStatisticsProps {
 export default function NFTStatistics({ 
   nfts, 
   allNFTs,
-  selectedNFTs, 
   selectedNetworks,
   onNetworkToggle,
   filters,
@@ -44,8 +42,7 @@ export default function NFTStatistics({
   const statisticsSource = allNFTs && allNFTs.length > 0 ? allNFTs : nfts;
   const statistics = useNFTStatistics(statisticsSource);
   
-  // Calculate selected statistics
-  const selectedCount = selectedNFTs.size;
+  // Calculate selected statistics - removed unused selectedCount variable
 
   // Top collections (by NFT count)
   const topCollections = Object.values(statistics.collectionsMap)

@@ -137,7 +137,6 @@ export default function TokenScanner() {
                             <TokenSelectionManager
                                 spamTokens={spamTokens}
                                 selectedTokens={selectedTokens}
-                                onSelectedTokensChange={setSelectedTokens}
                             />
 
                             {/* Token Statistics */}

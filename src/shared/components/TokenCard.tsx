@@ -32,6 +32,7 @@ const TokenImage = memo(function TokenImage({
   const [isLoading, setIsLoading] = useState(!initialLogoUrl);
   const [hasError, setHasError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [imageLoadAttempted, setImageLoadAttempted] = useState(false);
 
   // Generate initials for fallback
   const getInitials = useCallback(() => {
@@ -41,29 +42,46 @@ const TokenImage = memo(function TokenImage({
     return address.substring(2, 4).toUpperCase();
   }, [symbol, address]);
 
-  // Load image with error handling and retry logic
+  // Load image with enhanced error handling and progressive fallbacks
   useEffect(() => {
     let mounted = true;
+    let timeoutId: NodeJS.Timeout;
     
-    // If we already have an initial logo URL, try to use it
-    if (initialLogoUrl && !hasError) {
+    // If we already have an initial logo URL and haven't failed, use it
+    if (initialLogoUrl && !hasError && !imageLoadAttempted) {
       setImageUrl(initialLogoUrl);
       setIsLoading(false);
+      setImageLoadAttempted(true);
       return;
     }
     
     // Only fetch if we don't have a URL or need to retry
-    if (!imageUrl || (hasError && retryCount < 2)) {
+    if ((!imageUrl || (hasError && retryCount < 3)) && !imageLoadAttempted) {
       setIsLoading(true);
       setHasError(false);
+      setImageLoadAttempted(true);
       
       const loadImage = async () => {
         try {
-          const url = await getTokenLogoUrl(address, symbol);
-          if (mounted) {
-            setImageUrl(url);
-            setIsLoading(false);
-          }
+          // Add a small delay to prevent race conditions with cache clearing
+          timeoutId = setTimeout(async () => {
+            if (!mounted) return;
+            
+            try {
+              const url = await getTokenLogoUrl(address, symbol);
+              if (mounted) {
+                setImageUrl(url);
+                setIsLoading(false);
+                setRetryCount(0); // Reset retry count on success
+              }
+            } catch (error) {
+              console.debug(`Failed to load image for ${symbol || address}:`, error);
+              if (mounted) {
+                setHasError(true);
+                setIsLoading(false);
+              }
+            }
+          }, 100); // Small delay to avoid race conditions
         } catch (error) {
           console.debug(`Failed to load image for ${symbol || address}:`, error);
           if (mounted) {
@@ -78,16 +96,22 @@ const TokenImage = memo(function TokenImage({
     
     return () => {
       mounted = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     };
-  }, [address, symbol, initialLogoUrl, retryCount, hasError, imageUrl]);
+  }, [address, symbol, initialLogoUrl, retryCount, hasError, imageUrl, imageLoadAttempted]);
 
   const handleError = useCallback(() => {
     console.debug(`Image error for ${symbol || address}, retry count: ${retryCount}`);
     
-    // If we haven't exceeded retry limit, try again
+    // If we haven't exceeded retry limit, try again with progressive backoff
     if (retryCount < 2) {
-      setRetryCount(prev => prev + 1);
-      setImageUrl(null); // This will trigger a reload
+      setTimeout(() => {
+        setRetryCount(prev => prev + 1);
+        setImageUrl(null); // This will trigger a reload
+        setImageLoadAttempted(false); // Allow new attempt
+      }, (retryCount + 1) * 1000); // Progressive delay: 1s, 2s, 3s
     } else {
       setHasError(true);
     }

@@ -9,8 +9,7 @@ export interface NFTFilterOptions {
 }
 
 export const useNFTFiltering = (
-  nfts: NFT[], 
-  chainId: number = 8453 // Default to Base
+  nfts: NFT[]
 ) => {
   const [filters, setFilters] = useState<NFTFilterOptions>({
     searchTerm: '',

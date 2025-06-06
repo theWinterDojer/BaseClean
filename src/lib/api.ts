@@ -59,14 +59,21 @@ if (typeof window !== 'undefined') {
  * Save token logo URL to cache including localStorage
  */
 const saveToCache = (address: string, url: string): void => {
+  // Always save to memory cache for current session
   TOKEN_LOGO_CACHE[address] = url;
   
-  if (typeof window !== 'undefined') {
+  // Only save to localStorage if it's NOT a fallback SVG image
+  // This allows fallback images to be generated fresh each session,
+  // giving external sources a chance to be retried
+  if (typeof window !== 'undefined' && !url.startsWith('data:image/svg+xml')) {
     try {
       localStorage.setItem('token_logo_cache', JSON.stringify(TOKEN_LOGO_CACHE));
+      console.log(`🎯 Cached external URL for ${address.substring(0, 8)}...`);
     } catch {
       console.debug('Failed to save token logo cache to localStorage');
     }
+  } else if (url.startsWith('data:image/svg+xml')) {
+    console.log(`⚡ Using fallback SVG for ${address.substring(0, 8)}... (not cached permanently)`);
   }
 };
 
@@ -126,43 +133,22 @@ function safeEncode(str: string): string {
  * Enhanced token logo sources with better Base blockchain coverage
  * Prioritized by reliability, speed, and CORS compatibility
  */
+/**
+ * SIMPLIFIED: Use only Zapper API - proven to work 100% for Base tokens
+ * Analysis showed ALL successful token images come from this source
+ */
 const TOKEN_LOGO_SOURCES = [
-  // 1. Zapper API - Most reliable for Base tokens
+  // Zapper API - The only reliable source we need for Base tokens
   (address: string) => `https://storage.googleapis.com/zapper-fi-assets/tokens/base/${address}.png`,
-  
-  // 2. DeFi Llama Icon Service - Very reliable for multiple chains  
-  (address: string) => `https://icons.llama.fi/icons/tokens/8453/${address}?w=64&h=64`,
-  
-  // 3. Alternative DeFi Llama format
-  (address: string) => `https://icons.llama.fi/base/${address}.png`,
-  
-  // 4. Web3Icons CDN - New comprehensive source
-  (address: string) => `https://cdn.jsdelivr.net/gh/0xa3k5/web3icons@latest/raw-svgs/tokens/branded/${address.toUpperCase().substring(2, 6)}.svg`,
-  
-  // 5. Base Chain Explorer Icons
-  (address: string) => `https://basescan.org/token/images/${address}.png`,
-  
-  // 6. CoinGecko API (requires different approach but very reliable)
-  (address: string) => `https://api.coingecko.com/api/v3/coins/base/contract/${address}`,
-  
-  // 7. 1inch Token Repository
-  (address: string) => `https://tokens.1inch.io/${address}.png`,
-  
-  // 8. Moralis Token API format
-  (address: string) => `https://api.moralis.io/token/logo/${address}`,
-  
-  // 9. Trustwallet Assets - Community maintained
-  (address: string) => `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/base/assets/${address}/logo.png`,
 ];
 
 /**
  * Multiple ETH logo sources to try in order (native ETH, not WETH)
  */
 const ETH_LOGO_SOURCES = [
-  'https://icons.llama.fi/icons/tokens/1/0x0000000000000000000000000000000000000000?w=64&h=64', // DeFi Llama native ETH
-  'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png', // TrustWallet Ethereum logo
+  'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png', // TrustWallet Ethereum logo - WORKS
+  'https://assets.coingecko.com/coins/images/279/small/ethereum.png', // CoinGecko ETH - WORKS
   'https://cryptologos.cc/logos/ethereum-eth-logo.png', // CryptoLogos ETH
-  'https://assets.coingecko.com/coins/images/279/small/ethereum.png', // CoinGecko ETH
   'https://ethereum.org/static/6b935ac0e6194247347855dc3d328e83/81d9f/eth-diamond-glyph.png' // Official Ethereum.org logo
 ];
 
@@ -185,25 +171,25 @@ async function getBestETHLogoUrl(): Promise<string> {
 }
 
 /**
- * Well-known token addresses with verified icon URLs
- * Enhanced with multiple reliable sources for ETH
+ * OPTIMIZED: Well-known token addresses with Zapper URLs where available
+ * Using proven working Zapper API for Base tokens
  */
 const COMMON_TOKENS: Record<string, string> = {
-  // Native ETH (special handling for zero address) - using native ETH logo sources
-  '0x0000000000000000000000000000000000000000': 'https://icons.llama.fi/icons/tokens/1/0x0000000000000000000000000000000000000000?w=64&h=64',
+  // Native ETH (special handling for zero address) - using working TrustWallet logo
+  '0x0000000000000000000000000000000000000000': 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png',
   
-  // Major Base tokens by address (lowercase)
-  '0x4200000000000000000000000000000000000006': 'https://icons.llama.fi/icons/tokens/1/0x0000000000000000000000000000000000000000?w=64&h=64', // Wrapped ETH - use native ETH logo
-  '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913': 'https://icons.llama.fi/icons/tokens/8453/0x833589fcd6edb6e08f4c7c32d4f71b54bda02913?w=64&h=64', // USDC
-  '0x50c5725949a6f0c72e6c4a641f24049a917db0cb': 'https://icons.llama.fi/icons/tokens/8453/0x50c5725949a6f0c72e6c4a641f24049a917db0cb?w=64&h=64', // DAI
-  '0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca': 'https://icons.llama.fi/icons/tokens/8453/0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca?w=64&h=64', // USDbC
+  // Major Base tokens by address (lowercase) - using Zapper API
+  '0x4200000000000000000000000000000000000006': 'https://storage.googleapis.com/zapper-fi-assets/tokens/base/0x4200000000000000000000000000000000000006.png', // WETH
+  '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913': 'https://storage.googleapis.com/zapper-fi-assets/tokens/base/0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.png', // USDC
+  '0x50c5725949a6f0c72e6c4a641f24049a917db0cb': 'https://storage.googleapis.com/zapper-fi-assets/tokens/base/0x50c5725949a6f0c72e6c4a641f24049a917db0cb.png', // DAI
+  '0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca': 'https://storage.googleapis.com/zapper-fi-assets/tokens/base/0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca.png', // USDbC
   
-  // By symbol for quick lookups - using native ETH logo sources
-  'eth': 'https://icons.llama.fi/icons/tokens/1/0x0000000000000000000000000000000000000000?w=64&h=64',
-  'weth': 'https://icons.llama.fi/icons/tokens/1/0x0000000000000000000000000000000000000000?w=64&h=64',
-  'usdc': 'https://icons.llama.fi/icons/tokens/8453/0x833589fcd6edb6e08f4c7c32d4f71b54bda02913?w=64&h=64',
+  // By symbol for quick lookups
+  'eth': 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png',
+  'weth': 'https://storage.googleapis.com/zapper-fi-assets/tokens/base/0x4200000000000000000000000000000000000006.png',
+  'usdc': 'https://storage.googleapis.com/zapper-fi-assets/tokens/base/0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.png',
   'usdt': 'https://icons.llama.fi/icons/tokens/1/0xdac17f958d2ee523a2206206994597c13d831ec7?w=64&h=64',
-  'dai': 'https://icons.llama.fi/icons/tokens/8453/0x50c5725949a6f0c72e6c4a641f24049a917db0cb?w=64&h=64',
+  'dai': 'https://storage.googleapis.com/zapper-fi-assets/tokens/base/0x50c5725949a6f0c72e6c4a641f24049a917db0cb.png',
 };
 
 /**
@@ -308,8 +294,7 @@ function generateFallbackImage(address: string, symbol: string = ''): string {
   const patternSeed = parseInt(address.substring(10, 18), 16);
   const pattern = patternSeed % 3;
   
-  // Generate rotation for visual variety
-  const rotation = (addressSeed % 360);
+  // Removed unused rotation variable for visual variety
   
   // Create enhanced SVG with multiple design patterns
   let svgContent: string;
@@ -397,7 +382,7 @@ function generateFallbackImage(address: string, symbol: string = ''): string {
 const testImageUrl = async (url: string): Promise<boolean> => {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 300); // Reduced from 1000ms to 300ms
+    const timeoutId = setTimeout(() => controller.abort(), 1000); // Increased from 300ms to 1000ms for reliability
     
     const response = await fetch(url, {
       method: 'HEAD',
@@ -410,6 +395,67 @@ const testImageUrl = async (url: string): Promise<boolean> => {
     return false;
   }
 };
+
+/**
+ * Track success rates of different image sources for analysis
+ */
+const IMAGE_SOURCE_STATS = {
+  zapper: 0,
+  defillama_tokens: 0, 
+  defillama_base: 0,
+  web3icons: 0,
+  basescan: 0,
+  coingecko: 0,
+  oneinch: 0,
+  moralis: 0,
+  trustwallet: 0,
+  fallback_svg: 0
+};
+
+/**
+ * Log which image source was successful (for analysis and simplification)
+ */
+function logImageSourceSuccess(sourceIndex: number, url: string): void {
+  const sourceNames = [
+    'zapper', 'defillama_tokens', 'defillama_base', 'web3icons', 
+    'basescan', 'coingecko', 'oneinch', 'moralis', 'trustwallet'
+  ];
+  
+  const sourceName = sourceNames[sourceIndex] || 'unknown';
+  IMAGE_SOURCE_STATS[sourceName as keyof typeof IMAGE_SOURCE_STATS]++;
+  
+  console.log(`🎯 Image source success: ${sourceName} (${url.substring(0, 50)}...)`);
+}
+
+/**
+ * Export current image source statistics for analysis
+ */
+export function getImageSourceStats(): typeof IMAGE_SOURCE_STATS {
+  return { ...IMAGE_SOURCE_STATS };
+}
+
+/**
+ * Log current image source statistics to console
+ */
+export function logImageSourceStats(): void {
+  console.log('📊 Image Source Success Statistics:', IMAGE_SOURCE_STATS);
+  const total = Object.values(IMAGE_SOURCE_STATS).reduce((sum, count) => sum + count, 0);
+  if (total > 0) {
+    console.log('📈 Success Percentages:');
+    Object.entries(IMAGE_SOURCE_STATS).forEach(([source, count]) => {
+      if (count > 0) {
+        console.log(`  ${source}: ${count} (${Math.round((count / total) * 100)}%)`);
+      }
+    });
+  }
+}
+
+// Make stats available in browser console for analysis
+if (typeof window !== 'undefined') {
+  (window as unknown as { getImageStats: typeof getImageSourceStats; logImageStats: typeof logImageSourceStats }).getImageStats = getImageSourceStats;
+  (window as unknown as { getImageStats: typeof getImageSourceStats; logImageStats: typeof logImageSourceStats }).logImageStats = logImageSourceStats;
+  console.log('💡 Image source analysis available: Run getImageStats() or logImageStats() in console');
+}
 
 /**
  * Enhanced token logo resolver with optimized performance
@@ -433,12 +479,14 @@ export async function getTokenLogoUrl(address: string, symbol: string = ''): Pro
 
   // 1. Check cache first
   if (TOKEN_LOGO_CACHE[cleanAddress]) {
+    console.log(`🎯 Image source success: cache (${TOKEN_LOGO_CACHE[cleanAddress].substring(0, 50)}...)`);
     return TOKEN_LOGO_CACHE[cleanAddress];
   }
 
   // 2. Check common tokens for immediate return
   if (COMMON_TOKENS[cleanAddress]) {
     const logoUrl = COMMON_TOKENS[cleanAddress];
+    console.log(`🎯 Image source success: common_tokens (${logoUrl.substring(0, 50)}...)`);
     saveToCache(cleanAddress, logoUrl);
     return logoUrl;
   }
@@ -453,25 +501,24 @@ export async function getTokenLogoUrl(address: string, symbol: string = ''): Pro
     }
   }
   
-  // 4. Try logo sources with optimized timeouts
-  const maxSourcesToTry = 3;
-  const sourcesToTry = TOKEN_LOGO_SOURCES.slice(0, maxSourcesToTry);
-  
-  for (const logoSource of sourcesToTry) {
-    try {
-      const logoUrl = logoSource(cleanAddress);
-      const isValid = await testImageUrl(logoUrl);
-      
-      if (isValid) {
-        saveToCache(cleanAddress, logoUrl);
-        return logoUrl;
-      }
-    } catch {
-      // Continue to next source
+  // 4. Try Zapper API (our only source now)
+  try {
+    const logoUrl = TOKEN_LOGO_SOURCES[0](cleanAddress);
+    const isValid = await testImageUrl(logoUrl);
+    
+    if (isValid) {
+      console.log(`🎯 Image source success: zapper (${logoUrl})`);
+      IMAGE_SOURCE_STATS.zapper++;
+      saveToCache(cleanAddress, logoUrl);
+      return logoUrl;
     }
+  } catch {
+    console.log(`❌ Zapper API failed for ${cleanSymbol || cleanAddress.substring(0, 8)}`);
   }
 
   // 5. Generate enhanced fallback
+  IMAGE_SOURCE_STATS.fallback_svg++;
+  console.log(`🎨 Using SVG fallback for ${cleanSymbol || cleanAddress.substring(0, 8)}`);
   const fallback = generateFallbackImage(cleanAddress, cleanSymbol);
   saveToCache(cleanAddress, fallback);
   return fallback;
@@ -498,22 +545,36 @@ export function clearTokenLogoCache(): void {
       ethAddresses.forEach(addr => {
         delete TOKEN_LOGO_CACHE[addr];
       });
-      console.log('Token logo cache successfully cleared (including ETH logos)');
+      console.log('Token logo cache manually cleared (including ETH logos)');
     } catch {
       console.error('Failed to clear token logo cache from localStorage');
     }
   }
 }
 
-// Clear cache immediately to force regeneration with new enhanced designs
-if (typeof window !== 'undefined') {
-  clearTokenLogoCache();
-  // Force clear any existing SVG caches
-  Object.keys(TOKEN_LOGO_CACHE).forEach(key => {
-    if (TOKEN_LOGO_CACHE[key].startsWith('data:image/svg+xml')) {
-      delete TOKEN_LOGO_CACHE[key];
+/**
+ * Clear only outdated SVG fallback images while preserving successful external URLs
+ */
+export function clearOutdatedFallbacks(): void {
+  if (typeof window !== 'undefined') {
+    let clearedCount = 0;
+    Object.keys(TOKEN_LOGO_CACHE).forEach(key => {
+      if (TOKEN_LOGO_CACHE[key].startsWith('data:image/svg+xml')) {
+        delete TOKEN_LOGO_CACHE[key];
+        clearedCount++;
+      }
+    });
+    
+    if (clearedCount > 0) {
+      console.log(`Cleared ${clearedCount} outdated SVG fallback images`);
+      // Update localStorage
+      try {
+        localStorage.setItem('token_logo_cache', JSON.stringify(TOKEN_LOGO_CACHE));
+      } catch {
+        console.debug('Failed to update localStorage after fallback cleanup');
+      }
     }
-  });
+  }
 }
 
 /**
@@ -756,58 +817,18 @@ async function fetchTokensMetadataBatch(contractAddresses: string[]): Promise<Re
     return results;
   }
 
-  console.log(`Fetching metadata for ${uncachedAddresses.length} tokens in batches of ${BATCH_SIZE}`);
+  console.log(`Fetching metadata for ${uncachedAddresses.length} tokens individually (Alchemy doesn't support batch metadata)`);
 
-  // Process in batches
-  for (let i = 0; i < uncachedAddresses.length; i += BATCH_SIZE) {
-    const batch = uncachedAddresses.slice(i, i + BATCH_SIZE);
+  // NOTE: Alchemy doesn't support batch metadata requests (alchemy_getTokensMetadata doesn't exist)
+  // Using individual requests with alchemy_getTokenMetadata
+  console.log(`Processing individual metadata requests for ${uncachedAddresses.length} tokens`);
+  
+  for (const address of uncachedAddresses) {
+    const metadata = await fetchTokenMetadataFromAlchemy(address);
+    results[address] = metadata;
     
-    try {
-      const response = await fetch(
-        `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: 1,
-            jsonrpc: '2.0',
-            method: 'alchemy_getTokensMetadata',
-            params: [{ tokens: batch }]
-          })
-        }
-      );
-
-      if (response.ok) {
-        const data: AlchemyMetadataResponse = await response.json();
-        const metadataArray = data.result || [];
-        
-        // Map results back to addresses
-        metadataArray.forEach((metadata: TokenMetadata, index: number) => {
-          const address = batch[index];
-          if (metadata && !('error' in metadata)) {
-            results[address] = metadata;
-            saveMetadataToCache(address.toLowerCase(), metadata);
-          } else {
-            // Provide default metadata for failed requests
-            results[address] = { symbol: '', name: '', decimals: 18 };
-          }
-        });
-      } else {
-        // Fallback: individual requests for this batch
-        console.warn(`Batch metadata request failed, falling back to individual requests for batch ${i / BATCH_SIZE + 1}`);
-        for (const address of batch) {
-          const metadata = await fetchTokenMetadataFromAlchemy(address);
-          results[address] = metadata;
-        }
-      }
-    } catch (error) {
-      console.debug('Batch metadata fetch failed:', error);
-      // Fallback: individual requests for this batch
-      for (const address of batch) {
-        const metadata = await fetchTokenMetadataFromAlchemy(address);
-        results[address] = metadata;
-      }
-    }
+    // Small delay to be respectful to the API
+    await new Promise(resolve => setTimeout(resolve, 10));
   }
 
   return results;

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAccount, useChainId } from 'wagmi';
 import { NFT } from '@/types/nft';
 import { fetchNFTs } from '@/lib/nftApi';
-import { NFT_UI_TEXT } from '@/constants/nfts';
+// Removed unused NFT_UI_TEXT import
 
 /**
  * Custom hook for fetching and managing NFT data
@@ -12,7 +12,7 @@ import { NFT_UI_TEXT } from '@/constants/nfts';
  */
 export function useNFTs() {
   const { address, isConnected } = useAccount();
-  const chainId = useChainId();
+  // Removed unused chainId variable
   const [nfts, setNFTs] = useState<NFT[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +43,7 @@ export function useNFTs() {
     } finally {
       setLoading(false);
     }
-  }, [address, isConnected, chainId]);
+  }, [address, isConnected]); // Removed chainId - not used in function body
 
   // Auto-fetch NFTs when wallet connection changes
   useEffect(() => {

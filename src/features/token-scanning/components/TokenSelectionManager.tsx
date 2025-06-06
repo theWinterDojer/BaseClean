@@ -6,7 +6,6 @@ import BulkActions from './BulkActions';
 interface TokenSelectionManagerProps {
   spamTokens: Token[];
   selectedTokens: Set<string>;
-  onSelectedTokensChange: (newSelection: Set<string>) => void;
 }
 
 /**
@@ -15,7 +14,6 @@ interface TokenSelectionManagerProps {
 export default function TokenSelectionManager({
   spamTokens,
   selectedTokens,
-  onSelectedTokensChange,
 }: TokenSelectionManagerProps) {
 
   // Get direct access to the context to work around the setSelectedTokens limitation

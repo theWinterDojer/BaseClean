@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 interface NFTImageProps {
-  contractAddress: string;
   tokenId: string;
   name?: string;
   isSpam?: boolean;
@@ -9,7 +8,6 @@ interface NFTImageProps {
 }
 
 export default function NFTImage({
-  contractAddress,
   tokenId,
   name,
   isSpam = false,

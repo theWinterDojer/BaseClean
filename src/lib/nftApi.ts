@@ -136,10 +136,13 @@ export async function getNFTImageUrl(contractAddress: string, tokenId: string, a
       alchemyImage.thumbnailUrl,
       alchemyImage.pngUrl,
       alchemyImage.originalUrl
-    ].filter(Boolean);
+    ].filter((url): url is string => Boolean(url)).filter(isValidImageUrl); // Pre-filter invalid URLs
+    
+    console.debug(`🖼️ Testing ${alchemyUrls.length} Alchemy image URLs for ${contractAddress}/${tokenId}`);
     
     for (const url of alchemyUrls) {
       if (url && await testImageUrl(url)) {
+        console.debug(`✅ NFT image found: ${url.substring(0, 50)}...`);
         saveToNFTImageCache(cacheKey, url);
         return url;
       }
@@ -166,14 +169,50 @@ export async function getNFTImageUrl(contractAddress: string, tokenId: string, a
 }
 
 /**
+ * Validate if a URL looks like a valid image URL before testing
+ */
+const isValidImageUrl = (url: string): boolean => {
+  try {
+    const parsedUrl = new URL(url);
+    
+    // Check for invalid domains known to cause issues
+    const invalidDomains = [
+      'n1create.pages.dev',  // Known broken domain from logs
+    ];
+    
+    if (invalidDomains.some(domain => parsedUrl.hostname.includes(domain))) {
+      return false;
+    }
+    
+    // Check for obviously invalid Cloudinary URLs (400 errors in logs)
+    if (parsedUrl.hostname.includes('cloudinary.com') && 
+        (parsedUrl.pathname.includes('/video/upload/') || 
+         parsedUrl.pathname.includes('convert-png'))) {
+      return false;
+    }
+    
+    // Basic URL validation
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
+/**
  * Test if an image URL is valid and loads successfully
+ * Suppresses console errors from expected test failures
  */
 const testImageUrl = async (url: string): Promise<boolean> => {
+  // Pre-validate URL to avoid testing obviously broken ones
+  if (!isValidImageUrl(url)) {
+    return false;
+  }
+  
   return new Promise((resolve) => {
     const img = new Image();
     const timeout = setTimeout(() => {
       resolve(false);
-    }, 3000); // 3 second timeout
+    }, 1000); // Reduced timeout to 1 second for faster testing
     
     img.onload = () => {
       clearTimeout(timeout);
@@ -185,6 +224,8 @@ const testImageUrl = async (url: string): Promise<boolean> => {
       resolve(false);
     };
     
+    // Suppress the console error by setting crossOrigin to handle CORS gracefully
+    img.crossOrigin = 'anonymous';
     img.src = url;
   });
 };

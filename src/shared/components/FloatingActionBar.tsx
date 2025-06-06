@@ -41,13 +41,13 @@ export default function FloatingActionBar({
 
   return (
     <div 
-      className="fixed bottom-4 left-4 right-4 z-50 transition-all duration-300 ease-in-out animate-in slide-in-from-bottom-2"
+      className="fixed bottom-8 left-4 right-4 z-50 transition-all duration-300 ease-in-out animate-in slide-in-from-bottom-2"
     >
       <div className="max-w-4xl mx-auto">
         <div 
-          className="bg-gradient-to-r from-[#0052FF] to-blue-600 border-2 border-[#0052FF]/70 rounded-xl p-4 transition-all duration-300 shadow-2xl"
+          className="bg-gradient-to-r from-blue-900 to-blue-950 border-2 border-blue-800/80 rounded-xl p-5 transition-all duration-300 shadow-2xl"
           style={{
-            boxShadow: '0 20px 40px -8px rgba(0, 82, 255, 0.4), 0 0 0 1px rgba(0, 82, 255, 0.3), 0 0 32px rgba(0, 82, 255, 0.2)'
+            boxShadow: '0 20px 40px -8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(59, 130, 246, 0.2)'
           }}
         >
           <div className="flex items-center justify-between gap-4">
@@ -62,7 +62,7 @@ export default function FloatingActionBar({
                 <h4 className="text-base font-bold text-white leading-tight drop-shadow-md">
                   {selectionLabel}
                 </h4>
-                <p className="text-xs text-blue-100 font-medium drop-shadow-sm">
+                <p className="text-xs text-blue-200 font-medium drop-shadow-sm">
                   {isMixed ? 'Ready to burn from your wallet' : hasTokens ? 'Ready to clean from your wallet' : 'Ready to burn from your wallet'}
                 </p>
               </div>

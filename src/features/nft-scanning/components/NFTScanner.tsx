@@ -27,10 +27,7 @@ export default function NFTScanner() {
   const { 
     burnSingleNFT,
     burnMultipleNFTs,
-    isBurning, 
-    currentNFT,
-    burnResults,
-    getNFTBurnStats
+    isBurning
   } = useDirectBurner();
   
   const [showBurnConfirmation, setShowBurnConfirmation] = useState(false);
@@ -130,7 +127,7 @@ export default function NFTScanner() {
 
   return (
     <NFTDataManager onNFTsLoaded={handleNFTsLoaded}>
-      {({ nfts, loading, error, isConnected, isClient, updateNFTs, refreshNFTs }) => (
+      {({ loading, error, isConnected, refreshNFTs }) => (
         <>
           {/* Add bottom padding when NFTs are selected to prevent overlap with floating bar */}
           <div className={`flex flex-col lg:flex-row gap-6 ${selectedNFTsCount > 0 ? 'pb-24' : ''}`}>
@@ -190,7 +187,6 @@ export default function NFTScanner() {
                 <NFTStatistics 
                   nfts={filteredNFTs}
                   allNFTs={allNFTs}
-                  selectedNFTs={selectedNFTKeys}
                   selectedNetworks={selectedNetworks}
                   onNetworkToggle={handleNetworkToggle}
                   filters={filters}

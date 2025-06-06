@@ -85,7 +85,6 @@ export default function NFTBurnConfirmationModal({
                       <div key={`${nft.contract_address}-${nft.token_id}`} className="flex items-center space-x-3 bg-gray-700/50 rounded-lg p-3">
                         <div className="w-12 h-12 flex-shrink-0 relative rounded-md overflow-hidden">
                           <NFTImage
-                            contractAddress={nft.contract_address}
                             tokenId={nft.token_id}
                             name={nft.name}
                             imageUrl={nft.image_url}

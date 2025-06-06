@@ -71,7 +71,6 @@ const NFTCard = memo(function NFTCard({
       {/* Image Container */}
       <div className="relative aspect-square bg-gray-100 dark:bg-gray-800 overflow-hidden">
         <NFTImage 
-          contractAddress={nft.contract_address}
           tokenId={nft.token_id}
           name={nft.name}
           isSpam={isSpam}
