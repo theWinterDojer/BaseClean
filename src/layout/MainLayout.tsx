@@ -39,7 +39,7 @@ export default function MainLayout({ children, stickyHeaderContent }: MainLayout
               </div>
             </Link>
             
-            {/* Tab Navigation in Header */}
+            {/* Tab Navigation in Header - Centered */}
             <div className="hidden md:flex flex-1 justify-center">
               <HeaderTabNavigation />
             </div>
@@ -50,15 +50,17 @@ export default function MainLayout({ children, stickyHeaderContent }: MainLayout
           </div>
           
           {/* Mobile Tab Navigation */}
-          <div className="md:hidden mt-4 px-4">
-            <HeaderTabNavigation />
+          <div className="md:hidden border-t border-gray-700/50 bg-gray-800/60">
+            <div className="container mx-auto px-4 flex justify-center py-2">
+              <HeaderTabNavigation />
+            </div>
           </div>
         </header>
         
         {/* Sticky Selected Items Bar - positioned between header and content */}
         {stickyHeaderContent}
         
-        <main className="container mx-auto px-4 py-8">
+        <main className="max-w-7xl mx-auto px-6 py-8">
           {children}
         </main>
         

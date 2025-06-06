@@ -37,7 +37,7 @@ export default function HeaderTabNavigation() {
           className={`
             relative flex items-center gap-2.5 px-5 py-3
             text-base font-semibold transition-all duration-300
-            border-b-2 tracking-wide
+            border-b-2 tracking-wide cursor-pointer
             ${tab.isActive
               ? 'text-white border-[#0052FF]'
               : 'text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-600'
@@ -65,6 +65,7 @@ export default function HeaderTabNavigation() {
                   : 'bg-gray-700 text-gray-300'
                 }
               `}
+              suppressHydrationWarning
             >
               {tab.count}
             </span>

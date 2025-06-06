@@ -11,7 +11,9 @@ class MyDocument extends Document {
     return (
       <Html lang="en">
         <Head>
-          <link rel="icon" href="/BaseCleanlogo.png" />
+          <link rel="icon" href="/basecleanlogo.png" />
+          <link rel="apple-touch-icon" href="/basecleanlogo.png" />
+          <meta name="theme-color" content="#0052FF" />
         </Head>
         <body className="bg-gray-900 text-white">
           <Main />

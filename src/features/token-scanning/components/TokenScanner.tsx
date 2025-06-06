@@ -13,7 +13,7 @@ import BurnTransactionStatus from './BurnTransactionStatus';
 import BurnConfirmationModal from './BurnConfirmationModal';
 import TokenDataManager from './TokenDataManager';
 import TokenSelectionManager from './TokenSelectionManager';
-import StickySelectedTokensBarContainer from '@/shared/components/StickySelectedTokensBarContainer';
+import FloatingActionBar from '@/shared/components/FloatingActionBar';
 
 export default function TokenScanner() {
     const { address } = useAccount();
@@ -57,14 +57,23 @@ export default function TokenScanner() {
     }, []);
 
     // Handle burn confirmation with proper null checks
-    const handleBurnSelected = useCallback(async (selectedTokensList: Token[]) => {
+    const handleBurnSelected = useCallback(async () => {
+        const selectedTokensList = scamSnifferEnhancedTokens.filter(token => 
+            selectedTokens.has(token.contract_address)
+        );
+        
         // Ensure we have valid tokens and the array is not null/undefined
-        if (!selectedTokensList || !Array.isArray(selectedTokensList) || selectedTokensList.length === 0) {
+        if (!selectedTokensList || selectedTokensList.length === 0) {
             console.warn('No tokens selected for burning');
             return;
         }
         await showConfirmation(selectedTokensList);
-    }, [showConfirmation]);
+    }, [scamSnifferEnhancedTokens, selectedTokens, showConfirmation]);
+
+    // Handle deselect all
+    const handleDeselectAll = useCallback(() => {
+        setSelectedTokens(new Set());
+    }, [setSelectedTokens]);
 
     // Handle burn execution
     const handleConfirmBurn = useCallback(async (updateTokens: (tokens: Token[]) => void) => {
@@ -97,25 +106,10 @@ export default function TokenScanner() {
 
     return (
         <>
-            {/* Global Sticky Header - appears when tokens are selected */}
-            {selectedTokensCount > 0 && (
-                <div className="fixed top-16 left-0 right-0 z-20">
-                    <StickySelectedTokensBarContainer 
-                        tokens={scamSnifferEnhancedTokens}
-                        onBurnSelected={handleBurnSelected}
-                    />
-                </div>
-            )}
-            
             <TokenDataManager onTokensLoaded={handleTokensLoaded}>
                 {({ loading, isConnected, isClient, updateTokens }) => (
                     isClient && isConnected && !loading && (
-                        <div className="space-y-5">
-                            {/* Spacer for fixed sticky header when tokens are selected */}
-                            {selectedTokensCount > 0 && (
-                                <div className="h-12" />
-                            )}
-
+                        <div className="space-y-5 pb-24">
                             {/* ScamSniffer Loading Indicator (subtle) */}
                             {scamSnifferLoading && (
                                 <div className="text-xs text-gray-500 text-center py-1">
@@ -168,6 +162,13 @@ export default function TokenScanner() {
                     )
                 )}
             </TokenDataManager>
+
+            {/* Unified Floating Action Bar - appears when tokens are selected */}
+            <FloatingActionBar
+                onBurnSelected={handleBurnSelected}
+                onDeselectAll={handleDeselectAll}
+                isBurning={burnStatus.inProgress}
+            />
         </>
     );
 } 

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Token } from '@/types/token';
-import { useDirectTokenBurner, DirectBurnResult } from '@/lib/directBurner';
+import { useDirectBurner, DirectBurnResult } from '@/lib/directBurner';
 import { fetchTokenBalances } from '@/lib/api';
 import { parseWalletError, isUserRejectionError } from '@/utils/errorHandling';
 
@@ -64,8 +64,8 @@ export function useBurnFlow() {
     isBurning, 
     currentToken,
     burnResults,
-    getBurnStats
-  } = useDirectTokenBurner();
+    getTokenBurnStats
+  } = useDirectBurner();
 
   // Show confirmation modal for selected tokens
   const showConfirmation = useCallback(async (tokens: Token[]) => {
@@ -270,6 +270,6 @@ export function useBurnFlow() {
     isBurning,
     currentToken,
     burnResults,
-    getBurnStats
+    getTokenBurnStats
   };
 } 

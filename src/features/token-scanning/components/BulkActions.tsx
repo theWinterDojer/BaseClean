@@ -24,13 +24,10 @@ export default function BulkActions({
       <div className="flex flex-wrap gap-3">
         <button
           onClick={onSelectAllSpam}
-          className="bg-red-600/80 hover:bg-red-500/80 border border-red-500 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors shadow-sm hover:shadow-md flex items-center gap-2"
+          className="bg-red-600/80 hover:bg-red-500/80 border border-red-500 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors shadow-sm hover:shadow-md"
           disabled={spamTokensCount === 0}
           aria-label={`Select all ${spamTokensCount} spam tokens`}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H4zm0 3a1 1 0 100 2h6a1 1 0 100-2H4z" clipRule="evenodd" />
-          </svg>
           Select All Spam Tokens ({spamTokensCount})
         </button>
         <button

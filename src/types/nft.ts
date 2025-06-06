@@ -58,6 +58,8 @@ export type BurnableItemNFT = {
   data: NFT;
 };
 
+
+
 /**
  * Statistics about NFT distribution
  */
@@ -72,7 +74,13 @@ export type NFTStatistics = {
   erc1155Count: number;
   /** Number of currently selected NFTs */
   selectedNFTs: number;
+  /** Total estimated value of selected NFTs */
+  selectedValue?: number;
+  /** Total estimated value of all NFTs */
+  totalValue?: number;
 };
+
+
 
 /**
  * Combined statistics for tokens and NFTs
