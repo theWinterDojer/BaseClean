@@ -140,7 +140,7 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
               {/* Header Controls */}
               {allNFTs.length > 0 && (
                 <div className="mb-4 flex justify-between items-center">
-                  {/* Refresh Metadata Button */}
+                  {/* Left side - Refresh Button */}
                   <button
                     onClick={() => handleRefreshMetadata(refreshNFTs)}
                     disabled={loading}
@@ -163,7 +163,16 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
                     {loading ? 'Refreshing...' : 'Refresh Metadata'}
                   </button>
 
-                  {/* Grid Size Control */}
+                  {/* Center - NFT Count */}
+                  <div className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {filterStats.isFiltered ? (
+                      <>Showing {filteredNFTs.length} of {allNFTs.length} NFTs</>
+                    ) : (
+                      <>Showing all {allNFTs.length} NFT{allNFTs.length === 1 ? '' : 's'}</>
+                    )}
+                  </div>
+
+                  {/* Right side - Grid Size Control */}
                   <GridSizeControl 
                     currentSize={gridSize}
                     onSizeChange={setGridSize}
@@ -182,7 +191,6 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
                 spamNFTs={[]}
                 gridSize={gridSize}
                 totalNFTs={allNFTs.length}
-                isFiltered={filterStats.isFiltered}
               />
             </div>
 

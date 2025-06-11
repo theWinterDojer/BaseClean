@@ -15,7 +15,6 @@ interface NFTListsContainerProps {
   regularNFTs?: NFT[];
   gridSize?: GridSize;
   totalNFTs?: number; // Total NFTs in wallet (before filtering)
-  isFiltered?: boolean; // Whether filters are currently applied
 }
 
 /**
@@ -32,8 +31,7 @@ export default function NFTListsContainer({
   spamNFTs = [],
   regularNFTs = [],
   gridSize = 'medium',
-  totalNFTs = 0,
-  isFiltered = false
+  totalNFTs = 0
 }: NFTListsContainerProps) {
   
   // Generate unique key for NFT selection
@@ -132,18 +130,7 @@ export default function NFTListsContainer({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Filter Status Text */}
-      {isConnected && !loading && nfts.length > 0 && (
-        <div className="text-sm text-gray-600 dark:text-gray-400">
-          {isFiltered ? (
-            <>Showing {nfts.length} of {totalNFTs} NFTs</>
-          ) : (
-            <>Showing {nfts.length} NFT{nfts.length === 1 ? '' : 's'}</>
-          )}
-        </div>
-      )}
-
+    <div className="space-y-8">
       {/* Regular NFTs Section */}
       {regularNFTs.length > 0 && (
         <div className={gridClasses}>
