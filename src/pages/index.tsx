@@ -2,7 +2,11 @@ import Head from 'next/head';
 import MainLayout from '@/layout/MainLayout';
 import TokenScanner from '@/features/token-scanning/components/TokenScanner';
 
-export default function Home() {
+interface HomeProps {
+  showDisclaimer: boolean;
+}
+
+export default function Home({ showDisclaimer }: HomeProps) {
   return (
     <>
       <Head>
@@ -12,7 +16,7 @@ export default function Home() {
       
       <MainLayout>
         <div className="max-w-7xl mx-auto">
-          <TokenScanner />
+          <TokenScanner showDisclaimer={showDisclaimer} />
         </div>
       </MainLayout>
     </>

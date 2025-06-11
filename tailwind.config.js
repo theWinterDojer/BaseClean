@@ -9,6 +9,12 @@ module.exports = {
     ],
     theme: {
         extend: {
+            borderWidth: {
+                '3': '3px',
+            },
+            scale: {
+                '102': '1.02',
+            },
             animation: {
                 'spin-slow': 'spin 3s linear infinite',
                 'progress': 'progress 3s ease-in-out infinite',

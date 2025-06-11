@@ -28,7 +28,7 @@ export function resetDisclaimer(): void {
   console.log('Disclaimer reset. Refresh the page to see the disclaimer again.');
 }
 
-// Make resetDisclaimer available globally in development
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+// Make resetDisclaimer available globally for testing (not just development)
+if (typeof window !== 'undefined') {
   (window as typeof window & { resetDisclaimer: () => void }).resetDisclaimer = resetDisclaimer;
 } 

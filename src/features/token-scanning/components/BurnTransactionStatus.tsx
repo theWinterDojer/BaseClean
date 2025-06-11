@@ -114,14 +114,30 @@ export default function BurnTransactionStatus({
         {success && (
           <div className="text-center py-4">
             <div className="mb-4">
-              <div className="mx-auto w-12 h-12 rounded-full bg-green-900/30 border border-green-700 flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+              <div className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center ${
+                tokensBurned > 0 
+                  ? 'bg-green-900/30 border border-green-700' 
+                  : 'bg-red-900/30 border border-red-700'
+              }`}>
+                {tokensBurned > 0 ? (
+                  <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
               </div>
             </div>
-            <h4 className="text-lg font-semibold text-green-400 mb-2">
-              🎉 Burn Process Complete!
+            <h4 className={`text-lg font-semibold mb-2 ${
+              tokensBurned > 0 
+                ? 'text-green-400' 
+                : 'text-red-400'
+            }`}>
+              {tokensBurned > 0 
+                ? '🎉 Burn Process Complete!' 
+                : '❌ Burn Process Complete'}
             </h4>
             
             {/* Text summary */}
@@ -232,7 +248,11 @@ export default function BurnTransactionStatus({
             
             <button
               onClick={onClose}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors"
+              className={`w-full text-white py-2 px-4 rounded-lg transition-colors ${
+                tokensBurned > 0 
+                  ? 'bg-green-600 hover:bg-green-700' 
+                  : 'bg-red-600 hover:bg-red-700'
+              }`}
             >
               Close
             </button>

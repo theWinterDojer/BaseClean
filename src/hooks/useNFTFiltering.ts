@@ -6,6 +6,8 @@ export interface NFTFilterOptions {
   showOnlyWithoutImages: boolean;
   sortByCollection: boolean;
   showOnlySingleNFTs: boolean;
+  showERC721: boolean;
+  showERC1155: boolean;
 }
 
 export const useNFTFiltering = (
@@ -16,6 +18,8 @@ export const useNFTFiltering = (
     showOnlyWithoutImages: false,
     sortByCollection: false,
     showOnlySingleNFTs: false,
+    showERC721: true,
+    showERC1155: true,
   });
 
   // Separate debounced search term for filtering performance
@@ -34,7 +38,20 @@ export const useNFTFiltering = (
   const filteredNFTs = useMemo(() => {
     let result = [...nfts];
 
-    // 1. Search by collection name (using debounced term)
+    // 1. Filter by token standard (ERC-721/ERC-1155)
+    if (!filters.showERC721 || !filters.showERC1155) {
+      result = result.filter(nft => {
+        if (!filters.showERC721 && nft.token_standard === 'ERC721') {
+          return false;
+        }
+        if (!filters.showERC1155 && nft.token_standard === 'ERC1155') {
+          return false;
+        }
+        return true;
+      });
+    }
+
+    // 2. Search by collection name (using debounced term)
     if (debouncedSearchTerm.trim()) {
       const searchLower = debouncedSearchTerm.toLowerCase();
       result = result.filter(nft => 
@@ -43,7 +60,7 @@ export const useNFTFiltering = (
       );
     }
 
-    // 2. Show only NFTs without images
+    // 3. Show only NFTs without images
     if (filters.showOnlyWithoutImages) {
       result = result.filter(nft => 
         !nft.image_url || 
@@ -52,7 +69,7 @@ export const useNFTFiltering = (
       );
     }
 
-    // 3. Show only single NFTs (collections with only 1 NFT)
+    // 4. Show only single NFTs (collections with only 1 NFT)
     if (filters.showOnlySingleNFTs) {
       // Count NFTs per collection
       const collectionCounts = result.reduce((acc, nft) => {
@@ -68,7 +85,7 @@ export const useNFTFiltering = (
       });
     }
 
-    // 4. Sort by collection
+    // 5. Sort by collection
     if (filters.sortByCollection) {
       result.sort((a, b) => {
         const collectionA = (a.collection_name || '').toLowerCase();
@@ -84,7 +101,7 @@ export const useNFTFiltering = (
     }
 
     return result;
-  }, [nfts, debouncedSearchTerm, filters.showOnlyWithoutImages, filters.sortByCollection, filters.showOnlySingleNFTs]);
+  }, [nfts, debouncedSearchTerm, filters.showOnlyWithoutImages, filters.sortByCollection, filters.showOnlySingleNFTs, filters.showERC721, filters.showERC1155]);
 
   // Update individual filter options
   const updateFilter = useCallback((key: keyof NFTFilterOptions, value: boolean | string) => {
@@ -101,6 +118,8 @@ export const useNFTFiltering = (
       showOnlyWithoutImages: false,
       sortByCollection: false,
       showOnlySingleNFTs: false,
+      showERC721: true,
+      showERC1155: true,
     });
     setDebouncedSearchTerm(''); // Also reset debounced term
   }, []);

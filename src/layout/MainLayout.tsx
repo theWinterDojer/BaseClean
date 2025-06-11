@@ -131,6 +131,9 @@ export default function MainLayout({ children, stickyHeaderContent }: MainLayout
                     <Link href="/terms-of-service" className="text-xs text-gray-400 hover:text-green-400 transition-colors">
                       Terms of Service
                     </Link>
+                    <Link href="/privacy-policy" className="text-xs text-gray-400 hover:text-green-400 transition-colors">
+                      Privacy Policy
+                    </Link>
                   </div>
                 </div>
               </div>

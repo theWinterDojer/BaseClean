@@ -6,8 +6,7 @@ import { NFT_IMAGE_SOURCES, NFT_PAGINATION } from '@/constants/nfts';
 const NFT_IMAGE_CACHE: Record<string, string> = {};
 const NFT_METADATA_CACHE: Record<string, AlchemyNFTMetadata> = {};
 
-// Cache duration for NFT data (10 minutes)
-const NFT_CACHE_DURATION = 10 * 60 * 1000;
+
 
 // Type definitions for Alchemy NFT API responses
 interface AlchemyNFTMetadata {
@@ -104,18 +103,7 @@ const getCachedNFTImage = (key: string): string | null => {
   return null;
 };
 
-const saveMetadataToNFTCache = (key: string, metadata: AlchemyNFTMetadata): void => {
-  NFT_METADATA_CACHE[key] = metadata;
-  
-  // Save to localStorage for persistence
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.setItem(`nft_metadata_${key}`, JSON.stringify(metadata));
-    } catch (error) {
-      console.debug('Failed to save NFT metadata to localStorage:', error);
-    }
-  }
-};
+
 
 /**
  * Get NFT image URL with fallback sources and caching

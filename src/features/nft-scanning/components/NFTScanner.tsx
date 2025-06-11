@@ -12,7 +12,11 @@ import NFTBurnConfirmationModal from './NFTBurnConfirmationModal';
 import GridSizeControl, { type GridSize } from '@/shared/components/GridSizeControl';
 import FloatingActionBar from '@/shared/components/FloatingActionBar';
 
-export default function NFTScanner() {
+interface NFTScannerProps {
+  showDisclaimer: boolean;
+}
+
+export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
   const { address } = useAccount();
   const { selectedNFTs, toggleNFT, selectedNFTsCount, clearAllSelectedItems } = useSelectedItems();
   const [allNFTs, setAllNFTs] = useState<NFT[]>([]);
@@ -126,7 +130,7 @@ export default function NFTScanner() {
   }, []);
 
   return (
-    <NFTDataManager onNFTsLoaded={handleNFTsLoaded}>
+    <NFTDataManager onNFTsLoaded={handleNFTsLoaded} showDisclaimer={showDisclaimer}>
       {({ loading, error, isConnected, refreshNFTs }) => (
         <>
           {/* Add bottom padding when NFTs are selected to prevent overlap with floating bar */}

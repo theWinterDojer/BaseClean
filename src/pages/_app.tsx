@@ -36,7 +36,7 @@ function AppContent(props: AppProps) {
   return (
     <>
       <DisclaimerModal isOpen={shouldShowDisclaimer} onAgree={handleAgree} />
-      <Component {...pageProps} />
+      <Component {...pageProps} showDisclaimer={showDisclaimer} />
     </>
   );
 }

@@ -36,14 +36,7 @@ export const RPC_URLS = {
 export const API_CONFIG = {
   // Alchemy API (primary provider)
   ALCHEMY_API_KEY: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || '',
-  
-  // Legacy compatibility (remove these after migration)
-  BLOCKCHAIN_API_KEY: '', // Deprecated - use ALCHEMY_API_KEY
-  COVALENT_API_KEY: '', // Deprecated - being removed
 } as const;
-
-// Legacy exports for backward compatibility
-export const COVALENT_API_KEY = API_CONFIG.COVALENT_API_KEY;
 
 export const WALLET_CONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '';
 

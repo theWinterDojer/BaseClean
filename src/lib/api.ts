@@ -31,9 +31,7 @@ interface AlchemyResponse {
   };
 }
 
-interface AlchemyMetadataResponse {
-  result?: TokenMetadata[];
-}
+
 
 // Load cache from localStorage if available (client-side only)
 if (typeof window !== 'undefined') {
@@ -235,7 +233,7 @@ const TOKEN_COLOR_PALETTES = {
 /**
  * Detect token category based on symbol and address for appropriate styling
  */
-function detectTokenCategory(symbol: string, address: string): keyof typeof TOKEN_COLOR_PALETTES {
+function detectTokenCategory(symbol: string, address: string): keyof typeof TOKEN_COLOR_PALETTES { // address used for deterministic pattern generation
   const symbolLower = symbol.toLowerCase();
   
   // Spam indicators
@@ -415,17 +413,7 @@ const IMAGE_SOURCE_STATS = {
 /**
  * Log which image source was successful (for analysis and simplification)
  */
-function logImageSourceSuccess(sourceIndex: number, url: string): void {
-  const sourceNames = [
-    'zapper', 'defillama_tokens', 'defillama_base', 'web3icons', 
-    'basescan', 'coingecko', 'oneinch', 'moralis', 'trustwallet'
-  ];
-  
-  const sourceName = sourceNames[sourceIndex] || 'unknown';
-  IMAGE_SOURCE_STATS[sourceName as keyof typeof IMAGE_SOURCE_STATS]++;
-  
-  console.log(`🎯 Image source success: ${sourceName} (${url.substring(0, 50)}...)`);
-}
+
 
 /**
  * Export current image source statistics for analysis
@@ -582,9 +570,14 @@ export function clearOutdatedFallbacks(): void {
  * 
  * @param address - The wallet address to fetch balances for
  * @param chainId - The chain ID (8453 for Base Mainnet)
+ * @param onProgress - Optional callback to report discovery progress
  * @returns Promise<Token[]> - Array of tokens or empty array on error
  */
-export const fetchTokenBalances = async (address: string, chainId?: number): Promise<Token[]> => {
+export const fetchTokenBalances = async (
+  address: string, 
+  chainId?: number,
+  onProgress?: (discovered: number, phase: string) => void
+): Promise<Token[]> => {
   if (!address) {
     console.error('No address provided to fetchTokenBalances');
     return [];
@@ -599,7 +592,7 @@ export const fetchTokenBalances = async (address: string, chainId?: number): Pro
       
       // Fetch ERC-20 tokens and native ETH balance in parallel
       const [alchemyTokens, ethBalance] = await Promise.all([
-        fetchTokensFromAlchemy(address),
+        fetchTokensFromAlchemy(address, onProgress),
         fetchNativeETHBalance(address)
       ]);
       
@@ -609,10 +602,16 @@ export const fetchTokenBalances = async (address: string, chainId?: number): Pro
       if (ethBalance && parseFloat(ethBalance.balance) > 0) {
         allTokens.unshift(ethBalance); // Add ETH at the beginning
         console.log(`Added native ETH balance: ${formatBalance(ethBalance.balance, ethBalance.contract_decimals)} ETH`);
+        
+        // Report progress including ETH
+        onProgress?.(allTokens.length, 'ETH balance added');
       }
       
       if (allTokens.length > 0) {
         console.log(`Successfully discovered ${allTokens.length} tokens with balances (including ETH)`);
+        
+        // Report sorting phase
+        onProgress?.(allTokens.length, 'Sorting by value');
         
         // Sort tokens by USD value (descending)
         allTokens.sort((a, b) => {
@@ -636,6 +635,7 @@ export const fetchTokenBalances = async (address: string, chainId?: number): Pro
         }));
         console.log('Top 5 tokens by value:', sampleTokens);
         
+        onProgress?.(allTokens.length, 'Complete');
         return allTokens;
       }
       console.log('No tokens found in wallet');
@@ -653,7 +653,7 @@ export const fetchTokenBalances = async (address: string, chainId?: number): Pro
 /**
  * PERFORMANCE OPTIMIZED: Fetch tokens using Alchemy Token API with batched processing
  */
-async function fetchTokensFromAlchemy(address: string): Promise<Token[]> {
+async function fetchTokensFromAlchemy(address: string, onProgress?: (discovered: number, phase: string) => void): Promise<Token[]> {
   const ALCHEMY_API_KEY = API_CONFIG.ALCHEMY_API_KEY;
   if (!ALCHEMY_API_KEY) return [];
 
@@ -665,6 +665,13 @@ async function fetchTokensFromAlchemy(address: string): Promise<Token[]> {
     // Step 1: Collect all token balances with pagination
     do {
       console.log(`Fetching page ${page} of tokens from Alchemy...`);
+      
+      // User-friendly progress messages instead of technical "scanning page X"
+      if (page === 1) {
+        onProgress?.(allTokenBalances.length, 'Connecting to Base network');
+      } else {
+        onProgress?.(allTokenBalances.length, 'Discovering more tokens');
+      }
       
       const requestBody = {
         id: 1,
@@ -712,6 +719,12 @@ async function fetchTokensFromAlchemy(address: string): Promise<Token[]> {
       console.log(`Page ${page}: After filtering zero balances: ${nonZeroTokens.length} tokens`);
       
       allTokenBalances.push(...nonZeroTokens);
+      
+      // Report progress with accumulating token count - user-friendly messages
+      if (allTokenBalances.length > 0) {
+        onProgress?.(allTokenBalances.length, `Discovered ${allTokenBalances.length} tokens`);
+      }
+      
       page++;
       
       // Safety break to prevent infinite loops
@@ -743,6 +756,7 @@ async function fetchTokensFromAlchemy(address: string): Promise<Token[]> {
     const contractAddresses = allTokenBalances.map(token => token.contractAddress);
     
     console.log('Starting batch processing for metadata, prices, and logos...');
+    onProgress?.(allTokenBalances.length, 'Fetching metadata');
     
     // Fetch metadata and prices in parallel batches
     const [metadataMap, pricesMap] = await Promise.all([
@@ -751,6 +765,7 @@ async function fetchTokensFromAlchemy(address: string): Promise<Token[]> {
     ]);
 
     console.log('Batch processing complete, processing individual tokens...');
+    onProgress?.(allTokenBalances.length, 'Processing tokens');
 
     // Step 3: Process tokens with batched data
     const processedTokens = await Promise.all(
@@ -783,6 +798,7 @@ async function fetchTokensFromAlchemy(address: string): Promise<Token[]> {
     );
 
     console.log(`Successfully processed ${processedTokens.length} tokens with optimized batching`);
+    onProgress?.(processedTokens.length, 'Loading complete');
     return processedTokens;
     
   } catch (error) {
@@ -800,7 +816,6 @@ async function fetchTokensMetadataBatch(contractAddresses: string[]): Promise<Re
   if (!ALCHEMY_API_KEY || contractAddresses.length === 0) return {};
 
   const results: Record<string, TokenMetadata> = {};
-  const BATCH_SIZE = 20; // Alchemy supports up to 20 tokens per batch
   
   // Check cache first
   const uncachedAddresses: string[] = [];

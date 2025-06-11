@@ -15,7 +15,11 @@ import TokenDataManager from './TokenDataManager';
 import TokenSelectionManager from './TokenSelectionManager';
 import FloatingActionBar from '@/shared/components/FloatingActionBar';
 
-export default function TokenScanner() {
+interface TokenScannerProps {
+  showDisclaimer: boolean;
+}
+
+export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
     const { address } = useAccount();
     const [rawTokens, setRawTokens] = useState<Token[]>([]);
     const [maxValue, setMaxValue] = useState<number | null>(10);
@@ -106,7 +110,14 @@ export default function TokenScanner() {
 
     return (
         <>
-            <TokenDataManager onTokensLoaded={handleTokensLoaded}>
+            {/* Burn Transaction Status - moved outside TokenDataManager to prevent unmounting during token refresh */}
+            <BurnTransactionStatus
+                burnStatus={burnStatus}
+                onClose={resetBurnStatus}
+                isWaitingForConfirmation={isWaitingForConfirmation}
+            />
+
+            <TokenDataManager onTokensLoaded={handleTokensLoaded} showDisclaimer={showDisclaimer}>
                 {({ loading, isConnected, isClient, updateTokens }) => (
                     isClient && isConnected && !loading && (
                         <div className="space-y-5 pb-24">
@@ -116,13 +127,6 @@ export default function TokenScanner() {
                                     🔍 Checking tokens against ScamSniffer database...
                                 </div>
                             )}
-
-                            {/* Burn Transaction Status */}
-                            <BurnTransactionStatus
-                                burnStatus={burnStatus}
-                                onClose={resetBurnStatus}
-                                isWaitingForConfirmation={isWaitingForConfirmation}
-                            />
 
                             {/* Filter Panel (includes Value Threshold and Spam Detection) */}
                             <FilterPanel 

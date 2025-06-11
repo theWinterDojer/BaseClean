@@ -197,15 +197,16 @@ export function useBurnFlow() {
       } else if (userRejections.length === tokens.length) {
         completionMessage = '⏭️ All transactions were cancelled. You can try again anytime.';
       } else if (userRejections.length > 0) {
-        completionMessage = `⚠️ ${userRejections.length} transaction${userRejections.length > 1 ? 's' : ''} cancelled, ${actualFailures.length} failed. Please try again.`;
+        completionMessage = `⚠️ ${userRejections.length} transaction${userRejections.length > 1 ? 's' : ''} cancelled, ${actualFailures.length} failed due to token contract restrictions.`;
       } else {
-        completionMessage = `❌ Failed to burn tokens. Please try again.`;
+        completionMessage = `❌ Unable to burn tokens. These tokens likely have transfer restrictions that prevent burning.`;
       }
       
       setBurnStatus(prev => ({
         ...prev,
         inProgress: false,
-        success: successfulBurns.length > 0,
+        success: true,  // Always show detailed summary modal
+        error: null,    // Never use simple error modal for individual burn failures
         tokensBurned: successfulBurns.length,
         tokensFailed: actualFailures.length,
         tokensRejectedByUser: userRejections.length,

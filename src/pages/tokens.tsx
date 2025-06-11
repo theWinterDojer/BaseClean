@@ -2,7 +2,11 @@ import Head from 'next/head';
 import MainLayout from '@/layout/MainLayout';
 import TokenScanner from '@/features/token-scanning/components/TokenScanner';
 
-export default function TokensPage() {
+interface TokensPageProps {
+  showDisclaimer: boolean;
+}
+
+export default function TokensPage({ showDisclaimer }: TokensPageProps) {
   return (
     <>
       <Head>
@@ -12,7 +16,7 @@ export default function TokensPage() {
       
       <MainLayout>
         <div className="max-w-7xl mx-auto">
-          <TokenScanner />
+          <TokenScanner showDisclaimer={showDisclaimer} />
         </div>
       </MainLayout>
     </>

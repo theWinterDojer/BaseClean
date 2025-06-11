@@ -22,6 +22,18 @@ interface NFTStatisticsProps {
   className?: string;
 }
 
+// Helper function to get block explorer URL for contract addresses
+const getBlockExplorerUrl = (chainId: number, contractAddress: string): string => {
+  switch (chainId) {
+    case 8453: // Base
+      return `https://basescan.org/address/${contractAddress}`;
+    case 7777777: // Zora
+      return `https://explorer.zora.energy/address/${contractAddress}`;
+    default: // Default to Base
+      return `https://basescan.org/address/${contractAddress}`;
+  }
+};
+
 /**
  * Component for displaying NFT collection statistics
  * Shows total counts, collection breakdown, and selected counts
@@ -176,6 +188,33 @@ export default function NFTStatistics({
 
           {/* Filter Toggles */}
           <div className="space-y-3">
+            {/* Token Standard Filters */}
+            <div className="mb-4">
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Token Standard
+              </div>
+              <div className="flex space-x-4">
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.showERC721}
+                    onChange={(e) => onFilterChange('showERC721', e.target.checked)}
+                    className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2"
+                  />
+                  <span className="text-sm text-gray-900 dark:text-gray-100">ERC-721</span>
+                </label>
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.showERC1155}
+                    onChange={(e) => onFilterChange('showERC1155', e.target.checked)}
+                    className="w-4 h-4 text-orange-600 bg-gray-100 border-gray-300 rounded focus:ring-orange-500 dark:focus:ring-orange-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 mr-2"
+                  />
+                  <span className="text-sm text-gray-900 dark:text-gray-100">ERC-1155</span>
+                </label>
+              </div>
+            </div>
+
             <label className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600/50 transition-colors">
               <div className="flex items-center">
                 <input
@@ -276,31 +315,44 @@ export default function NFTStatistics({
             Top Collections
           </h4>
           <div className="space-y-2">
-            {topCollections.map((collection, index) => (
-              <div
-                key={collection.address}
-                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
-              >
-                <div className="flex items-center min-w-0 flex-1 mr-3">
-                  <div className={`w-2 h-2 rounded-full mr-2 flex-shrink-0 ${
-                    index === 0 ? 'bg-blue-500' :
-                    index === 1 ? 'bg-purple-500' :
-                    'bg-gray-400'
-                  }`} />
-                  <div className="min-w-0 flex-1 overflow-hidden">
-                    <div className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">
-                      {collection.name}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 font-mono truncate max-w-[140px]">
-                      {collection.address.substring(0, 8)}...{collection.address.slice(-4)}
+            {topCollections.map((collection, index) => {
+              // Get the chain ID from the first NFT in this collection for the block explorer link
+              const firstNFT = collection.nfts[0];
+              const chainId = (firstNFT?.metadata?.chainId as number) || 8453;
+              const chainName = (firstNFT?.metadata?.chainName as string) || 'Base';
+              
+              return (
+                <div
+                  key={collection.address}
+                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
+                >
+                  <div className="flex items-center min-w-0 flex-1 mr-3">
+                    <div className={`w-2 h-2 rounded-full mr-2 flex-shrink-0 ${
+                      index === 0 ? 'bg-blue-500' :
+                      index === 1 ? 'bg-purple-500' :
+                      'bg-gray-400'
+                    }`} />
+                    <div className="min-w-0 flex-1 overflow-hidden">
+                      <div className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">
+                        {collection.name}
+                      </div>
+                      <a
+                        href={getBlockExplorerUrl(chainId, collection.address)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-mono truncate block transition-colors underline"
+                        title={`View contract on ${chainName === 'Base' ? 'BaseScan' : 'Zora Explorer'}`}
+                      >
+                        {collection.address.substring(0, 12)}...{collection.address.slice(-8)}
+                      </a>
                     </div>
                   </div>
+                  <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex-shrink-0 whitespace-nowrap">
+                    {collection.count}
+                  </div>
                 </div>
-                <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex-shrink-0 whitespace-nowrap">
-                  {collection.count}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

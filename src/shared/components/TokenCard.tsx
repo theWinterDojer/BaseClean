@@ -4,6 +4,7 @@ import { Token } from '@/types/token';
 import { formatBalance } from '@/lib/api';
 import { getTokenLogoUrl } from '@/lib/api';
 import { SimpleScamSnifferIndicator } from '@/components/ScamSnifferIndicator';
+import { openDexScreener } from '@/utils/dexscreener';
 
 interface TokenCardProps {
   token: Token;
@@ -197,16 +198,22 @@ const TokenCard = memo(function TokenCard({
     }
   };
 
+  const handleDexScreenerClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation(); // Prevent token selection
+    openDexScreener(token.contract_address, token.contract_ticker_symbol);
+  };
+
   return (
     <div 
-      className={`p-4 rounded-lg cursor-pointer transition-all duration-200 group mb-1 ${
+      className={`p-4 rounded-lg cursor-pointer transition-all duration-200 group mb-1 border ${
         isSelected 
           ? isSpam 
-            ? 'bg-red-100 dark:bg-red-900/30 border-2 border-red-300 dark:border-red-700'
-            : 'bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-300 dark:border-blue-700' 
+            ? 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700'
+            : 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700' 
           : hover 
-            ? 'bg-gray-100 dark:bg-gray-800/70' 
-            : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
+            ? 'bg-gray-100 dark:bg-gray-800/70 border-gray-300 dark:border-gray-600' 
+            : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
       }`}
       onClick={handleCardClick}
       onMouseEnter={() => setHover(true)}
@@ -232,8 +239,24 @@ const TokenCard = memo(function TokenCard({
                 <SimpleScamSnifferIndicator isFlagged={token.scamSnifferFlagged ?? false} />
               </div>
             </div>
-            <div className={`text-sm font-medium flex-shrink-0 ${numericValue > 0.01 ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
-              ${numericValue > 0 ? numericValue.toFixed(2) : '0.00'}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={handleDexScreenerClick}
+                className="w-5 h-5 opacity-60 hover:opacity-100 transition-opacity focus:opacity-100 focus:outline-none"
+                title={`View ${token.contract_ticker_symbol || 'token'} on DexScreener`}
+                aria-label={`View ${token.contract_ticker_symbol || 'token'} on DexScreener`}
+              >
+                <Image 
+                  src="/dexscreener.png" 
+                  alt="DexScreener" 
+                  width={20} 
+                  height={20}
+                  className="rounded-sm"
+                />
+              </button>
+              <div className={`text-sm font-medium ${numericValue > 0.01 ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                ${numericValue > 0 ? numericValue.toFixed(2) : '0.00'}
+              </div>
             </div>
           </div>
           <div className="flex justify-between items-end">

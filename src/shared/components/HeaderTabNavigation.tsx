@@ -29,27 +29,36 @@ export default function HeaderTabNavigation() {
   ];
 
   return (
-    <div className="flex items-end pb-1">
+    <div className="flex items-end pb-2 pt-4">
       {tabs.map((tab, index) => (
         <Link
           key={tab.id}
           href={tab.href}
           className={`
-            relative flex items-center gap-2.5 px-5 py-3
-            text-base font-semibold transition-all duration-300
-            border-b-2 tracking-wide cursor-pointer
+            relative flex items-center gap-3 px-6 py-3.5
+            text-xl font-bold transition-all duration-300 ease-out
+            tracking-wider cursor-pointer group
             ${tab.isActive
-              ? 'text-white border-[#0052FF]'
-              : 'text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-600'
+              ? 'text-white shadow-sm transform scale-105'
+              : 'text-gray-400 hover:text-gray-100 hover:scale-102'
             }
-            ${index > 0 ? 'ml-8' : ''}
+            ${index > 0 ? 'ml-6' : ''}
           `}
         >
-          <span className="relative">
+          <span className="relative font-extrabold">
             {tab.label}
-            {/* Subtle glow effect for active tab */}
+            {/* Enhanced glow effect for active tab */}
             {tab.isActive && (
-              <div className="absolute inset-0 text-[#0052FF] blur-sm opacity-30">
+              <>
+                <div className="absolute inset-0 text-[#0052FF] blur-sm opacity-40">
+                  {tab.label}
+                </div>
+                <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-full h-1 bg-gradient-to-r from-[#0052FF] to-blue-400 rounded opacity-90 shadow-lg"></div>
+              </>
+            )}
+            {/* Subtle hover glow effect for inactive tabs */}
+            {!tab.isActive && (
+              <div className="absolute inset-0 text-gray-200 blur-sm opacity-0 group-hover:opacity-20 transition-opacity duration-300">
                 {tab.label}
               </div>
             )}
@@ -58,11 +67,11 @@ export default function HeaderTabNavigation() {
           {tab.count > 0 && (
             <span
               className={`
-                inline-flex items-center justify-center min-w-[20px] h-[20px] px-2 
-                rounded-full text-xs font-bold leading-none
+                inline-flex items-center justify-center min-w-[22px] h-[22px] px-2.5 
+                rounded-full text-xs font-extrabold leading-none transition-all duration-300
                 ${tab.isActive
-                  ? 'bg-[#0052FF] text-white'
-                  : 'bg-gray-700 text-gray-300'
+                  ? 'bg-[#0052FF] text-white shadow-lg scale-110 ring-2 ring-[#0052FF]/30'
+                  : 'bg-gray-700 text-gray-300 group-hover:bg-gray-600 group-hover:text-white group-hover:scale-105'
                 }
               `}
               suppressHydrationWarning

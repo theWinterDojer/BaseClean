@@ -25,6 +25,15 @@ export default function TermsOfService() {
               Last Updated: {new Date().toLocaleDateString()}
             </p>
 
+            <div className="mt-8 mb-12 p-6 bg-yellow-900/30 border border-yellow-700 rounded-lg">
+              <h3 className="text-xl font-bold mb-4 text-yellow-300">⚠️ Quick Summary (Non-Legal Summary)</h3>
+              <p className="font-medium">
+                Using BaseClean is entirely at your own risk. Burning tokens is permanent and cannot be undone. 
+                You are solely responsible for any losses. BaseClean provides no guarantees and is not liable 
+                for any issues that may arise. Please read the full terms below carefully.
+              </p>
+            </div>
+
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
               <p className="mb-4">
@@ -124,7 +133,7 @@ export default function TermsOfService() {
               <h2 className="text-2xl font-semibold mb-4">7. Intellectual Property</h2>
               <p className="mb-4">
                 BaseClean and its content are protected by intellectual property laws. You may not reproduce, 
-                distribute, or create derivative works without express permission.
+                distribute, or create derivative works without express written permission.
               </p>
             </section>
 
@@ -132,15 +141,21 @@ export default function TermsOfService() {
               <h2 className="text-2xl font-semibold mb-4">8. Termination</h2>
               <p className="mb-4">
                 We reserve the right to terminate or suspend access to the Service immediately, without prior notice, 
-                for any reason, including breach of these Terms.
+                for any reason, including but not limited to:
               </p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Violation of these Terms</li>
+                <li>Suspicion of abuse, exploitation, or malicious activity</li>
+                <li>Legal or regulatory obligations</li>
+              </ul>
             </section>
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">9. Governing Law and Jurisdiction</h2>
               <p className="mb-4">
-                These Terms shall be governed by and construed in accordance with the laws of [Your Jurisdiction], 
-                without regard to conflict of law principles. Any disputes shall be resolved in the courts of [Your Jurisdiction].
+                These Terms shall be governed by and construed in accordance with the laws of the State of Florida, 
+                United States, without regard to conflict of law principles. Any disputes shall be resolved exclusively 
+                in the state or federal courts located in Florida.
               </p>
             </section>
 
@@ -161,9 +176,21 @@ export default function TermsOfService() {
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4">12. Contact Information</h2>
+              <h2 className="text-2xl font-semibold mb-4">12. Related Policies</h2>
               <p className="mb-4">
-                For questions about these Terms, please contact us at [Your Contact Information].
+                These Terms of Service should be read in conjunction with our{' '}
+                <Link href="/privacy-policy" className="text-blue-400 hover:text-blue-300 underline">
+                  Privacy Policy
+                </Link>
+                , which explains how we collect, use, and protect your data.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold mb-4">13. Contact Information</h2>
+              {/* TODO: Replace placeholder with actual contact email or form link before public launch */}
+              <p className="mb-4">
+                For questions about these Terms, please contact us at [Insert Contact Email or Form Link].
               </p>
             </section>
 

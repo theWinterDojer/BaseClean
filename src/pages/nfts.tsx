@@ -2,7 +2,11 @@ import Head from 'next/head';
 import MainLayout from '@/layout/MainLayout';
 import NFTScanner from '@/features/nft-scanning/components/NFTScanner';
 
-export default function NFTsPage() {
+interface NFTsPageProps {
+  showDisclaimer: boolean;
+}
+
+export default function NFTsPage({ showDisclaimer }: NFTsPageProps) {
   return (
     <>
       <Head>
@@ -12,7 +16,7 @@ export default function NFTsPage() {
       
       <MainLayout>
         <div className="max-w-7xl mx-auto">
-          <NFTScanner />
+          <NFTScanner showDisclaimer={showDisclaimer} />
         </div>
       </MainLayout>
     </>
