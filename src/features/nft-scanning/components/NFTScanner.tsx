@@ -182,6 +182,7 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
                 spamNFTs={[]}
                 gridSize={gridSize}
                 totalNFTs={allNFTs.length}
+                isFiltered={filterStats.isFiltered}
               />
             </div>
 

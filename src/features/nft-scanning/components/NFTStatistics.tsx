@@ -258,21 +258,7 @@ export default function NFTStatistics({
             </label>
           </div>
 
-          {/* Filter Results Display */}
-          {filterStats?.isFiltered && (
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <div className="text-sm text-blue-800 dark:text-blue-200">
-                <div className="font-medium">
-                  Showing {filterStats.filteredCount} of {filterStats.totalNFTs} NFTs
-                </div>
-                {filterStats.hiddenCount > 0 && (
-                  <div className="text-xs text-blue-600 dark:text-blue-300 mt-1">
-                    {filterStats.hiddenCount} NFT{filterStats.hiddenCount !== 1 ? 's' : ''} hidden by filters
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+
         </div>
       )}
 
