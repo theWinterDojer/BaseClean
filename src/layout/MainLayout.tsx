@@ -5,6 +5,7 @@ import HeaderTabNavigation from '@/shared/components/HeaderTabNavigation';
 import TabNavigation from '@/shared/components/TabNavigation';
 import WalletConnectButton from '@/shared/components/WalletConnectButton';
 import { SelectedItemsProvider } from '@/contexts/SelectedItemsContext';
+import { ScamSnifferStatusIndicator } from '@/components/ScamSnifferStatusIndicator';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -65,6 +66,73 @@ export default function MainLayout({ children, stickyHeaderContent }: MainLayout
         <main className="container mx-auto px-4 py-8">
           {children}
         </main>
+        
+        {/* Footer */}
+        <footer className="bg-gray-900/80 backdrop-blur-sm border-t border-gray-700 py-8">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+              {/* Left side - Logo and Copyright */}
+              <div className="flex items-center gap-3">
+                <div className="overflow-hidden rounded-full">
+                  <Image 
+                    src="/BaseCleanlogo.png" 
+                    alt="BaseClean Logo" 
+                    width={64}
+                    height={64}
+                    className="w-16 h-16"
+                  />
+                </div>
+                <span className="text-sm text-gray-400">© 2025 BaseClean</span>
+              </div>
+              
+              {/* Center - ScamSniffer Section */}
+              <div className="flex flex-col items-center gap-1">
+                <div className="text-sm text-gray-400">
+                  Enhanced by <Link href="https://x.com/realScamSniffer" className="text-gray-300 hover:text-white transition-colors">Scam Sniffer</Link> community intelligence 👃
+                </div>
+                <div className="text-sm text-gray-400">
+                  <ScamSnifferStatusIndicator />
+                </div>
+              </div>
+              
+              {/* Right side - Organized Link Sections */}
+              <div className="flex flex-col md:flex-row gap-8 md:gap-12">
+                {/* Resources Section */}
+                <div className="flex flex-col gap-2">
+                  <h4 className="text-sm font-medium text-white mb-1">Resources</h4>
+                  <Link href="https://docs.base.org" className="text-xs text-gray-400 hover:text-white transition-colors">
+                    Base Docs
+                  </Link>
+                  <Link href="https://bridge.base.org" className="text-xs text-gray-400 hover:text-white transition-colors">
+                    Base Bridge
+                  </Link>
+                </div>
+                
+                {/* Community Section */}
+                <div className="flex flex-col gap-2">
+                  <h4 className="text-sm font-medium text-white mb-1">Community</h4>
+                  <Link href="https://x.com/Base_Clean" className="text-xs text-gray-400 hover:text-white transition-colors">
+                    Twitter
+                  </Link>
+                  <Link href="https://github.com/theWinterDojer/BaseClean" className="text-xs text-gray-400 hover:text-white transition-colors">
+                    GitHub
+                  </Link>
+                </div>
+                
+                {/* About Section */}
+                <div className="flex flex-col gap-2">
+                  <h4 className="text-sm font-medium text-white mb-1">About</h4>
+                  <Link href="/terms-of-service" className="text-xs text-gray-400 hover:text-white transition-colors">
+                    Terms of Service
+                  </Link>
+                  <Link href="/privacy-policy" className="text-xs text-gray-400 hover:text-white transition-colors">
+                    Privacy Policy
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
     </SelectedItemsProvider>
   );

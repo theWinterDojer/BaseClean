@@ -140,7 +140,7 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
               {/* Header Controls */}
               {allNFTs.length > 0 && (
                 <div className="mb-4 flex justify-between items-center">
-                  {/* Left side - Refresh Button */}
+                  {/* Left side - Refresh Button - Always show when NFTs exist */}
                   <button
                     onClick={() => handleRefreshMetadata(refreshNFTs)}
                     disabled={loading}
@@ -163,20 +163,24 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
                     {loading ? 'Refreshing...' : 'Refresh Metadata'}
                   </button>
 
-                  {/* Center - NFT Count */}
-                  <div className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                    {filterStats.isFiltered ? (
-                      <>Showing {filteredNFTs.length} of {allNFTs.length} NFTs</>
-                    ) : (
-                      <>Showing all {allNFTs.length} NFT{allNFTs.length === 1 ? '' : 's'}</>
-                    )}
-                  </div>
+                  {/* Center - NFT Count - Only show when not loading */}
+                  {!loading && (
+                    <div className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      {filterStats.isFiltered ? (
+                        <>Showing {filteredNFTs.length} of {allNFTs.length} NFTs</>
+                      ) : (
+                        <>Showing all {allNFTs.length} NFT{allNFTs.length === 1 ? '' : 's'}</>
+                      )}
+                    </div>
+                  )}
 
-                  {/* Right side - Grid Size Control */}
-                  <GridSizeControl 
-                    currentSize={gridSize}
-                    onSizeChange={setGridSize}
-                  />
+                  {/* Right side - Grid Size Control - Only show when not loading */}
+                  {!loading && (
+                    <GridSizeControl 
+                      currentSize={gridSize}
+                      onSizeChange={setGridSize}
+                    />
+                  )}
                 </div>
               )}
               
