@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { NFT } from '@/types/nft';
 import { useSelectedItems } from '@/contexts/SelectedItemsContext';
@@ -17,7 +17,7 @@ interface NFTScannerProps {
 }
 
 export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
   const { selectedNFTs, toggleNFT, selectedNFTsCount, clearAllSelectedItems } = useSelectedItems();
   const [allNFTs, setAllNFTs] = useState<NFT[]>([]);
   
@@ -36,6 +36,14 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
   
   const [showBurnConfirmation, setShowBurnConfirmation] = useState(false);
   const [nftsToBurn, setNftsToBurn] = useState<NFT[]>([]);
+
+  // Clear NFT data when wallet disconnects
+  useEffect(() => {
+    if (!isConnected) {
+      setAllNFTs([]);
+      clearAllSelectedItems();
+    }
+  }, [isConnected, clearAllSelectedItems]);
 
   // Handle NFT data loading
   const handleNFTsLoaded = useCallback((nfts: NFT[]) => {

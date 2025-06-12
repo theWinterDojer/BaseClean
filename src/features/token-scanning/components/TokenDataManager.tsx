@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAccount, useChainId } from 'wagmi';
 import { Token } from '@/types/token';
 import { fetchTokenBalances } from '@/lib/api';
-import { UI_TEXT } from '@/constants/tokens';
 
 interface TokenDataManagerProps {
   onTokensLoaded: (tokens: Token[]) => void;
@@ -321,10 +320,17 @@ export default function TokenDataManager({ onTokensLoaded, showDisclaimer, child
 
   return (
     <section className="mt-4 space-y-5" aria-labelledby="wallet-token-management">
-      {/* Not connected message - only show on client to avoid hydration mismatch */}
+      {/* Not connected message - centered on page */}
       {isClient && !isConnected && (
-        <div className="bg-blue-900/30 border border-blue-700 text-white p-5 rounded-lg flex items-center justify-center">
-          <span className="text-lg">{UI_TEXT.CONNECT_WALLET}</span>
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm">
+          <div className="bg-gray-800/90 border border-gray-700 text-white p-8 rounded-xl shadow-2xl text-center max-w-md mx-4">
+            <div className="mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </div>
+            <span className="text-xl font-medium">Connect your wallet to start using BaseClean</span>
+          </div>
         </div>
       )}
 

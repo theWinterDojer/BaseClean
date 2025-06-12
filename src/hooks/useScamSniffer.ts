@@ -42,6 +42,7 @@ export function useScamSniffer(tokens: Token[]) {
       
       // Log results for debugging
       const flaggedCount = enhanced.filter(t => t.scamSnifferFlagged).length;
+      console.log(`🛡️ ScamSniffer: Checked ${enhanced.length} tokens, ${flaggedCount} flagged as potentially malicious`);
       if (flaggedCount > 0) {
         console.debug(`ScamSniffer: ${flaggedCount} of ${enhanced.length} tokens flagged as potentially malicious`);
       }

@@ -158,7 +158,7 @@ export default function TokenList({
               {isSpam && selectedCount < filteredTokens.length && (
                 <button 
                   onClick={handleSelectAll}
-                  className="text-sm px-4 py-2 rounded-md bg-blue-700/70 hover:bg-blue-600 text-white transition-colors"
+                  className="text-sm px-4 py-2 rounded-md bg-blue-800/80 hover:bg-blue-700 text-white transition-colors"
                   aria-label={`Select all ${filteredTokens.length} tokens in this list`}
                 >
                   {searchQuery ? 'Select All Filtered' : 'Select All'}

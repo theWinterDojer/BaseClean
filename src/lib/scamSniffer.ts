@@ -46,7 +46,7 @@ async function fetchScamSnifferBlacklist(): Promise<Set<string>> {
 
     const cacheInfo = data.cached ? 'cached' : 'fresh';
     const staleInfo = data.stale ? ' (stale)' : '';
-    console.debug(`ScamSniffer: Loaded ${blacklistSet.size} blacklisted addresses from ${cacheInfo} data${staleInfo}`);
+    console.log(`🛡️ ScamSniffer: Loaded ${blacklistSet.size} blacklisted addresses from ${cacheInfo} data${staleInfo}`);
     
     return blacklistSet;
 

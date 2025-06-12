@@ -15,38 +15,40 @@ interface MainLayoutProps {
 export default function MainLayout({ children, stickyHeaderContent }: MainLayoutProps) {
   return (
     <SelectedItemsProvider>
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 text-white">
-        <header className="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700 py-4 sticky top-0 z-10">
-          <div className="container mx-auto px-4 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-4">
-              <div className="relative flex-shrink-0 overflow-hidden rounded-full">
-                <Image 
-                  src="/BaseCleanlogo.png" 
-                  alt="BaseClean Logo" 
-                  width={56}
-                  height={56}
-                  className="w-12 h-12 sm:w-14 sm:h-14"
-                />
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 text-white flex flex-col">
+        <header className="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700 py-6 sticky top-0 z-10">
+          <div className="container mx-auto px-4 relative">
+            <div className="flex items-center justify-between">
+              <Link href="/" className="flex items-center gap-4">
+                <div className="relative flex-shrink-0 overflow-hidden rounded-full">
+                  <Image 
+                    src="/BaseCleanlogo.png" 
+                    alt="BaseClean Logo" 
+                    width={56}
+                    height={56}
+                    className="w-12 h-12 sm:w-14 sm:h-14"
+                  />
+                </div>
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-extrabold text-white flex items-center tracking-tight leading-none">
+                    <span className="text-[#0052FF] drop-shadow-sm">Base</span>
+                    <span className="relative">
+                      <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Clean</span>
+                      <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-[#0052FF] to-transparent rounded"></span>
+                    </span>
+                  </h1>
+                  <p className="text-sm text-gray-400 mt-1.5">Clean your wallet. Strengthen your Base.</p>
+                </div>
+              </Link>
+              
+              <div className="flex items-center gap-4">
+                <WalletConnectButton />
               </div>
-              <div>
-                <h1 className="text-2xl md:text-3xl font-extrabold text-white flex items-center tracking-tight leading-none">
-                  <span className="text-[#0052FF] drop-shadow-sm">Base</span>
-                  <span className="relative">
-                    <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Clean</span>
-                    <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-[#0052FF] to-transparent rounded"></span>
-                  </span>
-                </h1>
-                <p className="text-sm text-gray-400 mt-1.5">Clean your wallet. Strengthen your Base.</p>
-              </div>
-            </Link>
-            
-            {/* Tab Navigation in Header - Centered */}
-            <div className="hidden md:flex flex-1 justify-center">
-              <HeaderTabNavigation />
             </div>
             
-            <div className="flex items-center gap-4">
-              <WalletConnectButton />
+            {/* Tab Navigation in Header - Absolutely Centered */}
+            <div className="hidden md:flex absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+              <HeaderTabNavigation />
             </div>
           </div>
           
@@ -63,12 +65,12 @@ export default function MainLayout({ children, stickyHeaderContent }: MainLayout
           )}
         </header>
         
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-4 flex-1">
           {children}
         </main>
         
         {/* Footer */}
-        <footer className="bg-gray-900/80 backdrop-blur-sm border-t border-gray-700 py-8">
+        <footer className="bg-gray-900/80 backdrop-blur-sm border-t border-gray-700 py-8 mt-auto">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row justify-between items-center gap-8">
               {/* Left side - Logo and Copyright */}

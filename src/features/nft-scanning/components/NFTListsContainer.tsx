@@ -1,7 +1,6 @@
 import React from 'react';
 import { NFT } from '@/types/nft';
 import NFTCard from '@/shared/components/NFTCard';
-import { NFT_UI_TEXT } from '@/constants/nfts';
 import { type GridSize } from '@/shared/components/GridSizeControl';
 
 interface NFTListsContainerProps {
@@ -61,9 +60,12 @@ export default function NFTListsContainer({
   // Loading state
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
-        <p className="text-gray-500 dark:text-gray-400 text-lg">{NFT_UI_TEXT.LOADING}</p>
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm">
+        <div className="bg-gray-800/90 border border-gray-700 text-white p-8 rounded-xl shadow-2xl text-center max-w-md mx-4">
+          <div className="w-16 h-16 border-4 border-gray-600 border-t-blue-500 rounded-full animate-spin mx-auto mb-6"></div>
+          <p className="text-xl font-medium mb-2">Loading your NFT collection...</p>
+          <p className="text-gray-300 text-sm">Discovering your NFT collection across Base and Zora networks</p>
+        </div>
       </div>
     );
   }
@@ -86,13 +88,15 @@ export default function NFTListsContainer({
   // Not connected state
   if (!isConnected) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-          <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm">
+        <div className="bg-gray-800/90 border border-gray-700 text-white p-8 rounded-xl shadow-2xl text-center max-w-md mx-4">
+          <div className="mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </div>
+          <span className="text-xl font-medium">Connect your wallet to start using BaseClean</span>
         </div>
-        <p className="text-gray-500 dark:text-gray-400 text-lg">{NFT_UI_TEXT.CONNECT_WALLET}</p>
       </div>
     );
   }
@@ -101,13 +105,16 @@ export default function NFTListsContainer({
   if (totalNFTs === 0) {
     // Actually no NFTs in wallet
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-          <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm">
+        <div className="bg-gray-800/90 border border-gray-700 text-white p-8 rounded-xl shadow-2xl text-center max-w-md mx-4">
+          <div className="mb-4">
+            <svg className="w-16 h-16 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <p className="text-xl font-medium mb-2">No NFTs found</p>
+          <p className="text-gray-300 text-sm">Your wallet doesn&apos;t contain any NFTs on Base or Zora networks</p>
         </div>
-        <p className="text-gray-500 dark:text-gray-400 text-lg">{NFT_UI_TEXT.NO_NFTS}</p>
       </div>
     );
   }
@@ -115,16 +122,18 @@ export default function NFTListsContainer({
   // All NFTs filtered out state
   if (nfts.length === 0 && totalNFTs > 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mb-4">
-          <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 2v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm">
+        <div className="bg-amber-900/90 border border-amber-700 text-white p-8 rounded-xl shadow-2xl text-center max-w-md mx-4">
+          <div className="mb-4">
+            <svg className="w-16 h-16 text-amber-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 2v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+          </div>
+          <p className="text-xl font-medium mb-2">No NFTs match your filters</p>
+          <p className="text-amber-200 text-sm">
+            You have {totalNFTs} NFT{totalNFTs === 1 ? '' : 's'} in your wallet, but none match your current network or other filter settings.
+          </p>
         </div>
-        <p className="text-gray-500 dark:text-gray-400 text-lg font-medium mb-2">No NFTs match your filters</p>
-        <p className="text-gray-400 dark:text-gray-500 text-sm">
-          You have {totalNFTs} NFT{totalNFTs === 1 ? '' : 's'} in your wallet, but none match your current network or other filter settings.
-        </p>
       </div>
     );
   }

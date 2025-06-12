@@ -12,7 +12,7 @@ import TokenListsContainer from './TokenListsContainer';
 import BurnTransactionStatus from './BurnTransactionStatus';
 import BurnConfirmationModal from './BurnConfirmationModal';
 import TokenDataManager from './TokenDataManager';
-import TokenSelectionManager from './TokenSelectionManager';
+
 import FloatingActionBar from '@/shared/components/FloatingActionBar';
 
 interface TokenScannerProps {
@@ -137,11 +137,7 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
                                 valueFilters={TOKEN_VALUE_THRESHOLDS}
                             />
                             
-                            {/* Token Selection Management (includes Bulk Actions only) */}
-                            <TokenSelectionManager
-                                spamTokens={spamTokens}
-                                selectedTokens={selectedTokens}
-                            />
+
 
                             {/* Token Statistics */}
                             <TokenStatisticsComponent statistics={statistics} />
