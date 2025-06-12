@@ -61,3 +61,6 @@ restart-dev.bat
 # OS generated files
 Thumbs.db
 .DS_Store
+
+# Project documentation (local only)
+PROJECT_STATUS_SUMMARY.md
