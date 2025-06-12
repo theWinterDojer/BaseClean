@@ -19,7 +19,7 @@ export default function TabNavigation({ className = '' }: TabNavigationProps) {
     {
       id: 'tokens',
       label: 'Tokens',
-      href: '/tokens',
+      href: '/',
       isActive: isTokensActive,
       count: selectedTokensCount,
     },

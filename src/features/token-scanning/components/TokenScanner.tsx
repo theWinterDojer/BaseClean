@@ -28,11 +28,11 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
     const { selectedTokens, selectedTokensCount, toggleToken, setSelectedTokens } = useSelectedTokens();
 
     // Default spam filters - enable all for best detection
+    // Phase 17.2: Simplified to 3 filters (removed high risk indicators)
     const [spamFilters, setSpamFilters] = useState<SpamFilters>({
         namingIssues: true,
         valueIssues: true,
-        airdropSignals: true,
-        highRiskIndicators: true
+        airdropSignals: true
     });
 
     // Enhance tokens with ScamSniffer data

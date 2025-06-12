@@ -1,6 +1,6 @@
 import { Token } from '@/types/token';
 import TokenCard from './TokenCard';
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 
 type TokenListProps = {
   tokens: Token[];
@@ -15,74 +15,127 @@ export default function TokenList({
   toggleToken,
   isSpam = false
 }: TokenListProps) {
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter tokens based on search query
+  const filteredTokens = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return tokens;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return tokens.filter(token => 
+      token.contract_name?.toLowerCase().includes(query) ||
+      token.contract_ticker_symbol?.toLowerCase().includes(query) ||
+      token.contract_address.toLowerCase().includes(query)
+    );
+  }, [tokens, searchQuery]);
+
   // Calculate how many tokens from this list are currently selected
   const selectedCount = useMemo(() => {
     return Array.from(selectedTokens).filter(
-      address => tokens.some(token => token.contract_address === address)
+      address => filteredTokens.some(token => token.contract_address === address)
     ).length;
-  }, [tokens, selectedTokens]);
+  }, [filteredTokens, selectedTokens]);
   
-  // Calculate total value of tokens in the list - fixed calculation
-  const totalValue = useMemo(() => {
-    return tokens.reduce((sum, token) => {
-      const balance = parseFloat(token.balance) / (10 ** token.contract_decimals);
-      const value = balance * (token.quote_rate || 0);
-      return sum + value;
-    }, 0);
-  }, [tokens]);
+
   
   // Handle bulk selection of all tokens in the current view
   const handleSelectAll = useCallback(() => {
-    tokens.forEach(token => {
+    filteredTokens.forEach(token => {
       if (!selectedTokens.has(token.contract_address)) {
         toggleToken(token.contract_address, tokens);
       }
     });
-  }, [tokens, toggleToken, selectedTokens]);
+  }, [filteredTokens, toggleToken, selectedTokens, tokens]);
   
   // Handle deselecting all tokens in the current view
   const handleDeselectAll = useCallback(() => {
-    tokens.forEach(token => {
+    filteredTokens.forEach(token => {
       if (selectedTokens.has(token.contract_address)) {
         toggleToken(token.contract_address, tokens);
       }
     });
-  }, [tokens, toggleToken, selectedTokens]);
+  }, [filteredTokens, toggleToken, selectedTokens, tokens]);
 
   // Create a wrapper function to pass tokens array
   const handleTokenToggle = useCallback((address: string) => {
     toggleToken(address, tokens);
   }, [toggleToken, tokens]);
+
+  // Clear search
+  const clearSearch = useCallback(() => {
+    setSearchQuery('');
+  }, []);
   
   return (
     <div className="p-5">
-      {tokens.length === 0 ? (
+      {/* Search Bar */}
+      <div className="mb-4">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={`Search ${isSpam ? 'spam ' : ''}tokens...`}
+            className="block w-full pl-10 pr-10 py-2 text-sm bg-gray-800/50 border border-gray-600 rounded-lg 
+                     text-white placeholder-gray-400 
+                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                     transition-colors duration-200"
+          />
+          {searchQuery && (
+            <button
+              onClick={clearSearch}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-200 transition-colors"
+              aria-label="Clear search"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+        
+        {/* Search Results Info */}
+        {searchQuery && (
+          <div className="text-xs text-gray-400">
+            {filteredTokens.length === 0 ? (
+              <>No tokens match &ldquo;{searchQuery}&rdquo;</>
+            ) : (
+              <>Showing {filteredTokens.length} of {tokens.length} tokens</>
+            )}
+          </div>
+        )}
+      </div>
+
+      {filteredTokens.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-8 text-center">
-          <p className="text-gray-400">No tokens match your current filters.</p>
-          <p className="text-sm text-gray-500 mt-2">Try adjusting your filter settings above.</p>
+          {searchQuery ? (
+            <>
+              <svg className="h-10 w-10 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <p className="text-gray-400">No tokens match your search</p>
+              <p className="text-sm text-gray-500 mt-1">Try a different search term</p>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-400">No tokens match your current filters.</p>
+              <p className="text-sm text-gray-500 mt-2">Try adjusting your filter settings above.</p>
+            </>
+          )}
         </div>
       ) : (
         <>
-          {/* List header with information */}
-          <div className="mb-4 pb-3 border-b border-gray-700/50 flex items-center justify-between">
-            <div className="flex items-center gap-3 text-sm">
-              <span className={`px-3 py-1.5 rounded-full ${
-                isSpam 
-                  ? 'bg-red-900/20 text-red-300 border border-red-900/30' 
-                  : 'bg-blue-900/20 text-blue-300 border border-blue-900/30'
-              }`}>
-                {tokens.length} token{tokens.length !== 1 ? 's' : ''}
-              </span>
-              
-              <span className="text-gray-400">
-                Total: ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              </span>
-            </div>
-          </div>
-
           {/* Simple token list */}
           <div className="space-y-3 max-h-[500px] overflow-y-auto border border-gray-700/30 rounded-md p-3 shadow-md">
-            {tokens.map((token) => (
+            {filteredTokens.map((token) => (
               <TokenCard
                 key={token.contract_address}
                 token={token}
@@ -96,19 +149,19 @@ export default function TokenList({
           <div className="mt-5 pt-3 border-t border-gray-700/50 flex justify-between items-center">
             <span className="text-sm text-gray-400">
               {selectedCount > 0 
-                ? `${selectedCount} of ${tokens.length} selected` 
+                ? `${selectedCount} of ${filteredTokens.length} selected` 
                 : "Click tokens to select"}
             </span>
             
             <div className="flex gap-2">
               {/* Only show Select All button for spam tokens */}
-              {isSpam && selectedCount < tokens.length && (
+              {isSpam && selectedCount < filteredTokens.length && (
                 <button 
                   onClick={handleSelectAll}
                   className="text-sm px-4 py-2 rounded-md bg-blue-700/70 hover:bg-blue-600 text-white transition-colors"
-                  aria-label={`Select all ${tokens.length} tokens in this list`}
+                  aria-label={`Select all ${filteredTokens.length} tokens in this list`}
                 >
-                  Select All
+                  {searchQuery ? 'Select All Filtered' : 'Select All'}
                 </button>
               )}
               

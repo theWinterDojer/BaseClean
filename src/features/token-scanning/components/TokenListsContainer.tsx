@@ -1,6 +1,7 @@
 import { Token } from '@/types/token';
 import TokenList from '@/shared/components/TokenList';
 import { UI_TEXT } from '@/constants/tokens';
+import { useMemo } from 'react';
 
 interface TokenListsContainerProps {
   spamTokens: Token[];
@@ -15,6 +16,23 @@ export default function TokenListsContainer({
   selectedTokens,
   toggleToken
 }: TokenListsContainerProps) {
+  // Calculate total values for each category
+  const spamTotalValue = useMemo(() => {
+    return spamTokens.reduce((sum, token) => {
+      const balance = parseFloat(token.balance) / (10 ** token.contract_decimals);
+      const value = balance * (token.quote_rate || 0);
+      return sum + value;
+    }, 0);
+  }, [spamTokens]);
+
+  const nonSpamTotalValue = useMemo(() => {
+    return nonSpamTokens.reduce((sum, token) => {
+      const balance = parseFloat(token.balance) / (10 ** token.contract_decimals);
+      const value = balance * (token.quote_rate || 0);
+      return sum + value;
+    }, 0);
+  }, [nonSpamTokens]);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       {/* Suspected Spam Tokens */}
@@ -27,7 +45,12 @@ export default function TokenListsContainer({
               </svg>
               <h3 className="font-bold text-red-400">Suspected Spam Tokens</h3>
             </div>
-            <span className="bg-red-800/50 text-red-200 text-xs px-2 py-1 rounded-full">{spamTokens.length} tokens</span>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-red-300 font-bold">
+                Total: ${spamTotalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </span>
+              <span className="bg-red-800/50 text-red-200 text-xs px-2 py-1 rounded-full">{spamTokens.length} tokens</span>
+            </div>
           </div>
           
           {spamTokens.length > 0 ? (
@@ -58,7 +81,12 @@ export default function TokenListsContainer({
               </svg>
               <h3 className="font-bold text-blue-400">Regular Tokens</h3>
             </div>
-            <span className="bg-blue-800/50 text-blue-200 text-xs px-2 py-1 rounded-full">{nonSpamTokens.length} tokens</span>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-blue-300 font-bold">
+                Total: ${nonSpamTotalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </span>
+              <span className="bg-blue-800/50 text-blue-200 text-xs px-2 py-1 rounded-full">{nonSpamTokens.length} tokens</span>
+            </div>
           </div>
           
           {nonSpamTokens.length > 0 ? (

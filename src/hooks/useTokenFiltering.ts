@@ -26,15 +26,11 @@ export function useTokenFiltering(
   maxValue: number | null
 ) {
   // Check if token has naming issues
+  // Phase 17.3: Removed all value-based logic - this filter is purely about names/symbols
   const hasNamingIssues = useCallback((token: Token): boolean => {
     if (!spamFilters.namingIssues) return false;
     
     const { contract_ticker_symbol: symbol, contract_name: name } = token;
-    
-    // Skip check for tokens with sufficient value (avoiding false positives)
-    const balance = formatBalance(token.balance, token.contract_decimals);
-    const usdValue = parseFloat(calculateTokenValue(balance, token.quote_rate) || '0');
-    if (usdValue > 10) return false;
     
     // Missing or overly long symbol
     if (!symbol || symbol.length > SPAM_SIGNALS.NAMING.MAX_SYMBOL_LENGTH) return true;
@@ -42,32 +38,28 @@ export function useTokenFiltering(
     // Missing or overly long name
     if (!name || name.length > SPAM_SIGNALS.NAMING.MAX_NAME_LENGTH) return true;
     
-    // Some legitimate tokens may use all caps, only consider this spam
-    // for tokens with very low value
-    const isAllCaps = name && name.toUpperCase() === name && name.length > 3;
-    if (isAllCaps && usdValue < 0.5) return true;
-    
-    // Suspicious naming patterns
+    // Suspicious naming patterns (URLs, domains, etc.)
     if (SUSPICIOUS_NAME_PATTERNS.some(pattern => 
       pattern.test(name) || pattern.test(symbol)
     )) return true;
     
-    // Excessive special characters, but only for tokens with low value
-    if (usdValue < 1 && /[^a-zA-Z0-9\s]/.test(name) && 
-       (name.match(/[^a-zA-Z0-9\s]/g)?.length || 0) >= 3) return true;
+    // Excessive special characters (regardless of value)
+    if (/[^a-zA-Z0-9\s]/.test(name) && 
+       (name.match(/[^a-zA-Z0-9\s]/g)?.length || 0) >= 4) return true; // Increased threshold to 4+
     
-    // Spam keywords - implement a smarter, weighted approach
-    // More matches = higher spam probability
+    // Spam keywords - focus on high-confidence indicators only
     let keywordMatches = 0;
     for (const keyword of SPAM_KEYWORDS) {
       if (name.toLowerCase().includes(keyword) || symbol.toLowerCase().includes(keyword)) {
         keywordMatches++;
         
-        // If we find more than 2 spam keywords or certain high-confidence keywords, consider it spam
-        if (keywordMatches >= 2 || 
-            ['airdrop', 'claim', 'free', 'giveaway'].includes(keyword)) {
+        // High-confidence keywords immediately flag as spam
+        if (['airdrop', 'claim', 'free', 'giveaway', 'scam', 'ponzi'].includes(keyword)) {
           return true;
         }
+        
+        // Multiple keyword matches indicate spam
+        if (keywordMatches >= 3) return true; // Increased threshold to 3+
       }
     }
     
@@ -107,12 +99,15 @@ export function useTokenFiltering(
   }, [spamFilters.valueIssues]);
   
   // Check if token has airdrop signals
+  // Phase 17.5: Removed value-based logic - this filter is purely about balance patterns and missing images
   const hasAirdropSignals = useCallback((token: Token, balance: number): boolean => {
     if (!spamFilters.airdropSignals) return false;
     
-    // Skip check for tokens with real value
-    const usdValue = parseFloat(calculateTokenValue(balance.toString(), token.quote_rate) || '0');
-    if (usdValue > 5) return false;
+    // Phase 17.6: Tokens without proper images are often spam/airdrops
+    if (!token.logo_url || token.logo_url.startsWith('data:image/svg+xml')) return true;
+    
+    // Phase 17.7: Tokens with very small balances (< 1 token) are often junk
+    if (balance < 1) return true;
     
     // Exact round numbers are suspicious (like 1000 or 1000000 tokens)
     if (/^[1-9]0*$/.test(balance.toString())) return true;
@@ -130,8 +125,8 @@ export function useTokenFiltering(
     // Weird decimal patterns often seen in airdrops
     if (/\.\d{10,}$/.test(balance.toString())) return true;
     
-    // Any token with extremely large integer balance (often junk)
-    if (balance > 10000000 && token.quote_rate < SPAM_SIGNALS.VALUE.MIN_QUOTE_RATE) return true;
+    // Any token with extremely large integer balance (often junk) - removed value check
+    if (balance > 10000000) return true;
     
     // Tokens with exactly 1.0 balance are often airdrops
     if (Math.abs(balance - 1.0) < 0.000001) return true;
@@ -148,48 +143,7 @@ export function useTokenFiltering(
     return false;
   }, [spamFilters.airdropSignals]);
   
-  // Check if token has high risk indicators
-  const hasHighRiskIndicators = useCallback((token: Token, balance: number, usdValue: number): boolean => {
-    if (!spamFilters.highRiskIndicators) return false;
-    
-    // Must have very low value to be considered high risk
-    if (usdValue >= 0.5) return false;
-    
-    // No logo found (often indicates unofficial or scam tokens) AND very low value
-    if (!token.logo_url && token.quote_rate < 0.0001) return true;
-    
-    // Extremely low or zero price with large balance (likely worthless)
-    if (token.quote_rate < 0.0000001 && balance > 1000) return true;
-    
-    // Suspicious token name patterns not caught by other filters
-    if (token.contract_name && /\b(airdrop|free|claim)\b/i.test(token.contract_name)) return true;
-    
-    // Extremely large balance with no real value (common in scam tokens)
-    if (balance > 1000000 && usdValue < 0.1) return true;
-    
-    // Tokens with unusual decimals (non-standard) - but only for low value tokens
-    if (token.contract_decimals > 18 && token.quote_rate < 0.00001) return true;
-    
-    // Combination of multiple suspicious characteristics
-    let suspiciousFactors = 0;
-    
-    // Factor 1: Unusual balance
-    if (balance > 10000) suspiciousFactors++;
-    
-    // Factor 2: Lack of price info
-    if (token.quote_rate === 0) suspiciousFactors++;
-    
-    // Factor 3: No logo
-    if (!token.logo_url) suspiciousFactors++;
-    
-    // Factor 4: Very low value
-    if (usdValue < 0.01) suspiciousFactors++;
-    
-    // If token exhibits multiple high-risk characteristics, flag it
-    if (suspiciousFactors >= SPAM_SIGNALS.HIGH_RISK.MIN_SUSPICIOUS_FACTORS) return true;
-    
-    return false;
-  }, [spamFilters.highRiskIndicators]);
+  // Phase 17.2: Removed high risk indicators filter entirely for simplicity
 
   // Memoize the isSpamToken function to prevent unnecessary recreations
   const isSpamToken = useCallback((token: Token): boolean => {
@@ -211,26 +165,26 @@ export function useTokenFiltering(
     
     // Smarter spam detection that requires multiple criteria for higher confidence
     // This reduces false positives while maintaining high detection rates
+    // Phase 17.2: Simplified to 3 filters (removed high risk indicators)
     let spamSignals = 0;
     
     // Count each spam signal
     if (hasNamingIssues(token)) spamSignals++;
     if (hasValueIssues(token, balanceNum)) spamSignals++;
     if (hasAirdropSignals(token, balanceNum)) spamSignals++;
-    if (hasHighRiskIndicators(token, balanceNum, usdValue)) spamSignals++;
     
-    // Adjusted thresholds using constants
+    // Adjusted thresholds for 3-filter system
     // If the token has low value, 1 signal is enough to flag it
     if (usdValue < SPAM_SIGNALS.VALUE.LOW_VALUE_THRESHOLD && spamSignals >= 1) return true;
     
     // For tokens with moderate value, require 2+ signals
     if (usdValue < 5.0 && spamSignals >= 2) return true;
     
-    // For tokens with significant value (>$5.00), require 3+ signals
+    // For tokens with significant value (>$5.00), require all 3 signals
     if (usdValue >= 5.0 && spamSignals >= 3) return true;
     
     return false;
-  }, [hasNamingIssues, hasValueIssues, hasAirdropSignals, hasHighRiskIndicators]);
+  }, [hasNamingIssues, hasValueIssues, hasAirdropSignals]); // Phase 17.2: Removed hasHighRiskIndicators
 
   // Filter tokens by maximum value
   const visibleTokens = useMemo(() => {

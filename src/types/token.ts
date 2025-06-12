@@ -26,6 +26,7 @@ export type Token = {
 
 /**
  * Configuration for spam token filtering
+ * Phase 17.2: Simplified by removing high risk indicators filter
  */
 export type SpamFilters = {
   /** Filter by name/symbol issues (missing, excessive length, suspicious patterns, spam keywords) */
@@ -34,8 +35,6 @@ export type SpamFilters = {
   valueIssues: boolean;
   /** Filter by airdrop signals (suspicious amounts, common airdrop techniques) */
   airdropSignals: boolean;
-  /** High risk indicators (tokens with high likelihood of being scams) */
-  highRiskIndicators: boolean;
 };
 
 /**

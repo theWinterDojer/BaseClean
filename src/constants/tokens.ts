@@ -28,40 +28,62 @@ export const LEGITIMATE_TOKENS: LegitimateTokenMap = {
 };
 
 // Common spam keywords found in many airdrop/scam tokens
+// Phase 17.1: Cleaned up to reduce false positives - removed legitimate industry terms
 export const SPAM_KEYWORDS = [
-  'airdrop', 'claim', 'reward', 'free', 'gift', 'bonus',
-  'elon', 'musk', 'trump', 'pump', 'moon', '1000x',
-  'twitter', 'discord', 'telegram', 'promo', 'giveaway',
-  'launch', 'presale', 'ico', 'whitelist', 'defi', 'safemoon',
-  'shib', 'doge', '.com', '.io', 'www.', 'http', 'https',
-  'inu', 'tech', 'finance', 'meme', 'swap', 'game', 'dao',
-  'nft', 'protocol', 'app', 'zk', 'dev', 'ai', 'metaverse',
-  'token', 'coin', 'farm', 'yield', 'fomo', 'based',
-  // Additional keywords for common spam patterns
-  'scam', 'legit', 'trust', 'burn', 'gpt', 'drop', 'fork',
-  'fair', 'safe', 'floki', 'cat', 'dog', 'chatgpt', 'openai',
-  'gem', 'erc20', 'btc', 'eth', 'viral', 'ponzi', 'honeypot'
+  // Clear airdrop/giveaway indicators
+  'airdrop', 'claim', 'reward', 'free', 'gift', 'bonus', 'giveaway',
+  
+  // Celebrity/meme exploitation
+  'elon', 'musk', 'trump', 
+  
+  // Obvious scam language
+  'pump', 'moon', '1000x', 'scam', 'legit', 'trust', 'ponzi', 'honeypot',
+  
+  // Promotional/marketing spam
+  'promo', 'launch', 'presale', 'ico', 'whitelist',
+  
+  // URL/Social media indicators (usually spam)
+  '.com', '.io', 'www.', 'http', 'https', 'twitter', 'discord', 'telegram', 't.me',
+  
+  // Known scam token names
+  'safemoon', 'fomo',
+  
+  // Obvious fakes/copies
+  'chatgpt', 'openai', 'gpt',
+  
+  // Generic spam terms
+  'viral', 'gem', 'drop', 'fair'
 ];
 
+// REMOVED LEGITIMATE INDUSTRY TERMS (Phase 17.1):
+// These were causing false positives for real projects:
+// 'tech', 'finance', 'meme', 'swap', 'game', 'dao', 'nft', 'protocol', 
+// 'app', 'zk', 'dev', 'ai', 'metaverse', 'token', 'coin', 'farm', 
+// 'yield', 'based', 'defi', 'burn', 'fork', 'safe', 'erc20', 'btc', 'eth'
+
 // Regex patterns for suspicious naming
+// Phase 17.1: Refined to focus on clear spam indicators while reducing false positives
+// Phase 17.3: Removed ALL CAPS detection to prevent false positives on legitimate tokens
 export const SUSPICIOUS_NAME_PATTERNS = [
-  /\.(com|io|xyz|org|net|fi)\b/i, // Domain names
-  /https?:\/\//i,             // URLs
-  /t\.me\//i,                 // Telegram links
-  /\d{5,}/,                   // Long numbers
-  /\$+[a-z]+\$+/i,            // Dollar signs wrapping text
-  /[0-9]{4,}/,                // Year-like numbers
-  /\([^)]*\)/,                // Text in parentheses (often contains instructions)
-  /v[0-9]+(\.[0-9]+)*/i,      // Version numbers (v1, v2.0 etc.)
-  /[@#$%^&*!]/,               // Special characters often used in spam tokens
-  /[A-Z]{6,}/,                // Long all-caps sequences
-  /^[a-z0-9]{10,}$/i,         // Long alphanumeric sequences
-  // Additional patterns for better detection
-  /[A-Z]{2,}[0-9]{2,}/,       // Capital letters followed by numbers (common in spam)
-  /airdrop|free|claim/i,      // Direct airdrop words with case insensitivity
-  /[0-9]+x$/i,                // Numbers followed by "x" (like 1000x)
-  /base|arbitrum|optimism/i,  // Chain names (often used to make spam seem legit)
+  /\.(com|io|xyz|org|net|fi)\b/i, // Domain names in token names
+  /https?:\/\//i,                 // URLs in token names
+  /t\.me\//i,                     // Telegram links
+  /\d{6,}/,                       // Very long numbers (6+ digits, more specific than before)
+  /\$+[a-z]+\$+/i,               // Dollar signs wrapping text
+  /\([^)]*\)/,                    // Text in parentheses (often spam instructions)
+  /[@#$%^&*!]{2,}/,              // Multiple special characters together
+  /^[a-z0-9]{12,}$/i,            // Very long random alphanumeric sequences (12+ chars)
+  /airdrop|free|claim/i,          // Direct airdrop words with case insensitivity
+  /[0-9]+x$/i,                    // Numbers followed by "x" (like 1000x)
 ];
+
+// REMOVED OVERLY BROAD PATTERNS (Phase 17.1):
+// These were flagging legitimate tokens:
+// /[0-9]{4,}/ - Year numbers (many legit tokens have years)
+// /v[0-9]+/ - Version numbers (legitimate for some projects)
+// /[A-Z]{6,}/ - Reduced to 8+ to allow shorter legitimate caps
+// /[A-Z]{2,}[0-9]{2,}/ - Too broad, caught legitimate naming
+// /base|arbitrum|optimism/i - Chain names are legitimate for multi-chain projects
 
 // Common airdrop amounts often used in spam tokens
 export const COMMON_AIRDROP_AMOUNTS = [
@@ -69,7 +91,9 @@ export const COMMON_AIRDROP_AMOUNTS = [
   8888, 9999, 6969, 4200, 4269, 800, 888, 69, 420, 666, 
   777, 7777, 101010, 123456, 654321,
   // Add more known airdrop amounts
-  12321, 42424, 31337, 999999, 1111111, 7654321, 55555
+  12321, 42424, 31337, 999999, 1111111, 7654321, 55555,
+  // Phase 17.6: Added meme decimal amounts
+  0.69
 ];
 
 // Spam detection signals (updated with consolidated values)
@@ -77,11 +101,11 @@ export const SPAM_SIGNALS = {
   // Naming issues
   NAMING: {
     SUSPICIOUS_PREFIXES: ['free', 'airdrop', 'claim', 'get', 'take'],
-    SUSPICIOUS_SUFFIXES: ['token', 'coin', 'dao', 'protocol', 'finance'],
-    SUSPICIOUS_NAMES: ['pepe', 'doge', 'shib', 'moon', 'safe', 'elon', 'inu', 'baby'],
-    MIN_NAME_LENGTH: 2,
-    MAX_SYMBOL_LENGTH: 8, // Updated to match useTokenFiltering.ts
-    MAX_NAME_LENGTH: 20,  // Added to consolidate
+    SUSPICIOUS_SUFFIXES: [], // Phase 17.1: Removed legitimate industry suffixes
+    SUSPICIOUS_NAMES: ['safemoon'], // Phase 17.1: Reduced to only known scam names
+    MIN_NAME_LENGTH: 1, // Allow single character symbols (like X, Y, etc.)
+    MAX_SYMBOL_LENGTH: 30, // Increased to match name length for legitimate tokens with longer symbols
+    MAX_NAME_LENGTH: 30,   // Increased from 20 to allow longer legitimate names
   },
   
   // Value issues

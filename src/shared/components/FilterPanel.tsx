@@ -71,7 +71,7 @@ export default function FilterPanel({
 }: FilterPanelProps) {
   const filterLabels = useMemo(() => ({
     valueIssues: {
-      label: 'Low/Zero Value Tokens',
+      label: 'Low/Zero Value',
       description: 'Zero value, dust balances, or very low total value'
     },
     namingIssues: {
@@ -81,12 +81,8 @@ export default function FilterPanel({
     airdropSignals: {
       label: 'Airdrops/Junk',
       description: 'Suspicious token amounts and common airdrop patterns'
-    },
-    highRiskIndicators: {
-      label: 'High Risk Indicators',
-      description: 'Tokens with high likelihood of being scams or having no value'
     }
-  }), []);
+  }), []); // Phase 17.2: Removed high risk indicators filter
 
   const toggleFilter = (key: keyof SpamFilters) => {
     setSpamFilters(prev => ({ ...prev, [key]: !prev[key] }));
@@ -142,7 +138,8 @@ export default function FilterPanel({
           }
         >
           <div className="flex flex-wrap gap-3 w-full">
-            {['valueIssues', 'namingIssues', 'airdropSignals', 'highRiskIndicators'].map((key) => {
+            {/* Phase 17.2: Simplified to 3 filters - removed 'highRiskIndicators' */}
+            {['valueIssues', 'namingIssues', 'airdropSignals'].map((key) => {
               const { label, description } = filterLabels[key as keyof SpamFilters] || { 
                 label: key, 
                 description: ''
