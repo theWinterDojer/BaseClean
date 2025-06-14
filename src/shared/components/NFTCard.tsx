@@ -74,7 +74,6 @@ const NFTCard = memo(function NFTCard({
         <NFTImage 
           tokenId={nft.token_id}
           name={nft.name}
-          isSpam={isSpam}
           imageUrl={nft.image_url}
         />
         

@@ -108,12 +108,16 @@ const getCachedNFTImage = (key: string): string | null => {
 /**
  * Get NFT image URL with fallback sources and caching
  */
-export async function getNFTImageUrl(contractAddress: string, tokenId: string, alchemyImage?: AlchemyNFT['image']): Promise<string> {
+export async function getNFTImageUrl(contractAddress: string, tokenId: string, alchemyImage?: AlchemyNFT['image']): Promise<string | null> {
   const cacheKey = `${contractAddress}_${tokenId}`;
+  
+  // Track this attempt
+  nftImageLoadingSummary.totalAttempts++;
   
   // Check cache first
   const cached = getCachedNFTImage(cacheKey);
   if (cached) {
+    nftImageLoadingSummary.successfulLoads++;
     return cached;
   }
   
@@ -126,34 +130,35 @@ export async function getNFTImageUrl(contractAddress: string, tokenId: string, a
       alchemyImage.originalUrl
     ].filter((url): url is string => Boolean(url)).filter(isValidImageUrl); // Pre-filter invalid URLs
     
-    console.debug(`🖼️ Testing ${alchemyUrls.length} Alchemy image URLs for ${contractAddress}/${tokenId}`);
-    
     for (const url of alchemyUrls) {
       if (url && await testImageUrl(url)) {
-        console.debug(`✅ NFT image found: ${url.substring(0, 50)}...`);
         saveToNFTImageCache(cacheKey, url);
+        nftImageLoadingSummary.successfulLoads++;
+        nftImageLoadingSummary.alchemySuccessful++;
         return url;
       }
     }
   }
   
-  // Try fallback sources
+  // Try fallback sources (only real image APIs)
   for (const sourceFunc of NFT_IMAGE_SOURCES) {
     try {
       const url = sourceFunc(contractAddress, tokenId);
       if (url && await testImageUrl(url)) {
         saveToNFTImageCache(cacheKey, url);
+        nftImageLoadingSummary.successfulLoads++;
+        nftImageLoadingSummary.fallbackSourcesUsed++;
         return url;
       }
-    } catch (error) {
-      console.debug(`NFT image source failed for ${contractAddress}/${tokenId}:`, error);
+    } catch {
+      // Silently handle errors - no console spam for expected failures
     }
   }
   
-  // Return final fallback
-  const fallbackUrl = NFT_IMAGE_SOURCES[NFT_IMAGE_SOURCES.length - 1](contractAddress, tokenId);
-  saveToNFTImageCache(cacheKey, fallbackUrl);
-  return fallbackUrl;
+  // No real image found - return null instead of forcing a generic fallback
+  // This allows the "show NFTs without images" filter to work properly
+  nftImageLoadingSummary.noImageFound++;
+  return null;
 }
 
 /**
@@ -188,7 +193,7 @@ const isValidImageUrl = (url: string): boolean => {
 
 /**
  * Test if an image URL is valid and loads successfully
- * Suppresses console errors from expected test failures
+ * Uses fetch with silent error handling to truly suppress console 404 errors
  */
 const testImageUrl = async (url: string): Promise<boolean> => {
   // Pre-validate URL to avoid testing obviously broken ones
@@ -196,27 +201,62 @@ const testImageUrl = async (url: string): Promise<boolean> => {
     return false;
   }
   
-  return new Promise((resolve) => {
-    const img = new Image();
-    const timeout = setTimeout(() => {
-      resolve(false);
-    }, 1000); // Reduced timeout to 1 second for faster testing
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 second timeout
     
-    img.onload = () => {
-      clearTimeout(timeout);
-      resolve(true);
-    };
+    const response = await fetch(url, {
+      method: 'HEAD', // Use HEAD to avoid downloading the full image
+      signal: controller.signal,
+      cache: 'no-cache'
+    });
     
-    img.onerror = () => {
-      clearTimeout(timeout);
-      resolve(false);
-    };
-    
-    // Suppress the console error by setting crossOrigin to handle CORS gracefully
-    img.crossOrigin = 'anonymous';
-    img.src = url;
-  });
+    clearTimeout(timeoutId);
+    const contentType = response.headers.get('content-type');
+    return response.ok && (contentType?.startsWith('image/') ?? false);
+  } catch {
+    // Silently handle all errors (network, timeout, abort, etc.)
+    return false;
+  }
 };
+
+/**
+ * Track NFT image loading session summary
+ */
+interface NFTImageLoadingSummary {
+  totalAttempts: number;
+  successfulLoads: number;
+  noImageFound: number; // Changed from fallbacksCreated to reflect missing images
+  alchemySuccessful: number;
+  fallbackSourcesUsed: number;
+}
+
+const nftImageLoadingSummary: NFTImageLoadingSummary = {
+  totalAttempts: 0,
+  successfulLoads: 0,
+  noImageFound: 0,
+  alchemySuccessful: 0,
+  fallbackSourcesUsed: 0
+};
+
+/**
+ * Log NFT image loading summary
+ */
+export function logNFTImageLoadingSummary(): void {
+  const { totalAttempts, successfulLoads, noImageFound, alchemySuccessful, fallbackSourcesUsed } = nftImageLoadingSummary;
+  
+  if (totalAttempts > 0) {
+    console.log(`🖼️ NFT Image Loading Summary: ${successfulLoads} external images loaded, ${noImageFound} without images (${totalAttempts} total)`);
+    console.log(`📊 Source Performance: ${alchemySuccessful} from Alchemy, ${fallbackSourcesUsed} from fallback sources`);
+    
+    // Reset summary for next session
+    nftImageLoadingSummary.totalAttempts = 0;
+    nftImageLoadingSummary.successfulLoads = 0;
+    nftImageLoadingSummary.noImageFound = 0;
+    nftImageLoadingSummary.alchemySuccessful = 0;
+    nftImageLoadingSummary.fallbackSourcesUsed = 0;
+  }
+}
 
 // Chain configuration for multi-chain NFT support
 const CHAIN_CONFIG = {
@@ -245,13 +285,12 @@ export const fetchNFTs = async (address: string, chainIds?: number[]): Promise<N
   }
 
   const chains = chainIds || [8453, 7777777]; // Default to Base and Zora
-  console.log(`🔍 Fetching NFTs for address: ${address} on chains: ${chains.map(id => CHAIN_CONFIG[id as keyof typeof CHAIN_CONFIG]?.name || id).join(', ')}`);
+  // Removed verbose NFT discovery logs
 
   try {
     // Use Alchemy API for NFT discovery
     if (API_CONFIG.ALCHEMY_API_KEY) {
-      console.log('🔑 Using Alchemy API for multi-chain NFT discovery...');
-      console.log(`🌐 API Key configured: ${API_CONFIG.ALCHEMY_API_KEY.substring(0, 10)}...`);
+      // Removed verbose API key logs
       
       // Fetch NFTs from all chains in parallel
       const chainPromises = chains.map(chainId => fetchNFTsFromAlchemy(address, chainId));
@@ -265,7 +304,7 @@ export const fetchNFTs = async (address: string, chainIds?: number[]): Promise<N
         
         if (result.status === 'fulfilled') {
           const nfts = result.value;
-          console.log(`✅ ${chainName}: Found ${nfts.length} NFTs`);
+          // Removed verbose chain success logs to reduce console spam
           allNFTs.push(...nfts);
         } else {
           console.error(`❌ ${chainName}: Failed to fetch NFTs:`, result.reason);
@@ -275,29 +314,32 @@ export const fetchNFTs = async (address: string, chainIds?: number[]): Promise<N
       if (allNFTs.length > 0) {
         console.log(`✅ Successfully discovered ${allNFTs.length} total NFTs across all chains`);
         
-                 // Sort NFTs by chain, then collection, then token ID
-         allNFTs.sort((a, b) => {
-           // First sort by chain (Base first, then Zora)
-           const aChain = (a.metadata?.chainId as number) || 8453;
-           const bChain = (b.metadata?.chainId as number) || 8453;
-           if (aChain !== bChain) {
-             return aChain === 8453 ? -1 : 1; // Base first
-           }
-           
-           // Then by collection
-           const contractComparison = a.contract_address.localeCompare(b.contract_address);
-           if (contractComparison !== 0) return contractComparison;
-           
-           // Finally by token ID numerically
-           const aTokenId = parseInt(a.token_id);
-           const bTokenId = parseInt(b.token_id);
-           
-           if (!isNaN(aTokenId) && !isNaN(bTokenId)) {
-             return aTokenId - bTokenId;
-           }
-           
-           return a.token_id.localeCompare(b.token_id);
-         });
+        // Log NFT image loading summary
+        logNFTImageLoadingSummary();
+        
+        // Sort NFTs by chain, then collection, then token ID
+        allNFTs.sort((a, b) => {
+          // First sort by chain (Base first, then Zora)
+          const aChain = (a.metadata?.chainId as number) || 8453;
+          const bChain = (b.metadata?.chainId as number) || 8453;
+          if (aChain !== bChain) {
+            return aChain === 8453 ? -1 : 1; // Base first
+          }
+          
+          // Then by collection
+          const contractComparison = a.contract_address.localeCompare(b.contract_address);
+          if (contractComparison !== 0) return contractComparison;
+          
+          // Finally by token ID numerically
+          const aTokenId = parseInt(a.token_id);
+          const bTokenId = parseInt(b.token_id);
+          
+          if (!isNaN(aTokenId) && !isNaN(bTokenId)) {
+            return aTokenId - bTokenId;
+          }
+          
+          return a.token_id.localeCompare(b.token_id);
+        });
         
         return allNFTs;
       }
@@ -332,7 +374,7 @@ async function fetchNFTsFromAlchemy(address: string, chainId: number = 8453): Pr
     return [];
   }
 
-  console.log(`${chainConfig.emoji} Fetching NFTs from ${chainConfig.name} network (${chainId})`);
+  // Removed verbose chain fetching logs
 
   const allNFTs: AlchemyNFT[] = [];
   let pageKey: string | undefined = undefined;
@@ -341,7 +383,7 @@ async function fetchNFTsFromAlchemy(address: string, chainId: number = 8453): Pr
   try {
     // Step 1: Collect all NFTs with pagination using REST API
     do {
-      console.log(`📄 ${chainConfig.emoji} ${chainConfig.name}: Fetching page ${page} of NFTs from Alchemy REST API...`);
+      // Removed verbose page fetching logs
       
       // Build URL with query parameters for REST API
       const baseUrl = `https://${chainConfig.rpcUrl}/nft/v3/${ALCHEMY_API_KEY}/getNFTsForOwner`;
@@ -355,12 +397,7 @@ async function fetchNFTsFromAlchemy(address: string, chainId: number = 8453): Pr
       
       const apiUrl = `${baseUrl}?${params.toString()}`;
 
-      console.log(`🔗 ${chainConfig.emoji} ${chainConfig.name}: Calling Alchemy REST API:`, {
-        url: `https://${chainConfig.rpcUrl}/nft/v3/${ALCHEMY_API_KEY.substring(0, 10)}.../getNFTsForOwner`,
-        owner: address,
-        pageSize: 100,
-        pageKey: pageKey || 'none'
-      });
+      // Removed verbose API call logs
 
       const response: Response = await fetch(apiUrl, {
         method: 'GET',
@@ -369,7 +406,7 @@ async function fetchNFTsFromAlchemy(address: string, chainId: number = 8453): Pr
         }
       });
 
-      console.log(`📡 ${chainConfig.emoji} ${chainConfig.name}: Response status: ${response.status} ${response.statusText}`);
+      // Removed verbose response status logs
 
       if (!response.ok) {
         console.error(`❌ ${chainConfig.emoji} ${chainConfig.name}: Alchemy NFT REST API error: ${response.status} ${response.statusText}`);
@@ -378,29 +415,15 @@ async function fetchNFTsFromAlchemy(address: string, chainId: number = 8453): Pr
         break;
       }
 
-      console.log(`✅ ${chainConfig.emoji} ${chainConfig.name}: Successfully fetched data from Alchemy API`);
+      // Removed verbose API success logs
 
       const data: AlchemyNFTResponse = await response.json();
-      console.log(`📊 Raw Alchemy response:`, {
-        totalCount: data.totalCount,
-        pageKey: data.pageKey,
-        ownedNftsLength: data.ownedNfts?.length || 0
-      });
+      // Removed verbose raw response logs
 
       const nfts = data.ownedNfts || [];
       pageKey = data.pageKey;
 
-      console.log(`📄 Page ${page}: Alchemy returned ${nfts.length} NFTs${pageKey ? ' (more pages available)' : ' (final page)'}`);
-      
-      // Log first NFT for debugging
-      if (nfts.length > 0) {
-        console.log(`🔍 Sample NFT from page ${page}:`, {
-          contract: nfts[0].contract.address,
-          tokenId: nfts[0].tokenId,
-          name: nfts[0].name,
-          collection: nfts[0].collection?.name
-        });
-      }
+      // Removed verbose page result logs and sample NFT debugging
       
       allNFTs.push(...nfts);
       page++;
@@ -413,7 +436,7 @@ async function fetchNFTsFromAlchemy(address: string, chainId: number = 8453): Pr
       
       // Respect pagination limits
       if (allNFTs.length >= NFT_PAGINATION.MAX_INITIAL_LOAD) {
-        console.log(`⏸️ Reached maximum initial load limit (${NFT_PAGINATION.MAX_INITIAL_LOAD} NFTs)`);
+        // Removed verbose pagination limit log
         break;
       }
       
@@ -424,14 +447,14 @@ async function fetchNFTsFromAlchemy(address: string, chainId: number = 8453): Pr
       return [];
     }
 
-    console.log(`📦 Found ${allNFTs.length} total NFTs to process`);
+    // Removed verbose total NFTs processing log
 
     // Step 2: Process NFTs and normalize to our NFT type
     const processedNFTs = await Promise.all(
-      allNFTs.map(async (nft: AlchemyNFT, index: number) => {
-        console.log(`🔄 Processing NFT ${index + 1}/${allNFTs.length}: ${nft.contract.address}/${nft.tokenId}`);
+      allNFTs.map(async (nft: AlchemyNFT) => {
+        // Removed verbose individual NFT processing logs
         
-        // Get image URL with fallbacks
+        // Get image URL with fallbacks (returns null if no real image found)
         const imageUrl = await getNFTImageUrl(
           nft.contract.address,
           nft.tokenId,
@@ -465,7 +488,7 @@ async function fetchNFTsFromAlchemy(address: string, chainId: number = 8453): Pr
       })
     );
 
-    console.log(`✅ ${chainConfig.emoji} ${chainConfig.name}: Successfully processed ${processedNFTs.length} NFTs`);
+    // Removed verbose chain processing success log
     return processedNFTs;
     
   } catch (error) {

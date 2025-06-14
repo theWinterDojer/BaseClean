@@ -66,12 +66,9 @@ const saveToCache = (address: string, url: string): void => {
   if (typeof window !== 'undefined' && !url.startsWith('data:image/svg+xml')) {
     try {
       localStorage.setItem('token_logo_cache', JSON.stringify(TOKEN_LOGO_CACHE));
-      console.log(`🎯 Cached external URL for ${address.substring(0, 8)}...`);
     } catch {
       console.debug('Failed to save token logo cache to localStorage');
     }
-  } else if (url.startsWith('data:image/svg+xml')) {
-    console.log(`⚡ Using fallback SVG for ${address.substring(0, 8)}... (not cached permanently)`);
   }
 };
 
@@ -191,87 +188,20 @@ const COMMON_TOKENS: Record<string, string> = {
 };
 
 /**
- * Enhanced color palettes for different token categories
- * All colors optimized for dark backgrounds with high contrast
+ * Professional color palette for random token fallbacks
+ * Modern, high-contrast colors that work well on both light and dark backgrounds
  */
-const TOKEN_COLOR_PALETTES = {
-  defi: [
-    { primary: '#8B5CF6', secondary: '#A78BFA', accent: '#EC4899', bg: '#1F1B2E' }, // Purple DeFi
-    { primary: '#06B6D4', secondary: '#67E8F9', accent: '#10B981', bg: '#0F1B1C' }, // Cyan DeFi  
-    { primary: '#F59E0B', secondary: '#FCD34D', accent: '#EF4444', bg: '#1F1611' }, // Gold DeFi
-  ],
-  meme: [
-    { primary: '#FF6B6B', secondary: '#FFE66D', accent: '#4ECDC4', bg: '#1A0F0F' }, // Vibrant coral
-    { primary: '#A8E6CF', secondary: '#88D8A3', accent: '#45B7D1', bg: '#0F1A0F' }, // Mint green
-    { primary: '#FFD93D', secondary: '#6BCF7F', accent: '#4D96FF', bg: '#1A1A0F' }, // Bright yellow
-  ],
-  gaming: [
-    { primary: '#9333EA', secondary: '#C084FC', accent: '#06D6A0', bg: '#1A0F1A' }, // Gaming purple
-    { primary: '#EF4444', secondary: '#F87171', accent: '#FBBF24', bg: '#1A0F0F' }, // Gaming red
-    { primary: '#3B82F6', secondary: '#60A5FA', accent: '#34D399', bg: '#0F1319' }, // Gaming blue
-  ],
-  stablecoin: [
-    { primary: '#10B981', secondary: '#6EE7B7', accent: '#059669', bg: '#0F1A14' }, // Stable green
-    { primary: '#3B82F6', secondary: '#93C5FD', accent: '#1D4ED8', bg: '#0F1319' }, // Stable blue
-    { primary: '#8B5CF6', secondary: '#C4B5FD', accent: '#7C3AED', bg: '#1A0F1A' }, // Stable purple
-  ],
-  utility: [
-    { primary: '#06B6D4', secondary: '#22D3EE', accent: '#0891B2', bg: '#0F1B1C' }, // Bright cyan
-    { primary: '#F59E0B', secondary: '#FBBF24', accent: '#D97706', bg: '#1F1611' }, // Bright amber
-    { primary: '#EF4444', secondary: '#F87171', accent: '#DC2626', bg: '#1A0F0F' }, // Bright red
-    { primary: '#8B5CF6', secondary: '#A78BFA', accent: '#7C3AED', bg: '#1A0F1A' }, // Bright purple
-    { primary: '#10B981', secondary: '#34D399', accent: '#059669', bg: '#0F1A14' }, // Bright green
-    { primary: '#EC4899', secondary: '#F472B6', accent: '#DB2777', bg: '#1A0F17' }, // Bright pink
-  ],
-  spam: [
-    { primary: '#EF4444', secondary: '#FCA5A5', accent: '#B91C1C', bg: '#1A0F0F' }, // Warning red
-    { primary: '#F97316', secondary: '#FDBA74', accent: '#C2410C', bg: '#1A1207' }, // Warning orange
-    { primary: '#EAB308', secondary: '#FDE047', accent: '#A16207', bg: '#1A1A0F' }, // Warning yellow
-  ]
-};
+const PROFESSIONAL_COLORS = [
+  '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+  '#DDA0DD', '#98D8C8', '#6C5CE7', '#A29BFE', '#FD79A8',
+  '#FDCB6E', '#55A3FF', '#00B894', '#E17055', '#81ECEC',
+  '#74B9FF', '#0984E3', '#6C5CE7', '#A29BFE', '#FD79A8',
+  '#FF7675', '#74B9FF', '#55EFC4', '#FDCB6E', '#E84393'
+];
 
 /**
- * Detect token category based on symbol and address for appropriate styling
- */
-function detectTokenCategory(symbol: string, address: string): keyof typeof TOKEN_COLOR_PALETTES { // address used for deterministic pattern generation
-  const symbolLower = symbol.toLowerCase();
-  
-  // Spam indicators
-  const spamKeywords = ['airdrop', 'claim', 'free', 'reward', 'giveaway', 'elon', 'trump'];
-  if (spamKeywords.some(keyword => symbolLower.includes(keyword))) {
-    return 'spam';
-  }
-  
-  // Stablecoin indicators
-  const stablecoinKeywords = ['usd', 'dai', 'usdc', 'usdt', 'busd', 'tusd', 'frax'];
-  if (stablecoinKeywords.some(keyword => symbolLower.includes(keyword))) {
-    return 'stablecoin';
-  }
-  
-  // Meme coin indicators
-  const memeKeywords = ['doge', 'shib', 'pepe', 'inu', 'moon', 'safe', 'baby', 'rocket'];
-  if (memeKeywords.some(keyword => symbolLower.includes(keyword))) {
-    return 'meme';
-  }
-  
-  // Gaming indicators
-  const gamingKeywords = ['game', 'play', 'nft', 'meta', 'verse', 'land', 'hero', 'war'];
-  if (gamingKeywords.some(keyword => symbolLower.includes(keyword))) {
-    return 'gaming';
-  }
-  
-  // DeFi indicators
-  const defiKeywords = ['swap', 'pool', 'farm', 'yield', 'lp', 'vault', 'stake', 'bond'];
-  if (defiKeywords.some(keyword => symbolLower.includes(keyword))) {
-    return 'defi';
-  }
-  
-  // Default to utility for unknown tokens
-  return 'utility';
-}
-
-/**
- * Generate enhanced fallback SVG with gradients, shadows, and modern design
+ * Generate a professional random gradient fallback image
+ * Creates clean, modern token avatars with random colors and gradients
  */
 function generateFallbackImage(address: string, symbol: string = ''): string {
   // Get display text (symbol initials or address hex)
@@ -279,92 +209,78 @@ function generateFallbackImage(address: string, symbol: string = ''): string {
     symbol.substring(0, Math.min(2, symbol.length)).toUpperCase() : 
     address.substring(2, 4).toUpperCase();
   
-  // Detect category and get appropriate colors
-  const category = detectTokenCategory(symbol, address);
-  const palettes = TOKEN_COLOR_PALETTES[category];
-  
-  // Use address to deterministically select palette and generate unique variations
+  // Use address to deterministically select colors
   const addressSeed = parseInt(address.substring(2, 10), 16);
-  const paletteIndex = addressSeed % palettes.length;
-  const palette = palettes[paletteIndex];
+  const color1Index = addressSeed % PROFESSIONAL_COLORS.length;
+  const color2Index = (addressSeed + 7) % PROFESSIONAL_COLORS.length; // Offset for variety
   
-  // Generate unique pattern based on address
-  const patternSeed = parseInt(address.substring(10, 18), 16);
-  const pattern = patternSeed % 3;
+  const color1 = PROFESSIONAL_COLORS[color1Index];
+  const color2 = PROFESSIONAL_COLORS[color2Index];
   
-  // Removed unused rotation variable for visual variety
+  // Generate gradient direction based on address
+  const gradientSeed = parseInt(address.substring(10, 18), 16);
+  const gradientType = gradientSeed % 3;
   
-  // Create enhanced SVG with multiple design patterns
+  // Create clean, professional SVG with full circle (no outline)
   let svgContent: string;
   
-  if (pattern === 0) {
-    // Pattern 0: Clean gradient with crisp text
-    svgContent = `
-      <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <radialGradient id="grad_${addressSeed}" cx="50%" cy="50%" r="60%">
-            <stop offset="0%" style="stop-color:${palette.secondary}" />
-            <stop offset="100%" style="stop-color:${palette.primary}" />
-          </radialGradient>
-        </defs>
-        <!-- Background circle -->
-        <circle cx="24" cy="24" r="23" fill="${palette.bg}" stroke="${palette.primary}" stroke-width="1"/>
-        <!-- Main gradient circle -->
-        <circle cx="24" cy="24" r="21" fill="url(#grad_${addressSeed})"/>
-        <!-- Clean text with perfect centering -->
-        <text x="24" y="24" 
-              font-family="system-ui, -apple-system, 'Segoe UI', Arial, sans-serif" 
-              font-size="16" 
-              font-weight="600" 
-              text-anchor="middle" 
-              fill="#FFFFFF" 
-              dominant-baseline="central"
-              text-rendering="optimizeLegibility">${displayText}</text>
-      </svg>`;
-  } else if (pattern === 1) {
-    // Pattern 1: Simple linear gradient with clean text
+  if (gradientType === 0) {
+    // Linear gradient
     svgContent = `
       <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="linear_${addressSeed}" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:${palette.primary}" />
-            <stop offset="100%" style="stop-color:${palette.accent}" />
+            <stop offset="0%" style="stop-color:${color1}" />
+            <stop offset="100%" style="stop-color:${color2}" />
           </linearGradient>
         </defs>
-        <!-- Background -->
-        <circle cx="24" cy="24" r="23" fill="${palette.bg}" stroke="${palette.accent}" stroke-width="1"/>
-        <!-- Main circle -->
-        <circle cx="24" cy="24" r="21" fill="url(#linear_${addressSeed})"/>
-        <!-- Clean text with perfect centering -->
-        <text x="24" y="24" 
-              font-family="system-ui, -apple-system, 'Segoe UI', Arial, sans-serif" 
-              font-size="16" 
-              font-weight="600" 
-              text-anchor="middle" 
-              fill="#FFFFFF" 
-              dominant-baseline="central"
-              text-rendering="optimizeLegibility">${displayText}</text>
-      </svg>`;
-  } else {
-    // Pattern 2: Solid color with accent border - maximum clarity
-    svgContent = `
-      <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-        <!-- Background -->
-        <circle cx="24" cy="24" r="23" fill="${palette.bg}" stroke="${palette.accent}" stroke-width="2"/>
-        <!-- Main solid circle -->
-        <circle cx="24" cy="24" r="20" fill="${palette.primary}"/>
-        <!-- Accent ring -->
-        <circle cx="24" cy="24" r="18" fill="none" stroke="${palette.secondary}" stroke-width="1" opacity="0.6"/>
-        <!-- Ultra-clean text with perfect centering -->
-        <text x="24" y="24" 
+        <circle cx="24" cy="24" r="24" fill="url(#linear_${addressSeed})"/>
+        <text x="24" y="30" 
               font-family="system-ui, -apple-system, 'Segoe UI', Arial, sans-serif" 
               font-size="16" 
               font-weight="700" 
               text-anchor="middle" 
               fill="#FFFFFF" 
-              dominant-baseline="central"
-              text-rendering="optimizeLegibility"
-              shape-rendering="crispEdges">${displayText}</text>
+              text-rendering="optimizeLegibility">${displayText}</text>
+      </svg>`;
+  } else if (gradientType === 1) {
+    // Radial gradient
+    svgContent = `
+      <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="radial_${addressSeed}" cx="30%" cy="30%" r="70%">
+            <stop offset="0%" style="stop-color:${color1}" />
+            <stop offset="100%" style="stop-color:${color2}" />
+          </radialGradient>
+        </defs>
+        <circle cx="24" cy="24" r="24" fill="url(#radial_${addressSeed})"/>
+        <text x="24" y="30" 
+              font-family="system-ui, -apple-system, 'Segoe UI', Arial, sans-serif" 
+              font-size="16" 
+              font-weight="700" 
+              text-anchor="middle" 
+              fill="#FFFFFF" 
+              text-rendering="optimizeLegibility">${displayText}</text>
+      </svg>`;
+  } else {
+    // Solid color with subtle inner shadow effect
+    svgContent = `
+      <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="shadow_${addressSeed}" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" style="stop-color:${color1}" />
+            <stop offset="100%" style="stop-color:${color2}" stop-opacity="0.8" />
+          </radialGradient>
+        </defs>
+        <circle cx="24" cy="24" r="24" fill="${color1}"/>
+        <circle cx="24" cy="24" r="20" fill="url(#shadow_${addressSeed})" opacity="0.6"/>
+        <text x="24" y="30" 
+              font-family="system-ui, -apple-system, 'Segoe UI', Arial, sans-serif" 
+              font-size="16" 
+              font-weight="700" 
+              text-anchor="middle" 
+              fill="#FFFFFF" 
+              text-rendering="optimizeLegibility">${displayText}</text>
       </svg>`;
   }
   
@@ -373,26 +289,6 @@ function generateFallbackImage(address: string, symbol: string = ''): string {
   saveToCache(address, dataUri);
   return dataUri;
 }
-
-/**
- * Optimized logo URL testing with faster timeout
- */
-const testImageUrl = async (url: string): Promise<boolean> => {
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1000); // Increased from 300ms to 1000ms for reliability
-    
-    const response = await fetch(url, {
-      method: 'HEAD',
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    return response.ok;
-  } catch {
-    return false;
-  }
-};
 
 /**
  * Track success rates of different image sources for analysis
@@ -411,38 +307,65 @@ const IMAGE_SOURCE_STATS = {
 };
 
 /**
- * Log which image source was successful (for analysis and simplification)
+ * Track image loading session summary
  */
-
-
-/**
- * Export current image source statistics for analysis
- */
-export function getImageSourceStats(): typeof IMAGE_SOURCE_STATS {
-  return { ...IMAGE_SOURCE_STATS };
+interface ImageLoadingSummary {
+  totalAttempts: number;
+  successfulLoads: number;
+  fallbacksCreated: number;
+  cacheMisses: number;
+  cacheHits: number;
 }
 
+const imageLoadingSummary: ImageLoadingSummary = {
+  totalAttempts: 0,
+  successfulLoads: 0,
+  fallbacksCreated: 0,
+  cacheMisses: 0,
+  cacheHits: 0
+};
+
 /**
- * Log current image source statistics to console
+ * Test if an image URL is valid and loads successfully
+ * Uses fetch with silent error handling to truly suppress console 404 errors
  */
-export function logImageSourceStats(): void {
-  console.log('📊 Image Source Success Statistics:', IMAGE_SOURCE_STATS);
-  const total = Object.values(IMAGE_SOURCE_STATS).reduce((sum, count) => sum + count, 0);
-  if (total > 0) {
-    console.log('📈 Success Percentages:');
-    Object.entries(IMAGE_SOURCE_STATS).forEach(([source, count]) => {
-      if (count > 0) {
-        console.log(`  ${source}: ${count} (${Math.round((count / total) * 100)}%)`);
-      }
+const testImageUrl = async (url: string): Promise<boolean> => {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 second timeout
+    
+    const response = await fetch(url, {
+      method: 'HEAD', // Use HEAD to avoid downloading the full image
+      signal: controller.signal,
+      cache: 'no-cache'
     });
+    
+    clearTimeout(timeoutId);
+    const contentType = response.headers.get('content-type');
+    return response.ok && (contentType?.startsWith('image/') ?? false);
+  } catch {
+    // Silently handle all errors (network, timeout, abort, etc.)
+    return false;
   }
-}
+};
 
-// Make stats available in browser console for analysis
-if (typeof window !== 'undefined') {
-  (window as unknown as { getImageStats: typeof getImageSourceStats; logImageStats: typeof logImageSourceStats }).getImageStats = getImageSourceStats;
-  (window as unknown as { getImageStats: typeof getImageSourceStats; logImageStats: typeof logImageSourceStats }).logImageStats = logImageSourceStats;
-  console.log('💡 Image source analysis available: Run getImageStats() or logImageStats() in console');
+/**
+ * Log image loading summary at the end of token processing
+ */
+export function logImageLoadingSummary(): void {
+  const { totalAttempts, successfulLoads, fallbacksCreated, cacheMisses, cacheHits } = imageLoadingSummary;
+  
+  if (totalAttempts > 0) {
+    console.log(`🖼️ Token Image Loading Summary: ${successfulLoads} external images loaded, ${fallbacksCreated} fallbacks created (${totalAttempts} total)`);
+    console.log(`📊 Cache Performance: ${cacheHits} hits, ${cacheMisses} misses (${Math.round((cacheHits / totalAttempts) * 100)}% hit rate)`);
+    
+    // Reset summary for next session
+    imageLoadingSummary.totalAttempts = 0;
+    imageLoadingSummary.successfulLoads = 0;
+    imageLoadingSummary.fallbacksCreated = 0;
+    imageLoadingSummary.cacheMisses = 0;
+    imageLoadingSummary.cacheHits = 0;
+  }
 }
 
 /**
@@ -451,6 +374,9 @@ if (typeof window !== 'undefined') {
 export async function getTokenLogoUrl(address: string, symbol: string = ''): Promise<string> {
   const cleanAddress = address?.toLowerCase();
   const cleanSymbol = symbol?.toLowerCase();
+  
+  // Track this attempt
+  imageLoadingSummary.totalAttempts++;
   
   // Special handling for ETH (native or wrapped)
   if (!cleanAddress || 
@@ -462,54 +388,48 @@ export async function getTokenLogoUrl(address: string, symbol: string = ''): Pro
     const ethLogoUrl = await getBestETHLogoUrl();
     const cacheKey = cleanAddress || '0x0000000000000000000000000000000000000000';
     saveToCache(cacheKey, ethLogoUrl);
+    imageLoadingSummary.successfulLoads++;
     return ethLogoUrl;
   }
 
   // 1. Check cache first
   if (TOKEN_LOGO_CACHE[cleanAddress]) {
-    console.log(`🎯 Image source success: cache (${TOKEN_LOGO_CACHE[cleanAddress].substring(0, 50)}...)`);
+    imageLoadingSummary.cacheHits++;
     return TOKEN_LOGO_CACHE[cleanAddress];
   }
+  
+  imageLoadingSummary.cacheMisses++;
 
   // 2. Check common tokens for immediate return
   if (COMMON_TOKENS[cleanAddress]) {
     const logoUrl = COMMON_TOKENS[cleanAddress];
-    console.log(`🎯 Image source success: common_tokens (${logoUrl.substring(0, 50)}...)`);
     saveToCache(cleanAddress, logoUrl);
+    imageLoadingSummary.successfulLoads++;
     return logoUrl;
   }
 
-  // 3. More conservative spam filtering - only skip obvious spam
-  if (cleanSymbol) {
-    const highConfidenceSpam = ['airdrop', 'claim', 'free', 'giveaway', 'reward'];
-    if (highConfidenceSpam.some(spam => cleanSymbol.includes(spam))) {
-      const fallback = generateFallbackImage(cleanAddress, cleanSymbol);
-      saveToCache(cleanAddress, fallback);
-      return fallback;
-    }
-  }
-  
-  // 4. Try Zapper API (our only source now)
+  // 3. Try external API for ALL tokens (removed spam filtering)
+  // Always attempt to load external images regardless of spam status
   try {
     const logoUrl = TOKEN_LOGO_SOURCES[0](cleanAddress);
     const isValid = await testImageUrl(logoUrl);
     
     if (isValid) {
-      console.log(`🎯 Image source success: zapper (${logoUrl})`);
       IMAGE_SOURCE_STATS.zapper++;
       saveToCache(cleanAddress, logoUrl);
+      imageLoadingSummary.successfulLoads++;
       return logoUrl;
     }
   } catch {
-    console.log(`❌ Zapper API failed for ${cleanSymbol || cleanAddress.substring(0, 8)}`);
+    // Silently handle errors
   }
 
-  // 5. Generate enhanced fallback
+  // 4. Generate professional fallback only when external sources fail
   IMAGE_SOURCE_STATS.fallback_svg++;
-  console.log(`🎨 Using SVG fallback for ${cleanSymbol || cleanAddress.substring(0, 8)}`);
-  const fallback = generateFallbackImage(cleanAddress, cleanSymbol);
-  saveToCache(cleanAddress, fallback);
-  return fallback;
+  imageLoadingSummary.fallbacksCreated++;
+  const fallbackSvg = generateFallbackImage(cleanAddress, cleanSymbol);
+  saveToCache(cleanAddress, fallbackSvg);
+  return fallbackSvg;
 }
 
 /**
@@ -588,7 +508,7 @@ export const fetchTokenBalances = async (
     
     // Use Alchemy API for token discovery
     if (API_CONFIG.ALCHEMY_API_KEY) {
-      console.log('Using Alchemy API for token discovery...');
+      // Removed verbose API initialization log
       
       // Fetch ERC-20 tokens and native ETH balance in parallel
       const [alchemyTokens, ethBalance] = await Promise.all([
@@ -664,7 +584,7 @@ async function fetchTokensFromAlchemy(address: string, onProgress?: (discovered:
   try {
     // Step 1: Collect all token balances with pagination
     do {
-      console.log(`Fetching page ${page} of tokens from Alchemy...`);
+      // Removed page-by-page fetching log to reduce console spam
       
       // User-friendly progress messages instead of technical "scanning page X"
       if (page === 1) {
@@ -702,7 +622,7 @@ async function fetchTokensFromAlchemy(address: string, onProgress?: (discovered:
       const tokens = data.result?.tokenBalances || [];
       pageKey = data.result?.pageKey; // Get next page key
 
-      console.log(`Page ${page}: Alchemy returned ${tokens.length} tokens${pageKey ? ' (more pages available)' : ' (final page)'}`);
+      // Removed detailed page result logs to reduce console spam
 
       // Filter tokens with non-zero balances and meaningful amounts
       const nonZeroTokens = tokens.filter((token: AlchemyTokenBalance) => {
@@ -716,7 +636,7 @@ async function fetchTokensFromAlchemy(address: string, onProgress?: (discovered:
         return balanceDecimal > 0; // Show all non-zero balances - let user decide what's valuable
       });
 
-      console.log(`Page ${page}: After filtering zero balances: ${nonZeroTokens.length} tokens`);
+      // Removed page filtering result log to reduce console spam
       
       allTokenBalances.push(...nonZeroTokens);
       
@@ -755,7 +675,7 @@ async function fetchTokensFromAlchemy(address: string, onProgress?: (discovered:
     // Step 2: PERFORMANCE OPTIMIZATION - Batch process all tokens
     const contractAddresses = allTokenBalances.map(token => token.contractAddress);
     
-    console.log('Starting batch processing for metadata, prices, and logos...');
+    // Removed verbose batch processing logs
     onProgress?.(allTokenBalances.length, 'Fetching metadata');
     
     // Fetch metadata and prices in parallel batches
@@ -764,7 +684,7 @@ async function fetchTokensFromAlchemy(address: string, onProgress?: (discovered:
       fetchTokenPricesBatch(contractAddresses)
     ]);
 
-    console.log('Batch processing complete, processing individual tokens...');
+    // Removed verbose batch completion log
     onProgress?.(allTokenBalances.length, 'Processing tokens');
 
     // Step 3: Process tokens with batched data
@@ -798,6 +718,7 @@ async function fetchTokensFromAlchemy(address: string, onProgress?: (discovered:
     );
 
     console.log(`Successfully processed ${processedTokens.length} tokens with optimized batching`);
+    logImageLoadingSummary(); // Log image loading summary
     onProgress?.(processedTokens.length, 'Loading complete');
     return processedTokens;
     
@@ -832,11 +753,11 @@ async function fetchTokensMetadataBatch(contractAddresses: string[]): Promise<Re
     return results;
   }
 
-  console.log(`Fetching metadata for ${uncachedAddresses.length} tokens individually (Alchemy doesn't support batch metadata)`);
+  // Removed verbose metadata fetching logs
 
   // NOTE: Alchemy doesn't support batch metadata requests (alchemy_getTokensMetadata doesn't exist)
   // Using individual requests with alchemy_getTokenMetadata
-  console.log(`Processing individual metadata requests for ${uncachedAddresses.length} tokens`);
+  // Removed verbose individual request processing log
   
   for (const address of uncachedAddresses) {
     const metadata = await fetchTokenMetadataFromAlchemy(address);
@@ -873,7 +794,7 @@ async function fetchTokenPricesBatch(contractAddresses: string[]): Promise<Recor
     return results;
   }
 
-  console.log(`Fetching prices for ${uncachedAddresses.length} tokens in chunks`);
+  // Removed verbose price fetching logs
 
   // FIXED: Use smaller chunks to avoid URL length limits and CORS issues
   const CHUNK_SIZE = 20; // Much smaller chunks to avoid URL limits
@@ -883,12 +804,12 @@ async function fetchTokenPricesBatch(contractAddresses: string[]): Promise<Recor
     chunks.push(uncachedAddresses.slice(i, i + CHUNK_SIZE));
   }
 
-  console.log(`Processing ${chunks.length} chunks of up to ${CHUNK_SIZE} tokens each`);
+  // Removed verbose chunk processing log
 
   // Process chunks sequentially to avoid overwhelming the API
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
-    console.log(`Processing chunk ${i + 1}/${chunks.length} with ${chunk.length} tokens`);
+    // Removed verbose chunk processing log
     
     try {
       // Try batch request for this chunk
@@ -909,7 +830,7 @@ async function fetchTokenPricesBatch(contractAddresses: string[]): Promise<Recor
           }
         });
         
-        console.log(`Successfully fetched prices for chunk ${i + 1} (${chunk.length} tokens)`);
+        // Removed verbose chunk success log
       } else {
         console.warn(`Batch request failed for chunk ${i + 1}, status: ${response.status}`);
         // Fallback to individual requests for this chunk
@@ -934,7 +855,7 @@ async function fetchTokenPricesBatch(contractAddresses: string[]): Promise<Recor
  * Fallback to individual price requests when batch fails
  */
 async function processBatchFallback(addresses: string[], results: Record<string, {price: number, source: string}>) {
-  console.log(`Falling back to individual requests for ${addresses.length} tokens`);
+  // Removed verbose fallback log
   
   for (const address of addresses) {
     try {
@@ -1186,4 +1107,39 @@ async function fetchNativeETHBalance(address: string): Promise<Token | null> {
     console.debug('ETH balance fetch failed:', error);
     return null;
   }
+}
+
+/**
+ * Generate professional token fallback HTML for onError handlers
+ * Creates consistent random gradient styling across all components
+ */
+export function generateTokenFallbackHTML(address: string, symbol: string = '', size: 'small' | 'medium' | 'large' = 'medium'): string {
+  // Get display text (symbol initials or address hex)
+  const displayText = symbol && symbol.length > 0 ? 
+    symbol.substring(0, Math.min(2, symbol.length)).toUpperCase() : 
+    address.substring(2, 4).toUpperCase();
+  
+  // Use address to deterministically select colors
+  const addressSeed = parseInt(address.substring(2, 10), 16);
+  const color1Index = addressSeed % PROFESSIONAL_COLORS.length;
+  const color2Index = (addressSeed + 7) % PROFESSIONAL_COLORS.length;
+  
+  const color1 = PROFESSIONAL_COLORS[color1Index];
+  const color2 = PROFESSIONAL_COLORS[color2Index];
+  
+  // Size configurations
+  const sizeConfig = {
+    small: { fontSize: '10px', fontWeight: '600' },
+    medium: { fontSize: '12px', fontWeight: '700' },
+    large: { fontSize: '16px', fontWeight: '700' }
+  };
+  
+  const config = sizeConfig[size];
+  
+  return `
+    <div class="w-full h-full rounded-full flex items-center justify-center text-white font-bold"
+         style="background: linear-gradient(135deg, ${color1}, ${color2}); font-size: ${config.fontSize}; font-weight: ${config.fontWeight};">
+      ${displayText}
+    </div>
+  `;
 } 

@@ -10,6 +10,7 @@
 // Cache for ScamSniffer blacklist data
 let scamSnifferCache: Set<string> | null = null;
 let lastFetchTime = 0;
+let hasLoggedInitialization = false; // Prevent duplicate initialization logs
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 /**
@@ -46,7 +47,12 @@ async function fetchScamSnifferBlacklist(): Promise<Set<string>> {
 
     const cacheInfo = data.cached ? 'cached' : 'fresh';
     const staleInfo = data.stale ? ' (stale)' : '';
+    
+    // Only log once per session to avoid duplicate messages
+    if (!hasLoggedInitialization) {
     console.log(`🛡️ ScamSniffer: Loaded ${blacklistSet.size} blacklisted addresses from ${cacheInfo} data${staleInfo}`);
+      hasLoggedInitialization = true;
+    }
     
     return blacklistSet;
 

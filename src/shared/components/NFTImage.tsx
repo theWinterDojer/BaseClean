@@ -3,14 +3,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 interface NFTImageProps {
   tokenId: string;
   name?: string;
-  isSpam?: boolean;
-  imageUrl?: string;
+  imageUrl?: string | null;
 }
 
 export default function NFTImage({
   tokenId,
   name,
-  isSpam = false,
   imageUrl
 }: NFTImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -53,7 +51,7 @@ export default function NFTImage({
 
   // Load image when visible
   useEffect(() => {
-    if (!isVisible || !imageUrl) return;
+    if (!isVisible || !imageUrl || imageUrl === null) return;
 
     setImageSrc(imageUrl);
   }, [isVisible, imageUrl]);
@@ -68,9 +66,8 @@ export default function NFTImage({
     setIsLoaded(false);
   }, []);
 
-  // Display name fallback
+  // Display name for alt text
   const displayName = name || `#${tokenId}`;
-  const initials = displayName.substring(0, 2).toUpperCase();
 
   return (
     <div className="relative w-full h-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
@@ -109,25 +106,7 @@ export default function NFTImage({
         </div>
       )}
 
-      {/* Error state or no image */}
-      {(hasError || !imageUrl) && isVisible && (
-        <div className={`absolute inset-0 flex flex-col items-center justify-center ${
-          isSpam ? 'bg-red-50 dark:bg-red-900/20' : 'bg-gray-100 dark:bg-gray-800'
-        }`}>
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold ${
-            isSpam 
-              ? 'bg-red-200 dark:bg-red-800 text-red-800 dark:text-red-200' 
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-          }`}>
-            {initials}
-          </div>
-          <div className={`mt-2 text-xs text-center px-2 ${
-            isSpam ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'
-          }`}>
-            {hasError ? 'Image failed to load' : 'No image'}
-          </div>
-        </div>
-      )}
+      {/* No artificial fallback - let natural image loading behavior handle missing images */}
 
       {/* Invisible reference for intersection observer */}
       {!isVisible && <div ref={imgRef} className="absolute inset-0" />}

@@ -24,9 +24,9 @@ export default function MainLayout({ children, stickyHeaderContent }: MainLayout
                   <Image 
                     src="/BaseCleanlogo.png" 
                     alt="BaseClean Logo" 
-                    width={56}
-                    height={56}
-                    className="w-12 h-12 sm:w-14 sm:h-14"
+                    width={72}
+                    height={72}
+                    className="w-16 h-16 sm:w-18 sm:h-18"
                   />
                 </div>
                 <div>

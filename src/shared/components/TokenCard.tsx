@@ -1,10 +1,9 @@
 import React, { useState, memo, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Token } from '@/types/token';
-import { formatBalance } from '@/lib/api';
-import { getTokenLogoUrl } from '@/lib/api';
-import { SimpleScamSnifferIndicator } from '@/components/ScamSnifferIndicator';
+import { formatBalance, getTokenLogoUrl, generateTokenFallbackHTML } from '@/lib/api';
 import { openDexScreener } from '@/utils/dexscreener';
+import { SimpleScamSnifferIndicator } from '@/components/ScamSnifferIndicator';
 
 interface TokenCardProps {
   token: Token;
@@ -21,12 +20,10 @@ interface TokenCardProps {
 const TokenImage = memo(function TokenImage({ 
   address, 
   symbol, 
-  isSpam,
   logoUrl: initialLogoUrl
 }: { 
   address: string; 
   symbol: string;
-  isSpam?: boolean;
   logoUrl?: string;
 }) {
   const [imageUrl, setImageUrl] = useState<string | null>(initialLogoUrl || null);
@@ -34,14 +31,6 @@ const TokenImage = memo(function TokenImage({
   const [hasError, setHasError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [imageLoadAttempted, setImageLoadAttempted] = useState(false);
-
-  // Generate initials for fallback
-  const getInitials = useCallback(() => {
-    if (symbol) {
-      return symbol.substring(0, 2).toUpperCase();
-    }
-    return address.substring(2, 4).toUpperCase();
-  }, [symbol, address]);
 
   // Load image with enhanced error handling and progressive fallbacks
   useEffect(() => {
@@ -132,12 +121,14 @@ const TokenImage = memo(function TokenImage({
   }
 
   if (hasError || !imageUrl) {
-    // Fallback to initials only if we truly have no image URL
+    // Use professional random gradient fallback
     return (
-      <div className={`absolute inset-0 flex items-center justify-center text-white font-bold text-lg 
-        ${isSpam ? 'bg-red-500' : 'bg-blue-500'}`}>
-        {getInitials()}
-      </div>
+      <div 
+        className="absolute inset-0"
+        dangerouslySetInnerHTML={{ 
+          __html: generateTokenFallbackHTML(address, symbol, 'large') 
+        }}
+      />
     );
   }
 
@@ -224,7 +215,6 @@ const TokenCard = memo(function TokenCard({
           <TokenImage 
             address={token.contract_address} 
             symbol={token.contract_ticker_symbol} 
-            isSpam={isSpam}
             logoUrl={token.logo_url}
           />
         </div>

@@ -17,10 +17,22 @@ module.exports = {
             },
             animation: {
                 'spin-slow': 'spin 3s linear infinite',
+                'orbit-small': 'orbit-small 12s linear infinite',
+                'orbit-medium': 'orbit-medium 12s linear infinite',
+                'orbit-large': 'orbit-large 12s linear infinite',
+                'wavy-scan-1': 'wavy-scan-balanced 8s ease-in-out infinite',
+                'wavy-scan-2': 'wavy-scan-balanced 10s ease-in-out infinite',
+                'wavy-scan-3': 'wavy-scan-balanced 12s ease-in-out infinite',
+                'wavy-scan-4': 'wavy-scan-balanced 9s ease-in-out infinite',
+                'wave-flow-1': 'wave-flow-balanced 6s ease-in-out infinite',
+                'wave-flow-2': 'wave-flow-balanced 7s ease-in-out infinite',
+                'wave-flow-3': 'wave-flow-balanced 8s ease-in-out infinite',
+                'wave-flow-4': 'wave-flow-balanced 6.5s ease-in-out infinite',
+                'analysis-line-1': 'analysis-line-balanced 12s ease-in-out infinite',
+                'analysis-line-2': 'analysis-line-balanced 14s ease-in-out infinite',
+                'analysis-line-3': 'analysis-line-balanced 16s ease-in-out infinite',
+                'pulse-gentle': 'pulse-gentle 10s ease-in-out infinite',
                 'progress': 'progress 3s ease-in-out infinite',
-                'float-1': 'float1 4s ease-in-out infinite',
-                'float-2': 'float2 5s ease-in-out infinite',
-                'float-3': 'float3 6s ease-in-out infinite',
             },
             keyframes: {
                 progress: {
@@ -28,19 +40,77 @@ module.exports = {
                     '50%': { width: '70%' },
                     '100%': { width: '100%' }
                 },
-                float1: {
-                    '0%, 100%': { transform: 'translateY(0px) translateX(0px)', opacity: '0.3' },
-                    '50%': { transform: 'translateY(-20px) translateX(10px)', opacity: '0.8' }
+                'spin-reverse': {
+                    '0%': { transform: 'rotate(0deg)' },
+                    '100%': { transform: 'rotate(-360deg)' }
                 },
-                float2: {
-                    '0%, 100%': { transform: 'translateY(0px) translateX(0px)', opacity: '0.2' },
-                    '33%': { transform: 'translateY(-15px) translateX(-8px)', opacity: '0.6' },
-                    '66%': { transform: 'translateY(-25px) translateX(15px)', opacity: '0.9' }
+                'orbit-small': {
+                    '0%': { transform: 'rotate(0deg) translateX(60px) rotate(0deg)' },
+                    '100%': { transform: 'rotate(360deg) translateX(60px) rotate(-360deg)' }
                 },
-                float3: {
-                    '0%, 100%': { transform: 'translateY(0px) translateX(0px)', opacity: '0.4' },
-                    '25%': { transform: 'translateY(-10px) translateX(12px)', opacity: '0.7' },
-                    '75%': { transform: 'translateY(-30px) translateX(-5px)', opacity: '0.5' }
+                'orbit-medium': {
+                    '0%': { transform: 'rotate(0deg) translateX(80px) rotate(0deg)' },
+                    '100%': { transform: 'rotate(360deg) translateX(80px) rotate(-360deg)' }
+                },
+                'orbit-large': {
+                    '0%': { transform: 'rotate(0deg) translateX(100px) rotate(0deg)' },
+                    '100%': { transform: 'rotate(360deg) translateX(100px) rotate(-360deg)' }
+                },
+                'wavy-scan-balanced': {
+                    '0%': { 
+                        transform: 'translateX(-130%) scaleY(0.7)',
+                        opacity: '0'
+                    },
+                    '50%': { 
+                        transform: 'translateX(0%) scaleY(1.4)',
+                        opacity: '0.6'
+                    },
+                    '100%': { 
+                        transform: 'translateX(130%) scaleY(0.7)',
+                        opacity: '0'
+                    }
+                },
+                'wave-flow-balanced': {
+                    '0%, 100%': { 
+                        transform: 'translateY(0px)',
+                        filter: 'hue-rotate(0deg)',
+                        opacity: '0.4'
+                    },
+                    '25%': { 
+                        transform: 'translateY(-2px)',
+                        filter: 'hue-rotate(15deg)',
+                        opacity: '0.6'
+                    },
+                    '50%': { 
+                        transform: 'translateY(0px)',
+                        filter: 'hue-rotate(30deg)',
+                        opacity: '0.7'
+                    },
+                    '75%': { 
+                        transform: 'translateY(2px)',
+                        filter: 'hue-rotate(15deg)',
+                        opacity: '0.6'
+                    }
+                },
+                'analysis-line-balanced': {
+                    '0%, 100%': { 
+                        opacity: '0.1',
+                        transform: 'scaleY(0.8)'
+                    },
+                    '50%': { 
+                        opacity: '0.25',
+                        transform: 'scaleY(1.3)'
+                    }
+                },
+                'pulse-gentle': {
+                    '0%, 100%': { 
+                        transform: 'scale(1)',
+                        opacity: '0.2'
+                    },
+                    '50%': { 
+                        transform: 'scale(1.8)',
+                        opacity: '0.1'
+                    }
                 }
             }
         },

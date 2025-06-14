@@ -12,8 +12,8 @@ export type NFT = {
   name?: string;
   /** NFT description */
   description?: string;
-  /** URL to the NFT image */
-  image_url?: string;
+  /** URL to the NFT image - null when no real image is available */
+  image_url?: string | null;
   /** Collection name */
   collection_name?: string;
   /** Collection contract address (same as contract_address for most cases) */

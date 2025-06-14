@@ -42,7 +42,15 @@ export default function BurnTransactionStatus({
           {!inProgress && (
             <h3 className="text-lg font-semibold text-white">
               {isWaitingForConfirmation && 'Confirm Transaction'}
-              {success && 'Burn Complete!'}
+              {success && (() => {
+                if (tokensBurned === 0 && tokensRejectedByUser > 0 && tokensFailed === 0) {
+                  return 'Burn Transaction Rejected';
+                } else if (tokensBurned > 0) {
+                  return 'Burn Complete!';
+                } else {
+                  return 'Burn Process Complete';
+                }
+              })()}
               {error && 'Burn Failed'}
             </h3>
           )}

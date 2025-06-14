@@ -48,6 +48,10 @@ export default function NFTDataManager({ onNFTsLoaded, showDisclaimer, children 
       const nftItems = await fetchNFTs(address, supportedChains);
       setNFTs(nftItems);
       onNFTsLoaded(nftItems);
+      
+      // Log NFT image loading summary after processing completes
+      const { logNFTImageLoadingSummary } = await import('../../../lib/nftApi');
+      logNFTImageLoadingSummary();
     } catch (err) {
       console.error('Failed to fetch NFTs:', err);
       setError('Failed to load NFTs. Please try again.');
@@ -74,23 +78,6 @@ export default function NFTDataManager({ onNFTsLoaded, showDisclaimer, children 
 
   return (
     <>
-      {/* Disclaimer acceptance required message - show instead of children when disclaimer is active */}
-      {isClient && isConnected && showDisclaimer && (
-        <div className="bg-yellow-900/30 border border-yellow-700 text-white p-5 rounded-lg flex items-center justify-center mt-4">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <span className="text-lg font-medium">Please Acknowledge Disclaimer</span>
-            </div>
-            <p className="text-gray-300">
-              Please read and accept the disclaimer to start scanning your NFTs.
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* Only render children when disclaimer is NOT showing */}
       {(!showDisclaimer || !isClient || !isConnected) && (
         children({

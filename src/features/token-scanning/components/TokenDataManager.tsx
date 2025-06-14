@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAccount, useChainId } from 'wagmi';
 import { Token } from '@/types/token';
-import { fetchTokenBalances } from '@/lib/api';
+import { fetchTokenBalances, generateTokenFallbackHTML } from '@/lib/api';
 
 interface TokenDataManagerProps {
   onTokensLoaded: (tokens: Token[]) => void;
@@ -25,12 +25,38 @@ interface LoadingProgress {
   discoveryMessage?: string; // Real-time progress from API
 }
 
+// Cycling messages for different phases - simplified and appropriate
+const CYCLING_MESSAGES = {
+  scanning: ['Connecting to Base network...'],
+  found: ['Analyzing tokens...'],
+  processing: [
+    'Fetching metadata...',
+    'Loading token details...',
+    'Getting prices...',
+    'Almost ready...'
+  ],
+  finalizing: ['Finalizing...']
+} as const;
+
 /**
  * Enhanced Loading Screen with Smart Messages and Token Image Cycling
  */
 function SmartLoadingScreen({ progress }: { progress: LoadingProgress }) {
   const [dots, setDots] = useState('');
   const [currentTokenIndex, setCurrentTokenIndex] = useState(0);
+  const [cyclingMessageIndex, setCyclingMessageIndex] = useState(0);
+
+  // Generate dynamic messages based on token count
+  const generateMessages = useCallback((phase: string, tokenCount: number) => {
+    switch (phase) {
+      case 'found':
+        return [`Found ${tokenCount} tokens...`];
+      case 'finalizing':
+        return [`Ready! ${tokenCount} tokens processed`];
+      default:
+        return CYCLING_MESSAGES[phase as keyof typeof CYCLING_MESSAGES] || ['Loading...'];
+    }
+  }, []);
 
   // Animate dots
   useEffect(() => {
@@ -44,6 +70,23 @@ function SmartLoadingScreen({ progress }: { progress: LoadingProgress }) {
     return () => clearInterval(dotInterval);
   }, []);
 
+  // Cycle through messages ONLY during processing phase (when it feels slowest) 
+  useEffect(() => {
+    if (progress.phase === 'processing') {
+      const currentMessages = generateMessages(progress.phase, progress.tokenCount);
+      
+      if (currentMessages.length > 1) {
+        const messageInterval = setInterval(() => {
+          setCyclingMessageIndex(prev => (prev + 1) % currentMessages.length);
+        }, 2000); // 2 second intervals
+
+        return () => clearInterval(messageInterval);
+      }
+    } else {
+      setCyclingMessageIndex(0); // Reset when not processing
+    }
+  }, [progress.phase, progress.tokenCount, generateMessages]);
+
   // Cycle through loaded token images
   useEffect(() => {
     if (progress.processedTokens.length > 1) {
@@ -55,26 +98,22 @@ function SmartLoadingScreen({ progress }: { progress: LoadingProgress }) {
     }
   }, [progress.processedTokens.length]);
 
-  // Smart contextual messages based on actual progress
+  // Smart contextual messages with cycling support
   const getSmartMessage = () => {
-    // Use real-time discovery message if available
+    // For processing phase, ignore API discoveryMessage and use cycling messages
+    if (progress.phase === 'processing') {
+      const currentMessages = generateMessages(progress.phase, progress.tokenCount);
+      const messageIndex = Math.min(cyclingMessageIndex, currentMessages.length - 1);
+      return currentMessages[messageIndex];
+    }
+    
+    // For other phases, use API message if available, otherwise use our messages
     if (progress.discoveryMessage) {
       return progress.discoveryMessage;
     }
     
-    // Fallback to phase-based messages
-    switch (progress.phase) {
-      case 'scanning':
-        return 'Connecting to Base network...';
-      case 'found':
-        return `Found ${progress.tokenCount} tokens, analyzing...`;
-      case 'processing':
-        return 'Processing token metadata...';
-      case 'finalizing':
-        return `Almost ready! Finalizing ${progress.tokenCount} tokens...`;
-      default:
-        return 'Loading...';
-    }
+    const currentMessages = generateMessages(progress.phase, progress.tokenCount);
+    return currentMessages[0] || 'Loading...';
   };
 
   const currentToken = progress.processedTokens[currentTokenIndex];
@@ -95,11 +134,11 @@ function SmartLoadingScreen({ progress }: { progress: LoadingProgress }) {
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
-                    target.parentElement!.innerHTML = `
-                      <div class="w-full h-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold">
-                        ${currentToken.contract_ticker_symbol?.substring(0, 2) || 'TK'}
-                      </div>
-                    `;
+                    target.parentElement!.innerHTML = generateTokenFallbackHTML(
+                      currentToken.contract_address, 
+                      currentToken.contract_ticker_symbol, 
+                      'medium'
+                    );
                   }}
                 />
               </div>
@@ -145,7 +184,7 @@ function SmartLoadingScreen({ progress }: { progress: LoadingProgress }) {
           {progress.tokenCount > 0 ? `Discovered ${progress.tokenCount} Tokens` : 'Scanning Your Wallet'}
         </h2>
         
-        <p className="text-lg text-gray-300 min-h-[28px]">
+        <p className="text-lg text-gray-300 min-h-[28px] transition-all duration-300">
           {getSmartMessage()}
           <span className="inline-block w-6 text-left">{dots}</span>
         </p>
@@ -179,11 +218,11 @@ function SmartLoadingScreen({ progress }: { progress: LoadingProgress }) {
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
-                    target.parentElement!.innerHTML = `
-                      <div class="w-full h-full bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                        ${token.contract_ticker_symbol?.substring(0, 1) || 'T'}
-                      </div>
-                    `;
+                    target.parentElement!.innerHTML = generateTokenFallbackHTML(
+                      token.contract_address, 
+                      token.contract_ticker_symbol, 
+                      'small'
+                    );
                   }}
                 />
               </div>
@@ -204,19 +243,73 @@ function SmartLoadingScreen({ progress }: { progress: LoadingProgress }) {
         </p>
       </div>
 
-      {/* Floating particles animation */}
+      {/* Balanced Wavery Scanning Pattern Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className={`absolute w-2 h-2 bg-blue-400 rounded-full opacity-30 animate-float-${i % 3 + 1}`}
-            style={{
-              left: `${20 + (i * 12)}%`,
-              top: `${30 + (i * 8)}%`,
-              animationDelay: `${i * 0.5}s`
-            }}
-          />
-        ))}
+        {/* Balanced horizontal wavy scanning patterns */}
+        <div className="absolute inset-0">
+          {/* Primary balanced wavy scanning line */}
+          <div className="absolute w-full h-1.5 animate-wavy-scan-1" style={{ top: '20%' }}>
+            <div className="w-full h-full bg-gradient-to-r from-transparent via-blue-400/35 to-transparent animate-wave-flow-1"
+                 style={{ 
+                   clipPath: 'polygon(0% 50%, 8% 30%, 16% 70%, 24% 35%, 32% 65%, 40% 40%, 48% 60%, 56% 45%, 64% 55%, 72% 35%, 80% 65%, 88% 40%, 96% 60%, 100% 50%, 100% 100%, 0% 100%)'
+                 }}></div>
+          </div>
+          
+          {/* Secondary balanced wavy scanning line */}
+          <div className="absolute w-full h-1.5 animate-wavy-scan-2" style={{ top: '45%', animationDelay: '2s' }}>
+            <div className="w-full h-full bg-gradient-to-r from-transparent via-green-400/30 to-transparent animate-wave-flow-2"
+                 style={{ 
+                   clipPath: 'polygon(0% 50%, 12% 65%, 20% 35%, 28% 70%, 36% 30%, 44% 60%, 52% 40%, 60% 65%, 68% 35%, 76% 70%, 84% 30%, 92% 60%, 100% 50%, 100% 100%, 0% 100%)'
+                 }}></div>
+          </div>
+          
+          {/* Tertiary balanced wavy scanning line */}
+          <div className="absolute w-full h-1 animate-wavy-scan-3" style={{ top: '70%', animationDelay: '4s' }}>
+            <div className="w-full h-full bg-gradient-to-r from-transparent via-blue-300/25 to-transparent animate-wave-flow-3"
+                 style={{ 
+                   clipPath: 'polygon(0% 50%, 10% 45%, 20% 55%, 30% 40%, 40% 60%, 50% 50%, 60% 40%, 70% 60%, 80% 45%, 90% 55%, 100% 50%, 100% 100%, 0% 100%)'
+                 }}></div>
+          </div>
+          
+          {/* Fourth balanced wavy scanning line */}
+          <div className="absolute w-full h-1 animate-wavy-scan-4" style={{ top: '85%', animationDelay: '6s' }}>
+            <div className="w-full h-full bg-gradient-to-r from-transparent via-green-300/20 to-transparent animate-wave-flow-4"
+                 style={{ 
+                   clipPath: 'polygon(0% 50%, 14% 60%, 28% 40%, 42% 65%, 56% 35%, 70% 55%, 84% 45%, 100% 50%, 100% 100%, 0% 100%)'
+                 }}></div>
+          </div>
+        </div>
+        
+        {/* Balanced analysis lines */}
+        <div className="absolute inset-0">
+          <div className="absolute h-full w-0.5 bg-gradient-to-b from-transparent via-blue-400/15 to-transparent animate-analysis-line-1" 
+               style={{ left: '20%' }}></div>
+          <div className="absolute h-full w-0.5 bg-gradient-to-b from-transparent via-green-400/12 to-transparent animate-analysis-line-2" 
+               style={{ left: '50%', animationDelay: '3s' }}></div>
+          <div className="absolute h-full w-0.5 bg-gradient-to-b from-transparent via-blue-300/10 to-transparent animate-analysis-line-3" 
+               style={{ left: '80%', animationDelay: '6s' }}></div>
+        </div>
+        
+        {/* Gentle pulsing background circle */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute w-40 h-40 border border-blue-400/8 rounded-full animate-pulse-gentle"></div>
+        </div>
+        
+        {/* Synchronized orbital elements - properly centered */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative">
+            {/* Three orbital dots with enhanced visibility */}
+            <div className="animate-orbit-small">
+              <div className="w-2 h-2 bg-blue-400/60 rounded-full shadow-sm shadow-blue-400/20"></div>
+            </div>
+            <div className="animate-orbit-medium">
+              <div className="w-1.5 h-1.5 bg-green-400/50 rounded-full shadow-sm shadow-green-400/15"></div>
+            </div>
+            <div className="animate-orbit-large">
+              <div className="w-1 h-1 bg-blue-300/70 rounded-full shadow-sm shadow-blue-300/25"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -271,12 +364,16 @@ export default function TokenDataManager({ onTokensLoaded, showDisclaimer, child
           discoveryMessage: `Ready! Found ${tokenItems.length} tokens`
         });
         
-        // Longer delay to showcase the token images
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Extended delay to showcase the token images and completion state
+        await new Promise(resolve => setTimeout(resolve, 3000));
         
         onTokensLoaded(tokenItems);
         setTokens(tokenItems);
         setLoading(false);
+        
+        // Log image loading summary after token processing completes
+        const { logImageLoadingSummary } = await import('../../../lib/api');
+        logImageLoadingSummary();
       } else {
         setTokens([]);
         setLoading(false);
@@ -329,24 +426,7 @@ export default function TokenDataManager({ onTokensLoaded, showDisclaimer, child
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16" />
               </svg>
             </div>
-            <span className="text-xl font-medium">Connect your wallet to start using BaseClean</span>
-          </div>
-        </div>
-      )}
-
-      {/* Disclaimer acceptance required message - show instead of children when disclaimer is active */}
-      {isClient && isConnected && showDisclaimer && (
-        <div className="bg-yellow-900/30 border border-yellow-700 text-white p-5 rounded-lg flex items-center justify-center">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <span className="text-lg font-medium">Please Acknowledge Disclaimer</span>
-            </div>
-            <p className="text-gray-300">
-              Please read and accept the disclaimer to start scanning your tokens.
-            </p>
+            <span className="text-xl font-medium">Connect your wallet to start using BaseClean. A zero-approval cleaning tool for Base.</span>
           </div>
         </div>
       )}
