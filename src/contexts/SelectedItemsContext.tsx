@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useMemo } from
 import { Token } from '@/types/token';
 import { NFT, BurnableItem, BurnableItemToken, BurnableItemNFT } from '@/types/nft';
 import EthSelectionModal from '@/shared/components/EthSelectionModal';
+import UnifiedBurnManager from '@/shared/components/UnifiedBurnManager';
 
 interface SelectedItemsContextValue {
   // Unified selection state
@@ -35,6 +36,11 @@ interface SelectedItemsContextValue {
   isTokenSelected: (contractAddress: string) => boolean;
   isNFTSelected: (contractAddress: string, tokenId: string) => boolean;
   getSelectedTokensList: (allTokens: Token[]) => Token[];
+  
+  // Burn modal state
+  isBurnModalOpen: boolean;
+  openBurnModal: () => void;
+  closeBurnModal: () => void;
 }
 
 const SelectedItemsContext = createContext<SelectedItemsContextValue | undefined>(undefined);
@@ -82,6 +88,7 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
   const [showEthModal, setShowEthModal] = useState(false);
   const [pendingEthToken, setPendingEthToken] = useState<Token | null>(null);
   const [pendingEthAddress, setPendingEthAddress] = useState<string>('');
+  const [isBurnModalOpen, setIsBurnModalOpen] = useState(false);
 
   // Computed values for backward compatibility
   const selectedTokens = useMemo(() => {
@@ -232,6 +239,20 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
     setSelectedItems([]);
   }, []);
 
+  // Burn modal methods
+  const openBurnModal = useCallback(() => {
+    setIsBurnModalOpen(true);
+  }, []);
+
+  const closeBurnModal = useCallback(() => {
+    setIsBurnModalOpen(false);
+  }, []);
+
+  // Handle burn completion
+  const handleBurnComplete = useCallback(() => {
+    clearAllSelectedItems();
+  }, [clearAllSelectedItems]);
+
   const value: SelectedItemsContextValue = {
     // Unified state
     selectedItems,
@@ -264,6 +285,11 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
     isTokenSelected,
     isNFTSelected,
     getSelectedTokensList,
+    
+    // Burn modal state
+    isBurnModalOpen,
+    openBurnModal,
+    closeBurnModal,
   };
 
   return (
@@ -274,6 +300,12 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
         onClose={handleEthCancel}
         onConfirm={handleEthConfirm}
         ethToken={pendingEthToken}
+      />
+      <UnifiedBurnManager
+        selectedItems={selectedItems}
+        isOpen={isBurnModalOpen}
+        onClose={closeBurnModal}
+        onComplete={handleBurnComplete}
       />
     </SelectedItemsContext.Provider>
   );

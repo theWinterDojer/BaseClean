@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { NFT } from '@/types/nft';
 import NFTImage from '@/shared/components/NFTImage';
 
@@ -111,9 +112,11 @@ export default function NFTBurnConfirmationModal({
                             className="inline-flex items-center justify-center w-8 h-8 bg-blue-600 hover:bg-blue-500 rounded-full transition-colors"
                             title="View on OpenSea"
                           >
-                            <img 
+                            <Image 
                               src="/opensealogo.png" 
                               alt="OpenSea"
+                              width={16}
+                              height={16}
                               className="w-4 h-4"
                             />
                           </a>

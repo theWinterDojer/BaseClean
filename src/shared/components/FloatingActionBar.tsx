@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelectedItems } from '@/contexts/SelectedItemsContext';
 
 interface FloatingActionBarProps {
-  onBurnSelected: () => void;
+  onBurnSelected?: () => void; // Made optional for backward compatibility
   onDeselectAll: () => void;
   isBurning?: boolean;
 }
@@ -12,7 +12,12 @@ export default function FloatingActionBar({
   onDeselectAll,
   isBurning = false
 }: FloatingActionBarProps) {
-  const { selectedTokensCount, selectedNFTsCount, selectedItemsCount } = useSelectedItems();
+  const { 
+    selectedTokensCount, 
+    selectedNFTsCount, 
+    selectedItemsCount,
+    openBurnModal 
+  } = useSelectedItems();
 
   // Only render when items are selected
   if (selectedItemsCount === 0) {
@@ -38,6 +43,20 @@ export default function FloatingActionBar({
     selectionLabel = `${selectedNFTsCount} NFT${selectedNFTsCount > 1 ? 's' : ''} Selected`;
     actionLabel = 'Burn Selected';
   }
+
+  // Handle burn button click - use unified modal if available
+  const handleBurnClick = () => {
+    if (isMixed || (hasTokens && hasNFTs)) {
+      // Always use unified modal for mixed selections
+      openBurnModal();
+    } else if (onBurnSelected) {
+      // Fall back to legacy behavior for single-type selections
+      onBurnSelected();
+    } else {
+      // Use unified modal for all selections
+      openBurnModal();
+    }
+  };
 
   return (
     <div 
@@ -86,7 +105,7 @@ export default function FloatingActionBar({
               
               {/* Burn Selected Button */}
               <button
-                onClick={onBurnSelected}
+                onClick={handleBurnClick}
                 disabled={isBurning}
                 className="px-4 py-2.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 disabled:from-red-800 disabled:to-red-800 disabled:cursor-not-allowed text-white rounded-lg text-sm font-bold transition-all duration-200 shadow-xl hover:shadow-2xl hover:scale-105 disabled:hover:scale-100 flex items-center gap-2 border border-red-400/60 flex-shrink-0 ring-2 ring-white/30"
                 aria-label={`Burn ${selectedItemsCount} selected items`}

@@ -200,32 +200,32 @@ const PROFESSIONAL_COLORS = [
 ];
 
 /**
- * Generate a professional random gradient fallback image
- * Creates clean, modern token avatars with random colors and gradients
+ * Generate a unified fallback data URI - replaces both SVG and HTML systems
+ * Creates consistent professional token avatars as data URIs for universal use
  */
-function generateFallbackImage(address: string, symbol: string = ''): string {
+function generateFallbackDataUri(address: string, symbol: string = ''): string {
   // Get display text (symbol initials or address hex)
   const displayText = symbol && symbol.length > 0 ? 
     symbol.substring(0, Math.min(2, symbol.length)).toUpperCase() : 
     address.substring(2, 4).toUpperCase();
   
-  // Use address to deterministically select colors
+  // Use address to deterministically select colors (same algorithm as HTML version)
   const addressSeed = parseInt(address.substring(2, 10), 16);
   const color1Index = addressSeed % PROFESSIONAL_COLORS.length;
-  const color2Index = (addressSeed + 7) % PROFESSIONAL_COLORS.length; // Offset for variety
+  const color2Index = (addressSeed + 7) % PROFESSIONAL_COLORS.length;
   
   const color1 = PROFESSIONAL_COLORS[color1Index];
   const color2 = PROFESSIONAL_COLORS[color2Index];
   
-  // Generate gradient direction based on address
+  // Generate gradient direction based on address (same as HTML version)
   const gradientSeed = parseInt(address.substring(10, 18), 16);
   const gradientType = gradientSeed % 3;
   
-  // Create clean, professional SVG with full circle (no outline)
+  // Create clean, professional SVG with unified styling
   let svgContent: string;
   
   if (gradientType === 0) {
-    // Linear gradient
+    // Linear gradient (matches HTML version)
     svgContent = `
       <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -244,7 +244,7 @@ function generateFallbackImage(address: string, symbol: string = ''): string {
               text-rendering="optimizeLegibility">${displayText}</text>
       </svg>`;
   } else if (gradientType === 1) {
-    // Radial gradient
+    // Radial gradient (matches HTML version)
     svgContent = `
       <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -263,17 +263,16 @@ function generateFallbackImage(address: string, symbol: string = ''): string {
               text-rendering="optimizeLegibility">${displayText}</text>
       </svg>`;
   } else {
-    // Solid color with subtle inner shadow effect
+    // Simple gradient (no overlay circles that create inner borders)
     svgContent = `
       <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <radialGradient id="shadow_${addressSeed}" cx="50%" cy="50%" r="50%">
+          <radialGradient id="simple_${addressSeed}" cx="30%" cy="30%" r="70%">
             <stop offset="0%" style="stop-color:${color1}" />
-            <stop offset="100%" style="stop-color:${color2}" stop-opacity="0.8" />
+            <stop offset="100%" style="stop-color:${color2}" />
           </radialGradient>
         </defs>
-        <circle cx="24" cy="24" r="24" fill="${color1}"/>
-        <circle cx="24" cy="24" r="20" fill="url(#shadow_${addressSeed})" opacity="0.6"/>
+        <circle cx="24" cy="24" r="24" fill="url(#simple_${addressSeed})"/>
         <text x="24" y="30" 
               font-family="system-ui, -apple-system, 'Segoe UI', Arial, sans-serif" 
               font-size="16" 
@@ -284,10 +283,8 @@ function generateFallbackImage(address: string, symbol: string = ''): string {
       </svg>`;
   }
   
-  // Create data URI and cache it
-  const dataUri = `data:image/svg+xml;base64,${safeEncode(svgContent.trim())}`;
-  saveToCache(address, dataUri);
-  return dataUri;
+  // Create data URI (no caching here - handled by caller)
+  return `data:image/svg+xml;base64,${safeEncode(svgContent.trim())}`;
 }
 
 /**
@@ -427,9 +424,10 @@ export async function getTokenLogoUrl(address: string, symbol: string = ''): Pro
   // 4. Generate professional fallback only when external sources fail
   IMAGE_SOURCE_STATS.fallback_svg++;
   imageLoadingSummary.fallbacksCreated++;
-  const fallbackSvg = generateFallbackImage(cleanAddress, cleanSymbol);
-  saveToCache(cleanAddress, fallbackSvg);
-  return fallbackSvg;
+  // Use consistent HTML-based fallback system (no more dual SVG/HTML systems)
+  const fallbackDataUri = generateFallbackDataUri(cleanAddress, cleanSymbol);
+  saveToCache(cleanAddress, fallbackDataUri);
+  return fallbackDataUri;
 }
 
 /**
@@ -1111,7 +1109,7 @@ async function fetchNativeETHBalance(address: string): Promise<Token | null> {
 
 /**
  * Generate professional token fallback HTML for onError handlers
- * Creates consistent random gradient styling across all components
+ * Creates consistent random gradient styling across all components - uniform and borderless
  */
 export function generateTokenFallbackHTML(address: string, symbol: string = '', size: 'small' | 'medium' | 'large' = 'medium'): string {
   // Get display text (symbol initials or address hex)
@@ -1119,13 +1117,17 @@ export function generateTokenFallbackHTML(address: string, symbol: string = '', 
     symbol.substring(0, Math.min(2, symbol.length)).toUpperCase() : 
     address.substring(2, 4).toUpperCase();
   
-  // Use address to deterministically select colors
+  // Use address to deterministically select colors (same algorithm as SVG version)
   const addressSeed = parseInt(address.substring(2, 10), 16);
   const color1Index = addressSeed % PROFESSIONAL_COLORS.length;
   const color2Index = (addressSeed + 7) % PROFESSIONAL_COLORS.length;
   
   const color1 = PROFESSIONAL_COLORS[color1Index];
   const color2 = PROFESSIONAL_COLORS[color2Index];
+  
+  // Generate gradient direction based on address (same as SVG version)
+  const gradientSeed = parseInt(address.substring(10, 18), 16);
+  const gradientType = gradientSeed % 3;
   
   // Size configurations
   const sizeConfig = {
@@ -1136,9 +1138,22 @@ export function generateTokenFallbackHTML(address: string, symbol: string = '', 
   
   const config = sizeConfig[size];
   
+  // Create consistent gradient backgrounds matching SVG version
+  let backgroundStyle = '';
+  if (gradientType === 0) {
+    // Linear gradient
+    backgroundStyle = `background: linear-gradient(135deg, ${color1}, ${color2});`;
+  } else if (gradientType === 1) {
+    // Radial gradient
+    backgroundStyle = `background: radial-gradient(circle at 30% 30%, ${color1}, ${color2});`;
+  } else {
+    // Solid color with subtle overlay effect
+    backgroundStyle = `background: ${color1}; background-image: radial-gradient(circle at center, ${color1}, ${color2});`;
+  }
+  
   return `
-    <div class="w-full h-full rounded-full flex items-center justify-center text-white font-bold"
-         style="background: linear-gradient(135deg, ${color1}, ${color2}); font-size: ${config.fontSize}; font-weight: ${config.fontWeight};">
+    <div class="w-full h-full rounded-full flex items-center justify-center text-white"
+         style="${backgroundStyle} font-size: ${config.fontSize}; font-weight: ${config.fontWeight}; font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;">
       ${displayText}
     </div>
   `;

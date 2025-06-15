@@ -30,7 +30,7 @@ export default function DisclaimerModal({
             </h2>
           </div>
           
-          <div className="bg-red-950/70 border border-red-800/80 rounded-lg p-5 mb-6">
+          <div className="bg-red-900/40 border border-red-600/50 rounded-lg p-5 mb-6">
             <p className="text-white font-medium text-base leading-relaxed mb-5">
               BaseClean is a tool designed to assist users in identifying and removing unwanted or spam tokens & NFTs from their wallet. This action includes the irreversible burning of assets.
             </p>
@@ -41,35 +41,35 @@ export default function DisclaimerModal({
             
             <div className="space-y-3">
               <div className="flex items-start">
-                <div className="flex-shrink-0 w-1.5 h-1.5 bg-red-400 rounded-full mt-2 mr-3"></div>
+                <div className="flex-shrink-0 w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-3"></div>
                 <p className="text-gray-200 text-sm leading-relaxed">
                   You are solely responsible for any actions taken on this platform, including the selection and removal (burning) of tokens.
                 </p>
               </div>
               
               <div className="flex items-start">
-                <div className="flex-shrink-0 w-1.5 h-1.5 bg-red-400 rounded-full mt-2 mr-3"></div>
+                <div className="flex-shrink-0 w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-3"></div>
                 <p className="text-gray-200 text-sm leading-relaxed">
                   BaseClean and its developers do not assume liability for any losses, mistakes, misclicks, technical errors, or unintended burns.
                 </p>
               </div>
               
               <div className="flex items-start">
-                <div className="flex-shrink-0 w-1.5 h-1.5 bg-red-400 rounded-full mt-2 mr-3"></div>
+                <div className="flex-shrink-0 w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-3"></div>
                 <p className="text-gray-200 text-sm leading-relaxed">
                   You understand that token burning is permanent and irreversible.
                 </p>
               </div>
               
               <div className="flex items-start">
-                <div className="flex-shrink-0 w-1.5 h-1.5 bg-red-400 rounded-full mt-2 mr-3"></div>
+                <div className="flex-shrink-0 w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-3"></div>
                 <p className="text-gray-200 text-sm leading-relaxed">
                   By proceeding, you explicitly release BaseClean, its operators, and affiliated parties from any claims or damages resulting from the use of this tool.
                 </p>
               </div>
               
               <div className="flex items-start">
-                <div className="flex-shrink-0 w-1.5 h-1.5 bg-red-400 rounded-full mt-2 mr-3"></div>
+                <div className="flex-shrink-0 w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-3"></div>
                 <p className="text-gray-200 text-sm leading-relaxed font-medium">
                   Use at your own risk. Review token selections carefully before confirming any transaction.
                 </p>
@@ -89,7 +89,7 @@ export default function DisclaimerModal({
           <div className="flex justify-center">
             <button
               type="button"
-              className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
               onClick={onAgree}
             >
               Agree and Continue

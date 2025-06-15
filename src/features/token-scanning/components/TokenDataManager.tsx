@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import Image from 'next/image';
 import { useAccount, useChainId } from 'wagmi';
 import { Token } from '@/types/token';
 import { fetchTokenBalances, generateTokenFallbackHTML } from '@/lib/api';
@@ -119,131 +120,8 @@ function SmartLoadingScreen({ progress }: { progress: LoadingProgress }) {
   const currentToken = progress.processedTokens[currentTokenIndex];
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
-      {/* Main Loading Icon with Token Image Cycling */}
-      <div className="relative">
-        {/* Animated gradient background */}
-        <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center animate-pulse">
-          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center overflow-hidden">
-            {currentToken ? (
-              <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100">
-                <img
-                  src={currentToken.logo_url || `https://storage.googleapis.com/zapper-fi-assets/tokens/base/${currentToken.contract_address}.png`}
-                  alt={currentToken.contract_ticker_symbol}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    target.parentElement!.innerHTML = generateTokenFallbackHTML(
-                      currentToken.contract_address, 
-                      currentToken.contract_ticker_symbol, 
-                      'medium'
-                    );
-                  }}
-                />
-              </div>
-            ) : (
-              <svg 
-                className="w-8 h-8 text-blue-600 animate-spin" 
-                fill="none" 
-                viewBox="0 0 24 24"
-              >
-                <circle 
-                  className="opacity-25" 
-                  cx="12" 
-                  cy="12" 
-                  r="10" 
-                  stroke="currentColor" 
-                  strokeWidth="4"
-                />
-                <path 
-                  className="opacity-75" 
-                  fill="currentColor" 
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-            )}
-          </div>
-        </div>
-        
-        {/* Rotating rings */}
-        <div className="absolute inset-0 w-20 h-20 border-4 border-transparent border-t-blue-400 rounded-full animate-spin"></div>
-        <div className="absolute inset-2 w-16 h-16 border-4 border-transparent border-r-green-400 rounded-full animate-spin-slow"></div>
-        
-        {/* Token symbol overlay when cycling through images */}
-        {currentToken && (
-          <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-80">
-            {currentToken.contract_ticker_symbol}
-          </div>
-        )}
-      </div>
-
-      {/* Smart Loading Messages */}
-      <div className="text-center space-y-4">
-        <h2 className="text-2xl font-bold text-white">
-          {progress.tokenCount > 0 ? `Discovered ${progress.tokenCount} Tokens` : 'Scanning Your Wallet'}
-        </h2>
-        
-        <p className="text-lg text-gray-300 min-h-[28px] transition-all duration-300">
-          {getSmartMessage()}
-          <span className="inline-block w-6 text-left">{dots}</span>
-        </p>
-        
-        {/* Dynamic Progress Bar */}
-        <div className="w-64 mx-auto bg-gray-700 rounded-full h-2 overflow-hidden">
-          <div 
-            className="h-full bg-gradient-to-r from-blue-500 to-green-500 rounded-full transition-all duration-500"
-            style={{ 
-              width: progress.phase === 'scanning' ? '20%' :
-                     progress.phase === 'found' ? '40%' :
-                     progress.phase === 'processing' ? '70%' : '95%'
-            }}
-          />
-        </div>
-        
-        {/* Token Preview Strip */}
-        {progress.processedTokens.length > 0 && (
-          <div className="flex justify-center space-x-2 mt-4">
-            {progress.processedTokens.slice(0, 6).map((token, index) => (
-              <div 
-                key={token.contract_address}
-                className={`w-8 h-8 rounded-full border-2 transition-all duration-300 ${
-                  index === currentTokenIndex ? 'border-blue-400 scale-110' : 'border-gray-600'
-                }`}
-              >
-                <img
-                  src={token.logo_url || `https://storage.googleapis.com/zapper-fi-assets/tokens/base/${token.contract_address}.png`}
-                  alt={token.contract_ticker_symbol}
-                  className="w-full h-full rounded-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    target.parentElement!.innerHTML = generateTokenFallbackHTML(
-                      token.contract_address, 
-                      token.contract_ticker_symbol, 
-                      'small'
-                    );
-                  }}
-                />
-              </div>
-            ))}
-            {progress.processedTokens.length > 6 && (
-              <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-white text-xs">
-                +{progress.processedTokens.length - 6}
-              </div>
-            )}
-          </div>
-        )}
-        
-        <p className="text-sm text-gray-400 max-w-md mx-auto">
-          {progress.processedTokens.length > 0 
-            ? `Processed ${progress.processedTokens.length} of ${progress.tokenCount} tokens`
-            : 'Securely scanning your wallet for tokens'
-          }
-        </p>
-      </div>
-
-      {/* Balanced Wavery Scanning Pattern Background */}
+    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8 relative">
+      {/* Balanced Wavery Scanning Pattern Background - Constrained to 60vh */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Balanced horizontal wavy scanning patterns */}
         <div className="absolute inset-0">
@@ -274,7 +152,7 @@ function SmartLoadingScreen({ progress }: { progress: LoadingProgress }) {
           {/* Fourth balanced wavy scanning line */}
           <div className="absolute w-full h-1 animate-wavy-scan-4" style={{ top: '85%', animationDelay: '6s' }}>
             <div className="w-full h-full bg-gradient-to-r from-transparent via-green-300/20 to-transparent animate-wave-flow-4"
-                 style={{ 
+            style={{
                    clipPath: 'polygon(0% 50%, 14% 60%, 28% 40%, 42% 65%, 56% 35%, 70% 55%, 84% 45%, 100% 50%, 100% 100%, 0% 100%)'
                  }}></div>
           </div>
@@ -290,12 +168,17 @@ function SmartLoadingScreen({ progress }: { progress: LoadingProgress }) {
                style={{ left: '80%', animationDelay: '6s' }}></div>
         </div>
         
-        {/* Gentle pulsing background circle */}
+        {/* Dual breathing circles - Centered within 60vh */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="absolute w-40 h-40 border border-blue-400/8 rounded-full animate-pulse-gentle"></div>
+          {/* Primary breathing circle - slower and larger */}
+          <div className="absolute w-48 h-48 border border-blue-400/6 rounded-full animate-pulse-gentle" 
+               style={{ animationDuration: '6s' }}></div>
+          {/* Secondary larger breathing circle - more subtle, starts simultaneously */}
+          <div className="absolute w-80 h-80 border border-green-400/2 rounded-full animate-pulse-gentle" 
+               style={{ animationDuration: '8s' }}></div>
         </div>
         
-        {/* Synchronized orbital elements - properly centered */}
+        {/* Synchronized orbital elements - Centered within 60vh */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative">
             {/* Three orbital dots with enhanced visibility */}
@@ -309,6 +192,136 @@ function SmartLoadingScreen({ progress }: { progress: LoadingProgress }) {
               <div className="w-1 h-1 bg-blue-300/70 rounded-full shadow-sm shadow-blue-300/25"></div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Main Content - Layered over background within same 60vh container */}
+      <div className="relative z-10 flex flex-col items-center justify-center space-y-8">
+        {/* Main Loading Icon with Token Image Cycling */}
+        <div className="relative">
+          {/* Animated gradient background */}
+          <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center animate-pulse">
+            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center overflow-hidden">
+              {currentToken ? (
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 relative">
+                  <Image
+                    src={currentToken.logo_url || `https://storage.googleapis.com/zapper-fi-assets/tokens/base/${currentToken.contract_address}.png`}
+                    alt={currentToken.contract_ticker_symbol}
+                    fill
+                    className="object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      target.parentElement!.innerHTML = generateTokenFallbackHTML(
+                        currentToken.contract_address, 
+                        currentToken.contract_ticker_symbol, 
+                        'medium'
+                      );
+                    }}
+                  />
+                </div>
+              ) : (
+                <svg 
+                  className="w-8 h-8 text-blue-600 animate-spin" 
+                  fill="none" 
+                  viewBox="0 0 24 24"
+                >
+                  <circle 
+                    className="opacity-25" 
+                    cx="12" 
+                    cy="12" 
+                    r="10" 
+                    stroke="currentColor" 
+                    strokeWidth="4"
+                  />
+                  <path 
+                    className="opacity-75" 
+                    fill="currentColor" 
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              )}
+            </div>
+          </div>
+          
+          {/* Rotating rings */}
+          <div className="absolute inset-0 w-20 h-20 border-4 border-transparent border-t-blue-400 rounded-full animate-spin"></div>
+          <div className="absolute inset-2 w-16 h-16 border-4 border-transparent border-r-green-400 rounded-full animate-spin-slow"></div>
+          
+          {/* Token symbol overlay when cycling through images */}
+          {currentToken && (
+            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-80">
+              {currentToken.contract_ticker_symbol}
+            </div>
+          )}
+        </div>
+
+        {/* Smart Loading Messages */}
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-bold text-white">
+            {progress.tokenCount > 0 ? `Discovered ${progress.tokenCount} Tokens` : 'Scanning Your Wallet'}
+          </h2>
+          
+          <p className="text-lg text-gray-300 min-h-[28px] transition-all duration-300">
+            {getSmartMessage()}
+            <span className="inline-block w-6 text-left">{dots}</span>
+          </p>
+          
+          {/* Dynamic Progress Bar */}
+          <div className="w-64 mx-auto bg-gray-700 rounded-full h-2 overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-500 to-green-500 rounded-full transition-all duration-500"
+              style={{ 
+                width: progress.phase === 'scanning' ? '20%' :
+                       progress.phase === 'found' ? '40%' :
+                       progress.phase === 'processing' ? '70%' : '95%'
+              }}
+            />
+          </div>
+          
+          {/* Token Preview Strip */}
+          {progress.processedTokens.length > 0 && (
+            <div className="flex justify-center space-x-2 mt-4">
+              {progress.processedTokens.slice(0, 6).map((token, index) => (
+                <div 
+                  key={token.contract_address}
+                  className={`w-8 h-8 rounded-full transition-all duration-300 ${
+                    index === currentTokenIndex ? 'scale-110 ring-2 ring-blue-400 ring-offset-1 ring-offset-gray-900' : ''
+                  }`}
+                >
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-700 relative">
+                    <Image
+                      src={token.logo_url || `https://storage.googleapis.com/zapper-fi-assets/tokens/base/${token.contract_address}.png`}
+                      alt={token.contract_ticker_symbol}
+                      fill
+                      className="object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.innerHTML = generateTokenFallbackHTML(
+                          token.contract_address, 
+                          token.contract_ticker_symbol, 
+                          'small'
+                        );
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+              {progress.processedTokens.length > 6 && (
+                <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-white text-xs">
+                  +{progress.processedTokens.length - 6}
+                </div>
+              )}
+            </div>
+          )}
+          
+          <p className="text-sm text-gray-400 max-w-md mx-auto">
+            {progress.processedTokens.length > 0 
+              ? `Processed ${progress.processedTokens.length} of ${progress.tokenCount} tokens`
+              : 'Securely scanning your wallet for tokens'
+            }
+          </p>
         </div>
       </div>
     </div>

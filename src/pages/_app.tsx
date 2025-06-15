@@ -13,6 +13,7 @@ import WalletErrorBoundary from '@/components/WalletErrorBoundary';
 import DisclaimerModal from '@/components/DisclaimerModal';
 import { useDisclaimer } from '@/hooks/useDisclaimer';
 import { parseWalletError, isUserRejectionError } from '@/utils/errorHandling';
+import { SelectedItemsProvider } from '@/contexts/SelectedItemsContext';
 
 const queryClient = new QueryClient();
 
@@ -97,9 +98,11 @@ export default function App(props: AppProps) {
     <QueryClientProvider client={queryClient}>
       <WagmiConfig config={config}>
         <RainbowKitProvider>
-          <WalletErrorBoundary>
-            <AppContent {...props} />
-          </WalletErrorBoundary>
+          <SelectedItemsProvider>
+            <WalletErrorBoundary>
+              <AppContent {...props} />
+            </WalletErrorBoundary>
+          </SelectedItemsProvider>
         </RainbowKitProvider>
       </WagmiConfig>
     </QueryClientProvider>
