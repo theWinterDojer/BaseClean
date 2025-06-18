@@ -3,12 +3,13 @@ import { useAccount } from 'wagmi';
 import { NFT } from '@/types/nft';
 import { useSelectedItems } from '@/contexts/SelectedItemsContext';
 import { useNFTFiltering } from '@/hooks/useNFTFiltering';
-import { useDirectBurner } from '@/lib/directBurner';
+import { useNFTBurnFlow } from '@/hooks/useNFTBurnFlow';
 import { clearNFTImageCache } from '@/lib/nftApi';
 import NFTDataManager from './NFTDataManager';
 import NFTListsContainer from './NFTListsContainer';
 import NFTStatistics from './NFTStatistics';
 import NFTBurnConfirmationModal from './NFTBurnConfirmationModal';
+import NFTBurnTransactionStatus from './NFTBurnTransactionStatus';
 import GridSizeControl, { type GridSize } from '@/shared/components/GridSizeControl';
 import FloatingActionBar from '@/shared/components/FloatingActionBar';
 
@@ -28,14 +29,15 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
   const [gridSize, setGridSize] = useState<GridSize>('medium');
 
   // NFT Burning state and hooks
-  const { 
-    burnSingleNFT,
-    burnMultipleNFTs,
+  const {
+    burnStatus,
+    showConfirmation,
+    closeConfirmation,
+    executeBurn,
+    resetBurnStatus,
+    isWaitingForConfirmation,
     isBurning
-  } = useDirectBurner();
-  
-  const [showBurnConfirmation, setShowBurnConfirmation] = useState(false);
-  const [nftsToBurn, setNftsToBurn] = useState<NFT[]>([]);
+  } = useNFTBurnFlow();
 
   // Clear NFT data when wallet disconnects
   useEffect(() => {
@@ -87,42 +89,37 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
   const handleBurnSelectedNFTs = useCallback(() => {
     const selectedNFTsArray = Array.from(selectedNFTs);
     if (selectedNFTsArray.length > 0) {
-      setNftsToBurn(selectedNFTsArray);
-      setShowBurnConfirmation(true);
+      showConfirmation(selectedNFTsArray);
     }
-  }, [selectedNFTs]);
+  }, [selectedNFTs, showConfirmation]);
 
   // Handle deselect all for the unified action bar
   const handleDeselectAll = useCallback(() => {
     clearAllSelectedItems();
   }, [clearAllSelectedItems]);
 
+  // Create a ref to store the refresh function
+  const refreshNFTsRef = React.useRef<(() => void) | null>(null);
+
   // Execute the burn after confirmation
-  const executeBurn = useCallback(async () => {
-    setShowBurnConfirmation(false);
-    
+  const handleExecuteBurn = useCallback(async () => {
     if (!address) {
       console.error('No wallet address available for burning');
       return;
     }
     
-    if (nftsToBurn.length === 1) {
-      // Single NFT burn
-      await burnSingleNFT(nftsToBurn[0], address);
-    } else if (nftsToBurn.length > 1) {
-      // Multiple NFT burn
-      await burnMultipleNFTs(nftsToBurn, address);
-    }
-    
-    // Clear the NFTs to burn
-    setNftsToBurn([]);
-  }, [nftsToBurn, burnSingleNFT, burnMultipleNFTs, address]);
+    await executeBurn(
+      address,
+      refreshNFTsRef.current || undefined, // Refresh NFT list after burning
+      clearAllSelectedItems, // Clear selections after burning
+      burnStatus.nftsToConfirm // Pass NFTs directly to avoid stale closure
+    );
+  }, [address, executeBurn, clearAllSelectedItems, burnStatus.nftsToConfirm]);
 
-  // Close burn confirmation
-  const closeBurnConfirmation = useCallback(() => {
-    setShowBurnConfirmation(false);
-    setNftsToBurn([]);
-  }, []);
+  // Close burn status modal
+  const handleCloseBurnStatus = useCallback(() => {
+    resetBurnStatus();
+  }, [resetBurnStatus]);
 
   // Convert selected NFTs Set to use our NFT key format
   const selectedNFTKeys = new Set(
@@ -139,7 +136,11 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
 
   return (
     <NFTDataManager onNFTsLoaded={handleNFTsLoaded} showDisclaimer={showDisclaimer}>
-      {({ loading, error, isConnected, refreshNFTs }) => (
+      {({ loading, error, isConnected, refreshNFTs }) => {
+        // Store the refresh function in ref so it can be used in callbacks
+        refreshNFTsRef.current = refreshNFTs;
+        
+        return (
         <>
           {/* Add bottom padding when NFTs are selected to prevent overlap with floating bar */}
           <div className={`flex flex-col lg:flex-row gap-6 ${selectedNFTsCount > 0 ? 'pb-24' : ''}`}>
@@ -233,13 +234,21 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
 
           {/* NFT Burn Confirmation Modal */}
           <NFTBurnConfirmationModal
-            nfts={nftsToBurn}
-            isOpen={showBurnConfirmation}
-            onClose={closeBurnConfirmation}
-            onConfirm={executeBurn}
+            nfts={burnStatus.nftsToConfirm}
+            isOpen={burnStatus.isConfirmationOpen}
+            onClose={closeConfirmation}
+            onConfirm={handleExecuteBurn}
+          />
+
+          {/* NFT Burn Transaction Status */}
+          <NFTBurnTransactionStatus
+            burnStatus={burnStatus}
+            onClose={handleCloseBurnStatus}
+            isWaitingForConfirmation={isWaitingForConfirmation}
           />
         </>
-      )}
+        );
+      }}
     </NFTDataManager>
   );
 } 

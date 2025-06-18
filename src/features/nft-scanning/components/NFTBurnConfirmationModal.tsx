@@ -109,15 +109,15 @@ export default function NFTBurnConfirmationModal({
                             href={`https://opensea.io/assets/base/${nft.contract_address}/${nft.token_id}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center w-8 h-8 bg-blue-600 hover:bg-blue-500 rounded-full transition-colors"
+                            className="inline-flex items-center justify-center w-6 h-6 hover:opacity-80 transition-opacity"
                             title="View on OpenSea"
                           >
                             <Image 
                               src="/opensealogo.png" 
                               alt="OpenSea"
-                              width={16}
-                              height={16}
-                              className="w-4 h-4"
+                              width={24}
+                              height={24}
+                              className="w-6 h-6 object-contain"
                             />
                           </a>
                         </div>
@@ -127,14 +127,6 @@ export default function NFTBurnConfirmationModal({
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Zero Approval Info */}
-          <div className="bg-blue-900/30 border border-blue-700 rounded-md p-4 mb-6">
-            <p className="text-white font-medium">🔐 Zero-Approval Burning</p>
-            <p className="text-gray-300 text-sm mt-1">
-              Each NFT will be transferred directly to the burn address using your selected NFTs. No approvals required - just {totalNFTs} simple transfer transaction{totalNFTs > 1 ? 's' : ''}.
-            </p>
           </div>
 
           {/* Cancel button on left, Burn button on right for safety */}
