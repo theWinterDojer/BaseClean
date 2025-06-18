@@ -192,14 +192,14 @@ export default function UnifiedBurnConfirmationModal({
                                   href={`https://opensea.io/assets/base/${nft.contract_address}/${nft.token_id}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="w-6 h-6 bg-blue-600 hover:bg-blue-500 rounded-full flex items-center justify-center transition-colors"
+                                  className="w-8 h-8 hover:opacity-80 flex items-center justify-center transition-opacity"
                                   title="View on OpenSea"
                                 >
                                   <Image 
                                     src="/opensealogo.png" 
                                     alt="OpenSea"
-                                    width={12}
-                                    height={12}
+                                    width={20}
+                                    height={20}
                                   />
                                 </a>
                               </div>
