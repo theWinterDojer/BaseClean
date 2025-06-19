@@ -2,7 +2,9 @@ import React, { createContext, useContext, useState, useCallback, useMemo } from
 import { Token } from '@/types/token';
 import { NFT, BurnableItem, BurnableItemToken, BurnableItemNFT } from '@/types/nft';
 import EthSelectionModal from '@/shared/components/EthSelectionModal';
-import UnifiedBurnManager from '@/shared/components/UnifiedBurnManager';
+import { useUniversalBurnFlow } from '@/hooks/useUniversalBurnFlow';
+import UniversalBurnConfirmationModal from '@/shared/components/UniversalBurnConfirmationModal';
+import UniversalBurnProgress from '@/shared/components/UniversalBurnProgress';
 
 interface SelectedItemsContextValue {
   // Unified selection state
@@ -88,7 +90,15 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
   const [showEthModal, setShowEthModal] = useState(false);
   const [pendingEthToken, setPendingEthToken] = useState<Token | null>(null);
   const [pendingEthAddress, setPendingEthAddress] = useState<string>('');
-  const [isBurnModalOpen, setIsBurnModalOpen] = useState(false);
+
+  // Use universal burn flow for handling burns
+  const {
+    burnStatus,
+    showConfirmation,
+    closeConfirmation,
+    executeBurn,
+    closeProgress
+  } = useUniversalBurnFlow();
 
   // Computed values for backward compatibility
   const selectedTokens = useMemo(() => {
@@ -241,17 +251,21 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
 
   // Burn modal methods
   const openBurnModal = useCallback(() => {
-    setIsBurnModalOpen(true);
-  }, []);
+    // Convert BurnableItem[] to BurnableAsset[]
+    const assets = selectedItems.map(item => item.data);
+    showConfirmation(assets);
+  }, [selectedItems, showConfirmation]);
 
   const closeBurnModal = useCallback(() => {
-    setIsBurnModalOpen(false);
-  }, []);
+    closeConfirmation();
+    closeProgress();
+  }, [closeConfirmation, closeProgress]);
 
   // Handle burn completion
   const handleBurnComplete = useCallback(() => {
     clearAllSelectedItems();
-  }, [clearAllSelectedItems]);
+    closeProgress();
+  }, [clearAllSelectedItems, closeProgress]);
 
   const value: SelectedItemsContextValue = {
     // Unified state
@@ -287,7 +301,7 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
     getSelectedTokensList,
     
     // Burn modal state
-    isBurnModalOpen,
+    isBurnModalOpen: burnStatus.isConfirmationOpen || burnStatus.isProgressOpen,
     openBurnModal,
     closeBurnModal,
   };
@@ -301,11 +315,18 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
         onConfirm={handleEthConfirm}
         ethToken={pendingEthToken}
       />
-      <UnifiedBurnManager
-        selectedItems={selectedItems}
-        isOpen={isBurnModalOpen}
-        onClose={closeBurnModal}
-        onComplete={handleBurnComplete}
+      {burnStatus.burnContext && (
+        <UniversalBurnConfirmationModal
+          burnContext={burnStatus.burnContext}
+          isOpen={burnStatus.isConfirmationOpen}
+          onClose={closeConfirmation}
+          onConfirm={executeBurn}
+          isConfirming={burnStatus.inProgress && !burnStatus.isProgressOpen}
+        />
+      )}
+      <UniversalBurnProgress
+        burnStatus={burnStatus}
+        onClose={handleBurnComplete}
       />
     </SelectedItemsContext.Provider>
   );

@@ -119,24 +119,12 @@ export function useDirectBurner() {
       let txHash: `0x${string}`;
       
       // Convert balance to proper BigInt format
-      // token.balance might be in scientific notation (e.g., "5.8451e+22")
-      // We need to convert it to a proper integer string first
+      // token.balance is already in the smallest unit (wei) as a string
       let balanceBigInt: bigint;
       try {
-        // If balance is in scientific notation, convert it properly
-        const balanceString = token.balance.toString();
-        if (balanceString.includes('e') || balanceString.includes('E')) {
-          // Convert scientific notation to full number string
-          const balanceNumber = Number(balanceString);
-          if (!Number.isFinite(balanceNumber)) {
-            throw new Error(`Invalid balance value: ${balanceString}`);
-          }
-          // Convert to integer string (no decimals)
-          balanceBigInt = BigInt(Math.floor(balanceNumber));
-        } else {
-          // Direct conversion for normal string numbers
-          balanceBigInt = BigInt(balanceString);
-        }
+        // The balance is already in the smallest unit, just convert directly to BigInt
+        // This ensures we burn the EXACT amount without any precision loss
+        balanceBigInt = BigInt(token.balance);
       } catch (balanceError) {
         console.error(`Error converting balance to BigInt for token ${token.contract_address}:`, balanceError);
         throw new Error(`Invalid token balance format: ${token.balance}`);

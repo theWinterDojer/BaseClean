@@ -4,13 +4,13 @@ import { Token, SpamFilters, TokenStatistics } from '@/types/token';
 import FilterPanel from '@/shared/components/FilterPanel';
 import { useTokenFiltering } from '@/hooks/useTokenFiltering';
 import { useScamSniffer } from '@/hooks/useScamSniffer';
-import { useBurnFlow } from '@/hooks/useBurnFlow';
+import { useUniversalBurnFlow } from '@/hooks/useUniversalBurnFlow';
 import { useSelectedTokens } from '@/contexts/SelectedItemsContext';
 import { TOKEN_VALUE_THRESHOLDS } from '@/constants/tokens';
 import TokenStatisticsComponent from './TokenStatistics';
 import TokenListsContainer from './TokenListsContainer';
-import BurnTransactionStatus from './BurnTransactionStatus';
-import BurnConfirmationModal from './BurnConfirmationModal';
+import UniversalBurnConfirmationModal from '@/shared/components/UniversalBurnConfirmationModal';
+import UniversalBurnProgress from '@/shared/components/UniversalBurnProgress';
 import TokenDataManager from './TokenDataManager';
 
 import FloatingActionBar from '@/shared/components/FloatingActionBar';
@@ -41,15 +41,14 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
         isLoading: scamSnifferLoading
     } = useScamSniffer(rawTokens);
 
-    // Use the extracted burn flow hook
+    // Use the universal burn flow hook instead of token-specific
     const {
         burnStatus,
         showConfirmation,
         closeConfirmation,
         executeBurn,
-        resetBurnStatus,
-        isWaitingForConfirmation,
-    } = useBurnFlow();
+        closeProgress
+    } = useUniversalBurnFlow();
 
     // Filter tokens using the existing hook with ScamSniffer-enhanced tokens
     const { spamTokens, nonSpamTokens } = useTokenFiltering(scamSnifferEnhancedTokens, spamFilters, maxValue);
@@ -71,7 +70,7 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
             console.warn('No tokens selected for burning');
             return;
         }
-        await showConfirmation(selectedTokensList);
+        showConfirmation(selectedTokensList);
     }, [scamSnifferEnhancedTokens, selectedTokens, showConfirmation]);
 
     // Handle deselect all
@@ -83,21 +82,23 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
     const handleConfirmBurn = useCallback(async (updateTokens: (tokens: Token[]) => void) => {
         if (!address) return;
         
-        try {
-            await executeBurn(
-                address,
-                updateTokens,
-                setSelectedTokens
-            );
-        } catch (error) {
-            // This catch block ensures any unhandled errors in the burn process
-            // are captured and don't bubble up to React's error boundary
-            console.error('Error in burn execution:', error);
-            
-            // The error should already be handled by the useBurnFlow hook,
-            // but this provides an additional safety net
+        await executeBurn();
+        
+        // After burn completes successfully, update the token list and clear selections
+        if (burnStatus.success) {
+            updateTokens(scamSnifferEnhancedTokens);
+            setSelectedTokens(new Set());
         }
-    }, [address, executeBurn, setSelectedTokens]);
+    }, [address, executeBurn, burnStatus.success, scamSnifferEnhancedTokens, setSelectedTokens]);
+
+    // Handle progress modal close
+    const handleCloseProgress = useCallback(() => {
+        closeProgress();
+        // Refresh tokens if needed
+        if (burnStatus.success && burnStatus.results.successful.length > 0) {
+            // The updateTokens function will be passed from TokenDataManager
+        }
+    }, [closeProgress, burnStatus]);
 
     // Statistics data for display (using ScamSniffer-enhanced tokens)
     const statistics: TokenStatistics = {
@@ -110,11 +111,10 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
 
     return (
         <>
-            {/* Burn Transaction Status - moved outside TokenDataManager to prevent unmounting during token refresh */}
-            <BurnTransactionStatus
+            {/* Universal Burn Progress Modal */}
+            <UniversalBurnProgress
                 burnStatus={burnStatus}
-                onClose={resetBurnStatus}
-                isWaitingForConfirmation={isWaitingForConfirmation}
+                onClose={handleCloseProgress}
             />
 
             <TokenDataManager onTokensLoaded={handleTokensLoaded} showDisclaimer={showDisclaimer}>
@@ -150,13 +150,16 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
                                 toggleToken={toggleToken}
                             />
                             
-                            {/* Burn Confirmation Modal */}
-                            <BurnConfirmationModal
-                                tokens={burnStatus.tokensToConfirm}
-                                isOpen={burnStatus.isConfirmationOpen}
-                                onClose={closeConfirmation}
-                                onConfirm={() => handleConfirmBurn(updateTokens)}
-                            />
+                            {/* Universal Burn Confirmation Modal */}
+                            {burnStatus.burnContext && (
+                                <UniversalBurnConfirmationModal
+                                    burnContext={burnStatus.burnContext}
+                                    isOpen={burnStatus.isConfirmationOpen}
+                                    onClose={closeConfirmation}
+                                    onConfirm={() => handleConfirmBurn(updateTokens)}
+                                    isConfirming={burnStatus.inProgress && !burnStatus.isProgressOpen}
+                                />
+                            )}
                         </div>
                     )
                 )}

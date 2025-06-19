@@ -3,13 +3,13 @@ import { useAccount } from 'wagmi';
 import { NFT } from '@/types/nft';
 import { useSelectedItems } from '@/contexts/SelectedItemsContext';
 import { useNFTFiltering } from '@/hooks/useNFTFiltering';
-import { useNFTBurnFlow } from '@/hooks/useNFTBurnFlow';
+import { useUniversalBurnFlow } from '@/hooks/useUniversalBurnFlow';
 import { clearNFTImageCache } from '@/lib/nftApi';
 import NFTDataManager from './NFTDataManager';
 import NFTListsContainer from './NFTListsContainer';
 import NFTStatistics from './NFTStatistics';
-import NFTBurnConfirmationModal from './NFTBurnConfirmationModal';
-import NFTBurnTransactionStatus from './NFTBurnTransactionStatus';
+import UniversalBurnConfirmationModal from '@/shared/components/UniversalBurnConfirmationModal';
+import UniversalBurnProgress from '@/shared/components/UniversalBurnProgress';
 import GridSizeControl, { type GridSize } from '@/shared/components/GridSizeControl';
 import FloatingActionBar from '@/shared/components/FloatingActionBar';
 
@@ -28,16 +28,14 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
   // Grid size state
   const [gridSize, setGridSize] = useState<GridSize>('medium');
 
-  // NFT Burning state and hooks
+  // NFT Burning state using universal burn flow
   const {
     burnStatus,
     showConfirmation,
     closeConfirmation,
     executeBurn,
-    resetBurnStatus,
-    isWaitingForConfirmation,
-    isBurning
-  } = useNFTBurnFlow();
+    closeProgress
+  } = useUniversalBurnFlow();
 
   // Clear NFT data when wallet disconnects
   useEffect(() => {
@@ -108,18 +106,23 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
       return;
     }
     
-    await executeBurn(
-      address,
-      refreshNFTsRef.current || undefined, // Refresh NFT list after burning
-      clearAllSelectedItems, // Clear selections after burning
-      burnStatus.nftsToConfirm // Pass NFTs directly to avoid stale closure
-    );
-  }, [address, executeBurn, clearAllSelectedItems, burnStatus.nftsToConfirm]);
+    await executeBurn();
+    
+    // After burn completes successfully, refresh and clear selections
+    if (burnStatus.success && refreshNFTsRef.current) {
+      refreshNFTsRef.current();
+      clearAllSelectedItems();
+    }
+  }, [address, executeBurn, burnStatus.success, clearAllSelectedItems]);
 
-  // Close burn status modal
-  const handleCloseBurnStatus = useCallback(() => {
-    resetBurnStatus();
-  }, [resetBurnStatus]);
+  // Handle progress modal close
+  const handleCloseProgress = useCallback(() => {
+    closeProgress();
+    // Refresh NFTs if needed
+    if (burnStatus.success && burnStatus.results.successful.length > 0 && refreshNFTsRef.current) {
+      refreshNFTsRef.current();
+    }
+  }, [closeProgress, burnStatus]);
 
   // Convert selected NFTs Set to use our NFT key format
   const selectedNFTKeys = new Set(
@@ -229,22 +232,24 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
           <FloatingActionBar
             onBurnSelected={handleBurnSelectedNFTs}
             onDeselectAll={handleDeselectAll}
-            isBurning={isBurning}
+            isBurning={burnStatus.inProgress}
           />
 
-          {/* NFT Burn Confirmation Modal */}
-          <NFTBurnConfirmationModal
-            nfts={burnStatus.nftsToConfirm}
-            isOpen={burnStatus.isConfirmationOpen}
-            onClose={closeConfirmation}
-            onConfirm={handleExecuteBurn}
-          />
+          {/* Universal Burn Confirmation Modal */}
+          {burnStatus.burnContext && (
+            <UniversalBurnConfirmationModal
+              burnContext={burnStatus.burnContext}
+              isOpen={burnStatus.isConfirmationOpen}
+              onClose={closeConfirmation}
+              onConfirm={handleExecuteBurn}
+              isConfirming={burnStatus.inProgress && !burnStatus.isProgressOpen}
+            />
+          )}
 
-          {/* NFT Burn Transaction Status */}
-          <NFTBurnTransactionStatus
+          {/* Universal Burn Progress Modal */}
+          <UniversalBurnProgress
             burnStatus={burnStatus}
-            onClose={handleCloseBurnStatus}
-            isWaitingForConfirmation={isWaitingForConfirmation}
+            onClose={handleCloseProgress}
           />
         </>
         );

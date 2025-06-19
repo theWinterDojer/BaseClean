@@ -1,0 +1,492 @@
+import { useState, useCallback, useRef, useMemo } from 'react';
+import { useAccount } from 'wagmi';
+import { 
+  BurnableAsset, 
+  BurnFlowContext, 
+  UniversalBurnFlowStatus, 
+  BurnResult, 
+  BurnFlowItem,
+  UniversalBurnFlowOptions,
+  UniversalBurnFlowCallbacks,
+  BurnSummary,
+  isToken,
+  isNFT,
+  categorizeError,
+  BurnFlowState
+} from '@/types/universalBurn';
+import { useDirectBurner } from '@/lib/directBurner';
+import { getTokenValue } from '@/features/token-scanning/utils/tokenUtils';
+import { Token } from '@/types/token';
+import { NFT } from '@/types/nft';
+
+// Default options
+const DEFAULT_OPTIONS: UniversalBurnFlowOptions = {
+  batchMode: false,
+  batchSize: 5,
+  delayBetweenBatches: 100,
+  skipValueWarnings: false,
+  preferredGasSpeed: 'normal'
+};
+
+// Initial burn status
+const initialBurnStatus: UniversalBurnFlowStatus = {
+  isConfirmationOpen: false,
+  isProgressOpen: false,
+  burnContext: null,
+  inProgress: false,
+  success: false,
+  error: null,
+  processedItems: 0,
+  totalItems: 0,
+  startTime: undefined,
+  estimatedTimeRemaining: undefined,
+  averageTimePerItem: undefined,
+  results: {
+    successful: [],
+    failed: [],
+    userRejected: []
+  },
+  totalGasUsed: undefined,
+  totalGasEstimated: undefined,
+  currentItem: null,
+  currentStepMessage: null,
+  currentBatch: undefined,
+  totalBatches: undefined
+};
+
+/**
+ * Universal burn flow hook that handles all asset types with enhanced features
+ */
+export function useUniversalBurnFlow(
+  options: UniversalBurnFlowOptions = {},
+  callbacks: UniversalBurnFlowCallbacks = {}
+) {
+  const { address } = useAccount();
+  const [burnStatus, setBurnStatus] = useState<UniversalBurnFlowStatus>(initialBurnStatus);
+  const [flowState, setFlowState] = useState<BurnFlowState>({ type: 'idle' });
+  const { burnSingleToken, burnSingleNFT } = useDirectBurner();
+  
+  // Merge options with defaults
+  const mergedOptions = useMemo(
+    () => ({ ...DEFAULT_OPTIONS, ...options }),
+    [options]
+  );
+  
+  // Refs for timing calculations
+  const itemTimings = useRef<number[]>([]);
+  const startTimeRef = useRef<number | null>(null);
+
+  // Calculate average time per item for estimates
+  const updateTimeEstimates = useCallback(() => {
+    if (itemTimings.current.length === 0) return;
+    
+    const avgTime = itemTimings.current.reduce((a, b) => a + b, 0) / itemTimings.current.length;
+    const remaining = burnStatus.totalItems - burnStatus.processedItems;
+    const estimatedTimeRemaining = Math.round((avgTime * remaining) / 1000); // in seconds
+    
+    setBurnStatus(prev => ({
+      ...prev,
+      averageTimePerItem: avgTime,
+      estimatedTimeRemaining
+    }));
+  }, [burnStatus.totalItems, burnStatus.processedItems]);
+
+  // Auto-detect burn context from mixed assets
+  const createBurnContext = useCallback((assets: BurnableAsset[]): BurnFlowContext => {
+    const tokens = assets.filter(isToken);
+    const nfts = assets.filter(isNFT);
+    
+    // Calculate token values and warnings
+    const totalTokenValue = tokens.reduce((sum, token) => sum + getTokenValue(token), 0);
+    const hasHighValueTokens = totalTokenValue > 1.0;
+    const hasETH = tokens.some(token => 
+      token.contract_ticker_symbol?.toLowerCase() === 'eth' ||
+      token.contract_address?.toLowerCase() === '0x4200000000000000000000000000000000000006' // ETH on Base
+    );
+    
+    // Calculate NFT collections
+    const nftsByCollection = new Map<string, NFT[]>();
+    nfts.forEach(nft => {
+      const collection = nft.contract_address;
+      if (!nftsByCollection.has(collection)) {
+        nftsByCollection.set(collection, []);
+      }
+      nftsByCollection.get(collection)!.push(nft);
+    });
+    const nftCollectionCount = nftsByCollection.size;
+    
+    // Determine burn type
+    let burnType: 'tokens-only' | 'nfts-only' | 'mixed';
+    if (tokens.length > 0 && nfts.length === 0) burnType = 'tokens-only';
+    else if (nfts.length > 0 && tokens.length === 0) burnType = 'nfts-only';  
+    else burnType = 'mixed';
+    
+    // Calculate estimated transaction count
+    const estimatedTransactionCount = assets.length;
+    
+    return {
+      tokens,
+      nfts,
+      totalItems: assets.length,
+      totalTokenValue,
+      hasHighValueTokens,
+      hasETH,
+      nftCollectionCount,
+      nftsByCollection,
+      burnType,
+      estimatedTransactionCount
+    };
+  }, []);
+
+  // Convert assets to burn flow items
+  const createBurnFlowItems = useCallback((assets: BurnableAsset[]): BurnFlowItem[] => {
+    return assets.map((asset, index) => {
+      if (isToken(asset)) {
+        return {
+          id: `token-${asset.contract_address}-${index}`,
+          type: 'token' as const,
+          data: asset,
+          metadata: {
+            displayName: asset.contract_ticker_symbol || 'Unknown Token',
+            value: getTokenValue(asset),
+            imageUrl: asset.logo_url
+          }
+        };
+      } else {
+        return {
+          id: `nft-${asset.contract_address}-${asset.token_id}-${index}`,
+          type: 'nft' as const,
+          data: asset,
+          metadata: {
+            displayName: asset.name || `NFT #${asset.token_id}`,
+            imageUrl: asset.image_url || undefined
+          }
+        };
+      }
+    });
+  }, []);
+
+  // Universal confirmation trigger
+  const showConfirmation = useCallback((assets: BurnableAsset[]) => {
+    if (assets.length === 0) return;
+    
+    const context = createBurnContext(assets);
+    
+    // Trigger onBurnStart callback if provided
+    callbacks.onBurnStart?.(context);
+    
+    setBurnStatus(prev => ({
+      ...prev,
+      isConfirmationOpen: true,
+      isProgressOpen: false,
+      burnContext: context,
+      error: null,
+      results: { successful: [], failed: [], userRejected: [] }
+    }));
+    
+    setFlowState({ type: 'confirming', context });
+  }, [createBurnContext, callbacks]);
+
+  // Close confirmation modal
+  const closeConfirmation = useCallback(() => {
+    setBurnStatus(prev => ({
+      ...prev,
+      isConfirmationOpen: false,
+      burnContext: null,
+      error: null
+    }));
+    
+    setFlowState({ type: 'idle' });
+  }, []);
+
+  // Process a single item
+  const processSingleItem = useCallback(async (
+    item: BurnFlowItem,
+    index: number,
+    total: number
+  ): Promise<BurnResult> => {
+    const itemStartTime = Date.now();
+    
+    try {
+      let result;
+      
+      if (item.type === 'token') {
+        result = await burnSingleToken(item.data as Token);
+      } else {
+        result = await burnSingleNFT(item.data as NFT, address!);
+      }
+
+      const itemEndTime = Date.now();
+      const itemDuration = itemEndTime - itemStartTime;
+      itemTimings.current.push(itemDuration);
+
+      const burnResult: BurnResult = {
+        item,
+        success: result.success,
+        txHash: result.txHash,
+        error: result.error as Error,
+        errorMessage: result.errorMessage,
+        errorType: result.error ? categorizeError(result.error) : undefined,
+        isUserRejection: result.isUserRejection || false,
+        timestamp: Date.now()
+      };
+
+      // Trigger callback
+      callbacks.onItemProcessed?.(burnResult, index, total);
+
+      return burnResult;
+
+    } catch (error) {
+      console.error('Burn error:', error);
+      
+      const burnResult: BurnResult = {
+        item,
+        success: false,
+        error: error as Error,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        errorType: categorizeError(error),
+        isUserRejection: categorizeError(error) === 'user_rejection',
+        timestamp: Date.now()
+      };
+
+      // Trigger error callback
+      callbacks.onError?.(error as Error, item);
+      callbacks.onItemProcessed?.(burnResult, index, total);
+
+      return burnResult;
+    }
+  }, [address, burnSingleToken, burnSingleNFT, callbacks]);
+
+  // Update burn progress
+  const updateBurnProgress = useCallback((result: BurnResult, processedCount: number) => {
+    setBurnStatus(prev => {
+      const successful = result.success ? [...prev.results.successful, result] : prev.results.successful;
+      const userRejected = result.isUserRejection ? [...prev.results.userRejected, result] : prev.results.userRejected;
+      const failed = (!result.success && !result.isUserRejection) ? [...prev.results.failed, result] : prev.results.failed;
+
+      const totalGasUsed = result.gasUsed 
+        ? (prev.totalGasUsed || BigInt(0)) + result.gasUsed 
+        : prev.totalGasUsed;
+
+      return {
+        ...prev,
+        processedItems: processedCount,
+        results: { successful, failed, userRejected },
+        totalGasUsed
+      };
+    });
+
+    updateTimeEstimates();
+  }, [updateTimeEstimates]);
+
+  // Process items in batches
+  const processBatch = useCallback(async (
+    items: BurnFlowItem[],
+    batchNumber: number,
+    totalBatches: number
+  ): Promise<BurnResult[]> => {
+    setBurnStatus(prev => ({
+      ...prev,
+      currentBatch: batchNumber,
+      totalBatches,
+      currentStepMessage: `Processing batch ${batchNumber} of ${totalBatches}...`
+    }));
+
+    const batchResults: BurnResult[] = [];
+    
+    // Process items in the batch sequentially
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const globalIndex = (batchNumber - 1) * mergedOptions.batchSize! + i;
+      
+      setBurnStatus(prev => ({
+        ...prev,
+        currentItem: item,
+        currentStepMessage: `Burning ${item.metadata?.displayName || 'item'} (${globalIndex + 1}/${prev.totalItems})...`
+      }));
+
+      const result = await processSingleItem(item, globalIndex, burnStatus.totalItems);
+      batchResults.push(result);
+
+      // Update progress after each item
+      const processedCount = (batchNumber - 1) * mergedOptions.batchSize! + i + 1;
+      updateBurnProgress(result, processedCount);
+    }
+
+    // Trigger batch complete callback
+    callbacks.onBatchComplete?.(batchNumber, batchResults);
+
+    return batchResults;
+  }, [mergedOptions.batchSize, processSingleItem, burnStatus.totalItems, callbacks, updateBurnProgress]);
+
+  // Universal burn execution
+  const executeBurn = useCallback(async () => {
+    if (!burnStatus.burnContext || !address) return;
+    
+    const { tokens, nfts } = burnStatus.burnContext;
+    const allAssets: BurnableAsset[] = [...tokens, ...nfts];
+    const burnItems = createBurnFlowItems(allAssets);
+
+    // Initialize burn process
+    startTimeRef.current = Date.now();
+    itemTimings.current = [];
+    
+    setBurnStatus(prev => ({
+      ...prev,
+      isConfirmationOpen: false,
+      isProgressOpen: true,
+      inProgress: true,
+      success: false,
+      error: null,
+      processedItems: 0,
+      totalItems: burnItems.length,
+      startTime: startTimeRef.current || undefined,
+      currentItem: null,
+      currentStepMessage: `Starting burn process for ${burnItems.length} items...`
+    }));
+
+    setFlowState({ type: 'burning', progress: burnStatus });
+
+    const allResults: BurnResult[] = [];
+
+    try {
+      if (mergedOptions.batchMode && burnItems.length > mergedOptions.batchSize!) {
+        // Process in batches
+        const totalBatches = Math.ceil(burnItems.length / mergedOptions.batchSize!);
+        
+        for (let batchNum = 1; batchNum <= totalBatches; batchNum++) {
+          const startIdx = (batchNum - 1) * mergedOptions.batchSize!;
+          const endIdx = Math.min(startIdx + mergedOptions.batchSize!, burnItems.length);
+          const batchItems = burnItems.slice(startIdx, endIdx);
+          
+          const batchResults = await processBatch(batchItems, batchNum, totalBatches);
+          allResults.push(...batchResults);
+          
+          // Delay between batches if specified
+          if (batchNum < totalBatches && mergedOptions.delayBetweenBatches! > 0) {
+            await new Promise(resolve => setTimeout(resolve, mergedOptions.delayBetweenBatches));
+          }
+        }
+      } else {
+        // Process sequentially
+        for (let i = 0; i < burnItems.length; i++) {
+          const item = burnItems[i];
+          
+          setBurnStatus(prev => ({
+            ...prev,
+            currentItem: item,
+            currentStepMessage: `Burning ${item.metadata?.displayName || 'item'} (${i + 1}/${burnItems.length})...`
+          }));
+
+          const result = await processSingleItem(item, i, burnItems.length);
+          allResults.push(result);
+          updateBurnProgress(result, i + 1);
+        }
+      }
+
+      // Calculate completion summary
+      const duration = Date.now() - startTimeRef.current!;
+      const summary: BurnSummary = {
+        totalItems: burnItems.length,
+        successfulBurns: allResults.filter(r => r.success).length,
+        failedBurns: allResults.filter(r => !r.success && !r.isUserRejection).length,
+        userRejections: allResults.filter(r => r.isUserRejection).length,
+        totalValue: burnStatus.burnContext.totalTokenValue,
+        totalGasUsed: burnStatus.totalGasUsed || BigInt(0),
+        duration,
+        burnType: burnStatus.burnContext.burnType
+      };
+
+      // Trigger completion callback
+      callbacks.onBurnComplete?.(summary);
+
+      // Complete the burn process
+      setBurnStatus(prev => ({
+        ...prev,
+        inProgress: false,
+        success: true,
+        currentItem: null,
+        currentStepMessage: createCompletionMessage(summary),
+        currentBatch: undefined,
+        totalBatches: undefined
+      }));
+
+      setFlowState({ type: 'complete', results: allResults });
+
+    } catch (error) {
+      console.error('Burn execution error:', error);
+      
+      setBurnStatus(prev => ({
+        ...prev,
+        inProgress: false,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unexpected error occurred',
+        currentItem: null,
+        currentStepMessage: 'Burn process failed'
+      }));
+
+      setFlowState({ type: 'error', error: error as Error });
+      callbacks.onError?.(error as Error);
+    }
+  }, [
+    burnStatus, 
+    address, 
+    createBurnFlowItems, 
+    mergedOptions, 
+    processBatch, 
+    processSingleItem, 
+    updateBurnProgress, 
+    callbacks
+  ]);
+
+  // Create user-friendly completion message
+  const createCompletionMessage = (summary: BurnSummary): string => {
+    const { successfulBurns, failedBurns, userRejections } = summary;
+    
+    if (successfulBurns > 0 && failedBurns === 0 && userRejections === 0) {
+      return `🎉 Successfully burned ${successfulBurns} item${successfulBurns > 1 ? 's' : ''}!`;
+    } else if (successfulBurns > 0) {
+      let message = `✅ Burned ${successfulBurns} item${successfulBurns > 1 ? 's' : ''}`;
+      if (userRejections > 0) {
+        message += ` (${userRejections} cancelled)`;
+      }
+      if (failedBurns > 0) {
+        message += ` (${failedBurns} failed)`;
+      }
+      return message;
+    } else if (userRejections === summary.totalItems) {
+      return '⏭️ All transactions were cancelled. You can try again anytime.';
+    } else {
+      return `❌ Unable to burn items. ${failedBurns} failed due to restrictions.`;
+    }
+  };
+
+  // Close progress modal
+  const closeProgress = useCallback(() => {
+    setBurnStatus(initialBurnStatus);
+    setFlowState({ type: 'idle' });
+  }, []);
+
+  // Reset everything
+  const resetBurnFlow = useCallback(() => {
+    setBurnStatus(initialBurnStatus);
+    setFlowState({ type: 'idle' });
+    itemTimings.current = [];
+    startTimeRef.current = null;
+  }, []);
+
+  // Check if waiting for wallet confirmation
+  const isWaitingForConfirmation = burnStatus.isConfirmationOpen && !burnStatus.inProgress;
+
+  return {
+    burnStatus,
+    flowState,
+    showConfirmation,
+    closeConfirmation,
+    executeBurn,
+    closeProgress,
+    resetBurnFlow,
+    isWaitingForConfirmation,
+    options: mergedOptions
+  };
+} 
