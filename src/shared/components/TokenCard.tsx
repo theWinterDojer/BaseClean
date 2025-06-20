@@ -168,6 +168,10 @@ const TokenCard = memo(function TokenCard({
 }: TokenCardProps) {
   const [hover, setHover] = useState(false);
   
+  // Check if this is native ETH (cannot be burned)
+  const isNativeETH = token.contract_address === '0x0000000000000000000000000000000000000000' || 
+                      token.contract_address.toLowerCase() === '0x0000000000000000000000000000000000000000';
+  
   const formattedBalance = formatBalance(token.balance, token.contract_decimals);
 
   // Calculate actual numeric value for display
@@ -181,6 +185,12 @@ const TokenCard = memo(function TokenCard({
   })();
 
   const handleCardClick = () => {
+    // Prevent selection of native ETH
+    if (isNativeETH) {
+      alert('⚠️ Native ETH cannot be burned.\n\nETH is needed for gas fees on the network and cannot be burned using token burn methods. Only ERC-20 tokens can be burned.');
+      return;
+    }
+    
     if (onTokenSelect) {
       onTokenSelect(token);
     }
@@ -197,18 +207,21 @@ const TokenCard = memo(function TokenCard({
 
   return (
     <div 
-      className={`p-4 rounded-lg cursor-pointer transition-all duration-200 group mb-1 border ${
-        isSelected 
-          ? isSpam 
-            ? 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700'
-            : 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700' 
-          : hover 
-            ? 'bg-gray-100 dark:bg-gray-800/70 border-gray-300 dark:border-gray-600' 
-            : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+      className={`p-4 rounded-lg transition-all duration-200 group mb-1 border ${
+        isNativeETH
+          ? 'bg-gray-50 dark:bg-gray-900/50 border-gray-300 dark:border-gray-600 cursor-not-allowed opacity-60'
+          : isSelected 
+            ? isSpam 
+              ? 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 cursor-pointer'
+              : 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 cursor-pointer' 
+            : hover 
+              ? 'bg-gray-100 dark:bg-gray-800/70 border-gray-300 dark:border-gray-600 cursor-pointer' 
+              : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 cursor-pointer'
       }`}
       onClick={handleCardClick}
-      onMouseEnter={() => setHover(true)}
+      onMouseEnter={() => !isNativeETH && setHover(true)}
       onMouseLeave={() => setHover(false)}
+      title={isNativeETH ? "ETH cannot be burned - needed for gas fees" : undefined}
     >
       <div className="flex items-center">
         <div className="relative w-12 h-12 mr-4 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 shadow-sm flex-shrink-0">
@@ -225,6 +238,11 @@ const TokenCard = memo(function TokenCard({
               <span className="truncate">
                 {token.contract_ticker_symbol || token.contract_name || token.contract_address.substring(0, 8)}
               </span>
+              {isNativeETH && (
+                <span className="flex-shrink-0 ml-1 text-yellow-600 dark:text-yellow-400" title="Cannot be burned">
+                  ⛔
+                </span>
+              )}
               <div className="flex-shrink-0 ml-1">
                 <SimpleScamSnifferIndicator isFlagged={token.scamSnifferFlagged ?? false} />
               </div>

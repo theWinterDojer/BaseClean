@@ -41,9 +41,10 @@ export const API_CONFIG = {
 export const WALLET_CONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '';
 
 // Gas limits for different operations
-export const BURN_GAS_LIMIT = 100000;
-export const BATCH_BURN_GAS_LIMIT = 150000;
-export const APPROVAL_GAS_LIMIT = 80000;
+export const BURN_GAS_LIMIT = 150000;
+export const NFT_BURN_GAS_LIMIT = 200000; // Higher limit for NFT transfers
+export const BATCH_BURN_GAS_LIMIT = 300000;
+export const APPROVAL_GAS_LIMIT = 100000;
 
 // Dead address for token burning - where tokens go to die
 export const BURN_ADDRESS = '0x000000000000000000000000000000000000dEaD';

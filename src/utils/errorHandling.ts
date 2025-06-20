@@ -138,11 +138,32 @@ export function parseWalletError(error: unknown): ParsedError {
 
   // Contract-specific errors
   const errorString = error.toString().toLowerCase();
-  if (errorString.includes('contract') || errorString.includes('revert')) {
+  const errorMessage = (error as { message?: string })?.message?.toLowerCase() || '';
+  
+  if (errorString.includes('contract') || errorString.includes('revert') || errorMessage.includes('execution reverted')) {
+    let userMessage = 'Transaction failed due to a contract error.';
+    
+    // NFT-specific error patterns with educational context
+    if (errorString.includes('not approved') || errorString.includes('caller is not owner') || errorString.includes('does not own')) {
+      userMessage = 'This NFT cannot be burned because you don\'t actually own it. Many spam NFTs appear in wallets but aren\'t truly owned by your address.';
+    } else if (errorString.includes('transfer restricted') || errorString.includes('transfers disabled')) {
+      userMessage = 'This NFT has transfer restrictions built into its contract. Some NFTs are designed to be non-transferable and cannot be burned.';
+    } else if (errorString.includes('insufficient balance') || errorString.includes('balance')) {
+      userMessage = 'This NFT has zero balance in your wallet. It may be a phantom NFT that appears due to indexing issues but doesn\'t actually exist.';
+    } else if (errorString.includes('invalid token') || errorString.includes('nonexistent token')) {
+      userMessage = 'This NFT token ID doesn\'t exist or has been destroyed. Some spam NFTs reference invalid token IDs.';
+    } else if (errorString.includes('gas')) {
+      userMessage = 'Transaction failed due to insufficient gas. Some NFT contracts require more gas than estimated.';
+    } else if (errorString.includes('token') || errorString.includes('nft')) {
+      userMessage = 'This NFT cannot be burned due to contract restrictions. Many spam NFTs are designed to be non-transferable to prevent removal.';
+    } else {
+      userMessage = 'This asset cannot be burned due to contract limitations. Some tokens and NFTs have built-in restrictions that prevent burning.';
+    }
+    
     return {
       type: 'CONTRACT_ERROR',
       message: error.toString(),
-      userFriendlyMessage: 'Transaction failed due to a contract error. The token might not support burning or there could be insufficient balance.',
+      userFriendlyMessage: userMessage,
       originalError: error
     };
   }

@@ -21,6 +21,7 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
   const { address, isConnected } = useAccount();
   const { selectedNFTs, toggleNFT, selectedNFTsCount, clearAllSelectedItems } = useSelectedItems();
   const [allNFTs, setAllNFTs] = useState<NFT[]>([]);
+
   
   // Network filtering state
   const [selectedNetworks, setSelectedNetworks] = useState<Set<number>>(new Set([8453, 7777777])); // Default: show all networks
@@ -31,7 +32,6 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
   // NFT Burning state using universal burn flow
   const {
     burnStatus,
-    showConfirmation,
     closeConfirmation,
     executeBurn,
     closeProgress
@@ -83,13 +83,8 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
 
 
 
-  // Handle bulk burn of selected NFTs
-  const handleBurnSelectedNFTs = useCallback(() => {
-    const selectedNFTsArray = Array.from(selectedNFTs);
-    if (selectedNFTsArray.length > 0) {
-      showConfirmation(selectedNFTsArray);
-    }
-  }, [selectedNFTs, showConfirmation]);
+  // Note: Burn handling is now fully managed by the SelectedItemsContext
+  // and triggered through the FloatingActionBar using openBurnModal()
 
   // Handle deselect all for the unified action bar
   const handleDeselectAll = useCallback(() => {
@@ -115,14 +110,7 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
     }
   }, [address, executeBurn, burnStatus.success, clearAllSelectedItems]);
 
-  // Handle progress modal close
-  const handleCloseProgress = useCallback(() => {
-    closeProgress();
-    // Refresh NFTs if needed
-    if (burnStatus.success && burnStatus.results.successful.length > 0 && refreshNFTsRef.current) {
-      refreshNFTsRef.current();
-    }
-  }, [closeProgress, burnStatus]);
+
 
   // Convert selected NFTs Set to use our NFT key format
   const selectedNFTKeys = new Set(
@@ -138,8 +126,9 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
   }, []);
 
   return (
-    <NFTDataManager onNFTsLoaded={handleNFTsLoaded} showDisclaimer={showDisclaimer}>
-      {({ loading, error, isConnected, refreshNFTs }) => {
+    <>
+      <NFTDataManager onNFTsLoaded={handleNFTsLoaded} showDisclaimer={showDisclaimer}>
+        {({ loading, error, isConnected, refreshNFTs }) => {
         // Store the refresh function in ref so it can be used in callbacks
         refreshNFTsRef.current = refreshNFTs;
         
@@ -230,7 +219,6 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
 
           {/* Floating Action Bar */}
           <FloatingActionBar
-            onBurnSelected={handleBurnSelectedNFTs}
             onDeselectAll={handleDeselectAll}
             isBurning={burnStatus.inProgress}
           />
@@ -249,11 +237,21 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
           {/* Universal Burn Progress Modal */}
           <UniversalBurnProgress
             burnStatus={burnStatus}
-            onClose={handleCloseProgress}
+            onClose={() => {
+              closeProgress();
+              // Simple page reload after successful burns
+              if (burnStatus.success && burnStatus.results.successful.length > 0) {
+                // Clear selections first
+                clearAllSelectedItems();
+                // Simple page reload - browser handles loading state
+                window.location.reload();
+              }
+            }}
           />
         </>
         );
       }}
     </NFTDataManager>
+    </>
   );
 } 

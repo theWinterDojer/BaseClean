@@ -41,35 +41,35 @@ export default function DisclaimerModal({
             
             <div className="space-y-3">
               <div className="flex items-start">
-                <div className="flex-shrink-0 w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-3"></div>
+                <div className="flex-shrink-0 w-1.5 h-1.5 bg-white rounded-full mt-2 mr-3"></div>
                 <p className="text-gray-200 text-sm leading-relaxed">
                   You are solely responsible for any actions taken on this platform, including the selection and removal (burning) of tokens.
                 </p>
               </div>
               
               <div className="flex items-start">
-                <div className="flex-shrink-0 w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-3"></div>
+                <div className="flex-shrink-0 w-1.5 h-1.5 bg-white rounded-full mt-2 mr-3"></div>
                 <p className="text-gray-200 text-sm leading-relaxed">
                   BaseClean and its developers do not assume liability for any losses, mistakes, misclicks, technical errors, or unintended burns.
                 </p>
               </div>
               
               <div className="flex items-start">
-                <div className="flex-shrink-0 w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-3"></div>
+                <div className="flex-shrink-0 w-1.5 h-1.5 bg-white rounded-full mt-2 mr-3"></div>
                 <p className="text-gray-200 text-sm leading-relaxed">
                   You understand that token burning is permanent and irreversible.
                 </p>
               </div>
               
               <div className="flex items-start">
-                <div className="flex-shrink-0 w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-3"></div>
+                <div className="flex-shrink-0 w-1.5 h-1.5 bg-white rounded-full mt-2 mr-3"></div>
                 <p className="text-gray-200 text-sm leading-relaxed">
                   By proceeding, you explicitly release BaseClean, its operators, and affiliated parties from any claims or damages resulting from the use of this tool.
                 </p>
               </div>
               
               <div className="flex items-start">
-                <div className="flex-shrink-0 w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-3"></div>
+                <div className="flex-shrink-0 w-1.5 h-1.5 bg-white rounded-full mt-2 mr-3"></div>
                 <p className="text-gray-200 text-sm leading-relaxed font-medium">
                   Use at your own risk. Review token selections carefully before confirming any transaction.
                 </p>

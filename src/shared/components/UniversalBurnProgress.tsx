@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { UniversalBurnFlowStatus, BurnResult } from '@/types/universalBurn';
 import NFTImage from '@/shared/components/NFTImage';
 import { NFT } from '@/types/nft';
+import BurnFailureEducationModal from '@/components/SpamNFTEducationModal';
 
 interface UniversalBurnProgressProps {
   burnStatus: UniversalBurnFlowStatus;
@@ -13,6 +14,8 @@ export default function UniversalBurnProgress({
   burnStatus,
   onClose
 }: UniversalBurnProgressProps) {
+  const [showEducationModal, setShowEducationModal] = React.useState(false);
+  
   const { 
     isProgressOpen,
     inProgress,
@@ -66,38 +69,27 @@ export default function UniversalBurnProgress({
 
   // Get user-friendly error message
   const getErrorMessage = (result: BurnResult) => {
-    if (result.errorType === 'user_rejection') {
+    if (result.isUserRejection || result.errorType === 'user_rejection') {
       return 'Transaction cancelled by user';
-    } else if (result.errorType === 'insufficient_gas') {
-      return 'Insufficient gas funds';
-    } else if (result.errorType === 'contract_restriction') {
-      return 'Contract restrictions prevent burning';
-    } else if (result.errorMessage?.includes('execution reverted')) {
-      return 'Execution reverted on chain';
-    } else if (result.errorMessage?.includes('insufficient funds')) {
-      return 'Insufficient gas funds';
-    } else if (result.errorMessage?.includes('User rejected') || 
-               result.errorMessage?.includes('cancelled') || 
-               result.errorMessage?.includes('canceled')) {
-      return 'Transaction was canceled by user';
     }
-    return result.errorMessage || 'Unknown error';
+    
+    return 'Transaction was reverted on-chain';
   };
 
   // Get dynamic header title
   const getHeaderTitle = () => {
     if (isComplete) {
       if (successCount > 0 && failedCount === 0 && rejectedCount === 0) {
-        return '🎉 Burn Complete!';
+        return 'Burn Complete!';
       } else if (successCount > 0) {
-        return '✅ Burn Process Complete';
+        return 'Burn Process Complete';
       } else if (rejectedCount === totalItems) {
-        return '⏭️ Burn Process Cancelled';
+        return 'Burn Process Cancelled';
       } else {
-        return '❌ Burn Process Complete';
+        return 'Burn Process Complete';
       }
     }
-    return `🔥 Burning Assets - ${progressPercentage}%`;
+    return `Burning Assets - ${progressPercentage}%`;
   };
 
   return (
@@ -252,7 +244,7 @@ export default function UniversalBurnProgress({
                             {!result.success && (
                               <div className="flex items-center gap-2">
                                 <span className={result.isUserRejection ? 'text-yellow-400' : 'text-red-400'}>
-                                  {result.isUserRejection ? 'Cancelled' : 'Failed'}
+                                  {result.isUserRejection ? 'Cancelled' : '❌'}
                                 </span>
                                 {result.txHash && (
                                   <a 
@@ -269,9 +261,17 @@ export default function UniversalBurnProgress({
                           </div>
                         </div>
                         {/* Error Details */}
-                        {!result.success && result.errorMessage && (
+                        {!result.success && result.errorMessage && !result.isUserRejection && (
                           <div className="ml-5 text-xs text-red-300 bg-red-900/20 rounded p-2">
-                            {getErrorMessage(result)}
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="flex-1">{getErrorMessage(result)}</span>
+                              <button
+                                onClick={() => setShowEducationModal(true)}
+                                className="text-blue-400 hover:text-blue-300 underline whitespace-nowrap flex-shrink-0"
+                              >
+                                Learn More
+                              </button>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -323,7 +323,7 @@ export default function UniversalBurnProgress({
                                   {!result.success && (
                                     <div className="flex items-center gap-2">
                                       <span className={result.isUserRejection ? 'text-yellow-400' : 'text-red-400'}>
-                                        {result.isUserRejection ? 'Cancelled' : 'Failed'}
+                                        {result.isUserRejection ? 'Cancelled' : '❌'}
                                       </span>
                                       {result.txHash && (
                                         <a 
@@ -342,7 +342,15 @@ export default function UniversalBurnProgress({
                               {/* Error Details */}
                               {!result.success && result.errorMessage && !result.isUserRejection && (
                                 <div className="ml-5 text-xs text-red-300 bg-red-900/20 rounded p-2">
-                                  {getErrorMessage(result)}
+                                  <div className="flex items-start justify-between gap-2">
+                                    <span className="flex-1">{getErrorMessage(result)}</span>
+                                    <button
+                                      onClick={() => setShowEducationModal(true)}
+                                      className="text-blue-400 hover:text-blue-300 underline whitespace-nowrap flex-shrink-0"
+                                    >
+                                      Learn More
+                                    </button>
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -373,6 +381,12 @@ export default function UniversalBurnProgress({
           </div>
         </div>
       </div>
+      
+             {/* Educational Modal */}
+       <BurnFailureEducationModal 
+         isOpen={showEducationModal}
+         onClose={() => setShowEducationModal(false)}
+       />
     </div>
   );
 } 

@@ -6,7 +6,7 @@ import {
 } from 'wagmi';
 import { Token } from '@/types/token';
 import { NFT } from '@/types/nft';
-import { BURN_GAS_LIMIT, BURN_ADDRESS } from '@/config/web3';
+import { BURN_GAS_LIMIT, NFT_BURN_GAS_LIMIT, BURN_ADDRESS } from '@/config/web3';
 import { parseWalletError, ParsedError, isUserRejectionError } from '@/utils/errorHandling';
 
 // Minimal ERC20 ABI for direct transfer
@@ -54,6 +54,8 @@ export const ERC1155_TRANSFER_ABI = [
     "stateMutability": "nonpayable"
   }
 ] as const;
+
+
 
 // Result type for direct burn operations
 export type DirectBurnResult = {
@@ -114,6 +116,12 @@ export function useDirectBurner() {
     setCurrentToken(token);
     
     try {
+      // Check if this is native ETH (cannot be burned using ERC-20 methods)
+      if (token.contract_address === '0x0000000000000000000000000000000000000000' || 
+          token.contract_address.toLowerCase() === '0x0000000000000000000000000000000000000000') {
+        throw new Error('Native ETH cannot be burned using token burn methods. ETH is needed for gas fees on the network.');
+      }
+      
       // Call transfer() directly on the token contract
       // This transfers from user's wallet to burn address - NO APPROVAL NEEDED!
       let txHash: `0x${string}`;
@@ -122,9 +130,29 @@ export function useDirectBurner() {
       // token.balance is already in the smallest unit (wei) as a string
       let balanceBigInt: bigint;
       try {
-        // The balance is already in the smallest unit, just convert directly to BigInt
-        // This ensures we burn the EXACT amount without any precision loss
-        balanceBigInt = BigInt(token.balance);
+        // Handle scientific notation properly without losing precision
+        const balanceString = token.balance.toString();
+        if (balanceString.includes('e') || balanceString.includes('E')) {
+          // Convert scientific notation to full integer string without precision loss
+          const [coefficient, exponent] = balanceString.toLowerCase().split('e');
+          const exp = parseInt(exponent, 10);
+          const coefficientParts = coefficient.split('.');
+          const integerPart = coefficientParts[0];
+          const fractionalPart = coefficientParts[1] || '';
+          
+          if (exp >= 0) {
+            // Positive exponent: add zeros to the right
+            const zerosToAdd = Math.max(0, exp - fractionalPart.length);
+            const fullIntegerString = integerPart + fractionalPart + '0'.repeat(zerosToAdd);
+            balanceBigInt = BigInt(fullIntegerString);
+          } else {
+            // Negative exponent would create a decimal, but token balances should be integers
+            throw new Error(`Token balance has negative exponent (fractional): ${balanceString}`);
+          }
+        } else {
+          // Regular string number, convert directly
+          balanceBigInt = BigInt(balanceString);
+        }
       } catch (balanceError) {
         console.error(`Error converting balance to BigInt for token ${token.contract_address}:`, balanceError);
         throw new Error(`Invalid token balance format: ${token.balance}`);
@@ -247,7 +275,7 @@ export function useDirectBurner() {
               BURN_ADDRESS as `0x${string}`, 
               tokenIdBigInt
             ],
-            gas: BigInt(BURN_GAS_LIMIT),
+            gas: BigInt(NFT_BURN_GAS_LIMIT), // Use higher gas limit for NFTs
           });
         } catch (writeError) {
           const isRejection = isUserRejectionError(writeError);
@@ -272,7 +300,7 @@ export function useDirectBurner() {
               amount,
               '0x' as `0x${string}` // Empty data parameter
             ],
-            gas: BigInt(BURN_GAS_LIMIT),
+            gas: BigInt(NFT_BURN_GAS_LIMIT), // Use higher gas limit for NFTs
           });
         } catch (writeError) {
           const isRejection = isUserRejectionError(writeError);
@@ -515,21 +543,37 @@ export function useIndividualTokenBurner() {
    */
   const burnTokenWithMonitoring = async (token: Token): Promise<DirectBurnResult> => {
     try {
+      // Check if this is native ETH (cannot be burned using ERC-20 methods)
+      if (token.contract_address === '0x0000000000000000000000000000000000000000' || 
+          token.contract_address.toLowerCase() === '0x0000000000000000000000000000000000000000') {
+        throw new Error('Native ETH cannot be burned using token burn methods. ETH is needed for gas fees on the network.');
+      }
+      
       // Convert balance to proper BigInt format
       // token.balance might be in scientific notation (e.g., "5.8451e+22")
       let balanceBigInt: bigint;
       try {
+        // Handle scientific notation properly without losing precision
         const balanceString = token.balance.toString();
         if (balanceString.includes('e') || balanceString.includes('E')) {
-          // Convert scientific notation to full number string
-          const balanceNumber = Number(balanceString);
-          if (!Number.isFinite(balanceNumber)) {
-            throw new Error(`Invalid balance value: ${balanceString}`);
+          // Convert scientific notation to full integer string without precision loss
+          const [coefficient, exponent] = balanceString.toLowerCase().split('e');
+          const exp = parseInt(exponent, 10);
+          const coefficientParts = coefficient.split('.');
+          const integerPart = coefficientParts[0];
+          const fractionalPart = coefficientParts[1] || '';
+          
+          if (exp >= 0) {
+            // Positive exponent: add zeros to the right
+            const zerosToAdd = Math.max(0, exp - fractionalPart.length);
+            const fullIntegerString = integerPart + fractionalPart + '0'.repeat(zerosToAdd);
+            balanceBigInt = BigInt(fullIntegerString);
+          } else {
+            // Negative exponent would create a decimal, but token balances should be integers
+            throw new Error(`Token balance has negative exponent (fractional): ${balanceString}`);
           }
-          // Convert to integer string (no decimals)
-          balanceBigInt = BigInt(Math.floor(balanceNumber));
         } else {
-          // Direct conversion for normal string numbers
+          // Regular string number, convert directly
           balanceBigInt = BigInt(balanceString);
         }
       } catch (balanceError) {
@@ -578,4 +622,6 @@ export function useIndividualTokenBurner() {
     isConfirming,
     isConfirmed,
   };
-} 
+}
+
+ 

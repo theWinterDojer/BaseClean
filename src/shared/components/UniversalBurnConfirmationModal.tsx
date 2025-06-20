@@ -130,15 +130,6 @@ export default function UniversalBurnConfirmationModal({
                   onClick={() => setShowDetails(!showDetails)}
                   className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-all font-medium"
                 >
-                  <svg 
-                    className="w-4 h-4 mr-2" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
                   {showDetails ? 'Hide Details' : 'View Details'}
                   <svg 
                     className={`w-4 h-4 ml-2 transform transition-transform ${showDetails ? 'rotate-180' : ''}`}
@@ -262,7 +253,7 @@ export default function UniversalBurnConfirmationModal({
           <div className="flex gap-3 justify-end">
             <button
               type="button"
-              className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors font-medium"
+              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors font-medium"
               onClick={onClose}
               disabled={isConfirming}
             >
@@ -270,7 +261,7 @@ export default function UniversalBurnConfirmationModal({
             </button>
             <button
               type="button"
-              className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 disabled:from-red-800 disabled:to-orange-800 text-white rounded-lg transition-all transform hover:scale-105 disabled:scale-100 font-medium flex items-center disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 disabled:from-red-800 disabled:to-orange-800 text-white rounded-lg transition-all transform hover:scale-105 disabled:scale-100 font-medium flex items-center disabled:cursor-not-allowed"
               onClick={onConfirm}
               disabled={isConfirming}
             >

@@ -428,6 +428,8 @@ export default function TokenDataManager({ onTokensLoaded, showDisclaimer, child
     onTokensLoaded(newTokens);
   };
 
+
+
   return (
     <section className="mt-4 space-y-5" aria-labelledby="wallet-token-management">
       {/* Not connected message - centered on page */}

@@ -24,6 +24,7 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
     const [rawTokens, setRawTokens] = useState<Token[]>([]);
     const [maxValue, setMaxValue] = useState<number | null>(10);
 
+
     // Use the global selected tokens context
     const { selectedTokens, selectedTokensCount, toggleToken, setSelectedTokens } = useSelectedTokens();
 
@@ -44,7 +45,6 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
     // Use the universal burn flow hook instead of token-specific
     const {
         burnStatus,
-        showConfirmation,
         closeConfirmation,
         executeBurn,
         closeProgress
@@ -59,19 +59,8 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
         console.log(`TokenScanner: Loaded ${loadedTokens.length} raw tokens for ScamSniffer checking`);
     }, []);
 
-    // Handle burn confirmation with proper null checks
-    const handleBurnSelected = useCallback(async () => {
-        const selectedTokensList = scamSnifferEnhancedTokens.filter(token => 
-            selectedTokens.has(token.contract_address)
-        );
-        
-        // Ensure we have valid tokens and the array is not null/undefined
-        if (!selectedTokensList || selectedTokensList.length === 0) {
-            console.warn('No tokens selected for burning');
-            return;
-        }
-        showConfirmation(selectedTokensList);
-    }, [scamSnifferEnhancedTokens, selectedTokens, showConfirmation]);
+    // Note: Burn handling is now fully managed by the SelectedItemsContext
+    // and triggered through the FloatingActionBar using openBurnModal()
 
     // Handle deselect all
     const handleDeselectAll = useCallback(() => {
@@ -79,26 +68,13 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
     }, [setSelectedTokens]);
 
     // Handle burn execution
-    const handleConfirmBurn = useCallback(async (updateTokens: (tokens: Token[]) => void) => {
+    const handleConfirmBurn = useCallback(async () => {
         if (!address) return;
         
         await executeBurn();
-        
-        // After burn completes successfully, update the token list and clear selections
-        if (burnStatus.success) {
-            updateTokens(scamSnifferEnhancedTokens);
-            setSelectedTokens(new Set());
-        }
-    }, [address, executeBurn, burnStatus.success, scamSnifferEnhancedTokens, setSelectedTokens]);
+    }, [address, executeBurn]);
 
-    // Handle progress modal close
-    const handleCloseProgress = useCallback(() => {
-        closeProgress();
-        // Refresh tokens if needed
-        if (burnStatus.success && burnStatus.results.successful.length > 0) {
-            // The updateTokens function will be passed from TokenDataManager
-        }
-    }, [closeProgress, burnStatus]);
+
 
     // Statistics data for display (using ScamSniffer-enhanced tokens)
     const statistics: TokenStatistics = {
@@ -111,16 +87,26 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
 
     return (
         <>
-            {/* Universal Burn Progress Modal */}
-            <UniversalBurnProgress
-                burnStatus={burnStatus}
-                onClose={handleCloseProgress}
-            />
+                        <TokenDataManager onTokensLoaded={handleTokensLoaded} showDisclaimer={showDisclaimer}>
+                {({ loading, isConnected, isClient }) => (
+                    <>
+                        {/* Universal Burn Progress Modal */}
+                        <UniversalBurnProgress
+                            burnStatus={burnStatus}
+                            onClose={() => {
+                                closeProgress();
+                                // Simple page reload after successful burns
+                                if (burnStatus.success && burnStatus.results.successful.length > 0) {
+                                    // Clear selections first
+                                    setSelectedTokens(new Set());
+                                    // Simple page reload - browser handles loading state
+                                    window.location.reload();
+                                }
+                            }}
+                        />
 
-            <TokenDataManager onTokensLoaded={handleTokensLoaded} showDisclaimer={showDisclaimer}>
-                {({ loading, isConnected, isClient, updateTokens }) => (
-                    isClient && isConnected && !loading && (
-                        <div className="space-y-5 pb-24">
+                        {isClient && isConnected && !loading && (
+                            <div className="space-y-5 pb-24">
                             {/* ScamSniffer Loading Indicator (subtle) */}
                             {scamSnifferLoading && (
                                 <div className="text-xs text-gray-500 text-center py-1">
@@ -156,18 +142,18 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
                                     burnContext={burnStatus.burnContext}
                                     isOpen={burnStatus.isConfirmationOpen}
                                     onClose={closeConfirmation}
-                                    onConfirm={() => handleConfirmBurn(updateTokens)}
+                                    onConfirm={handleConfirmBurn}
                                     isConfirming={burnStatus.inProgress && !burnStatus.isProgressOpen}
                                 />
                             )}
-                        </div>
-                    )
+                                                    </div>
+                        )}
+                    </>
                 )}
             </TokenDataManager>
 
             {/* Unified Floating Action Bar - appears when tokens are selected */}
             <FloatingActionBar
-                onBurnSelected={handleBurnSelected}
                 onDeselectAll={handleDeselectAll}
                 isBurning={burnStatus.inProgress}
             />
