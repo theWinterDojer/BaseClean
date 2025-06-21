@@ -1,24 +1,20 @@
 import React, { useCallback } from 'react';
 import { useSelectedItems } from '@/contexts/SelectedItemsContext';
-import { useUniversalBurnFlow } from '@/hooks/useUniversalBurnFlow';
 
 interface FloatingActionBarProps {
   onDeselectAll: () => void;
-  isBurning?: boolean; // DEPRECATED - using burnStatus from universal flow
 }
 
 export default function FloatingActionBar({
-  onDeselectAll,
-  isBurning = false
+  onDeselectAll
 }: FloatingActionBarProps) {
   const { 
     selectedTokensCount, 
     selectedNFTsCount, 
     selectedItemsCount,
-    openBurnModal
+    openBurnModal,
+    isBurnModalOpen
   } = useSelectedItems();
-
-  const { burnStatus } = useUniversalBurnFlow();
 
   // Handle burn button click - must be defined before early return
   const handleBurnClick = useCallback(() => {
@@ -33,7 +29,7 @@ export default function FloatingActionBar({
   }
 
   // Hide during the entire burn flow (confirmation and progress modals)
-  if (burnStatus.isConfirmationOpen || burnStatus.isProgressOpen) {
+  if (isBurnModalOpen) {
     return null;
   }
 
@@ -44,20 +40,14 @@ export default function FloatingActionBar({
 
   // Generate appropriate labels
   let selectionLabel = '';
-  let actionLabel = '';
   
   if (isMixed) {
     selectionLabel = `${selectedItemsCount} Items Selected`;
-    actionLabel = 'Burn Selected';
   } else if (hasTokens) {
     selectionLabel = `${selectedTokensCount} Token${selectedTokensCount > 1 ? 's' : ''} Selected`;
-    actionLabel = 'Burn Selected';
   } else if (hasNFTs) {
     selectionLabel = `${selectedNFTsCount} NFT${selectedNFTsCount > 1 ? 's' : ''} Selected`;
-    actionLabel = 'Burn Selected';
   }
-
-  const isProcessing = burnStatus.inProgress || isBurning;
 
   return (
     <div 
@@ -93,8 +83,7 @@ export default function FloatingActionBar({
               {/* Deselect All Button */}
               <button
                 onClick={onDeselectAll}
-                disabled={isProcessing}
-                className="px-3 py-2 bg-white/20 hover:bg-white/30 disabled:bg-white/10 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2 border border-white/30 flex-shrink-0"
+                className="px-3 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2 border border-white/30 flex-shrink-0"
                 aria-label="Deselect all items"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -107,24 +96,13 @@ export default function FloatingActionBar({
               {/* Burn Selected Button */}
               <button
                 onClick={handleBurnClick}
-                disabled={isProcessing}
-                className="px-4 py-2.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 disabled:from-red-800 disabled:to-red-800 disabled:cursor-not-allowed text-white rounded-lg text-sm font-bold transition-all duration-200 shadow-xl hover:shadow-2xl hover:scale-105 disabled:hover:scale-100 flex items-center gap-2 border border-red-400/60 flex-shrink-0 ring-2 ring-white/30"
+                className="px-4 py-2.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white rounded-lg text-sm font-bold transition-all duration-200 shadow-xl hover:shadow-2xl hover:scale-105 flex items-center gap-2 border border-red-400/60 flex-shrink-0 ring-2 ring-white/30"
                 aria-label={`Burn ${selectedItemsCount} selected items`}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
                 </svg>
-                {isProcessing ? (
-                  <>
-                    <span className="hidden sm:inline">Burning...</span>
-                    <span className="sm:hidden">Burning...</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="hidden sm:inline">{actionLabel}</span>
-                    <span className="sm:hidden">Burn</span>
-                  </>
-                )}
+                <span>Burn</span>
               </button>
             </div>
           </div>

@@ -19,6 +19,10 @@ interface SelectedItemsContextValue {
   selectedNFTs: NFT[];
   selectedNFTsCount: number;
   
+  // Burned items tracking
+  burnedTokenAddresses: Set<string>;
+  burnedNFTKeys: Set<string>;
+  
   // Selection methods
   toggleToken: (contractAddress: string, tokens?: Token[]) => void;
   toggleNFT: (nft: NFT) => void;
@@ -90,6 +94,10 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
   const [showEthModal, setShowEthModal] = useState(false);
   const [pendingEthToken, setPendingEthToken] = useState<Token | null>(null);
   const [pendingEthAddress, setPendingEthAddress] = useState<string>('');
+  
+  // Track successfully burned assets
+  const [burnedTokenAddresses, setBurnedTokenAddresses] = useState<Set<string>>(new Set());
+  const [burnedNFTKeys, setBurnedNFTKeys] = useState<Set<string>>(new Set());
 
   // Use universal burn flow for handling burns
   const {
@@ -219,9 +227,6 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
       
       // Remove all tokens and keep only NFTs
       setSelectedItems(prev => prev.filter(item => item.type === 'nft'));
-      
-      // This method has limitations - we can't add tokens without the full Token objects
-      console.warn('setSelectedTokens with Set<string> has limitations. Consider using setSelectedItems or providing Token objects.');
     } else {
       // Direct set - also limited
       setSelectedItems(prev => prev.filter(item => item.type === 'nft'));
@@ -263,9 +268,38 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
 
   // Handle burn completion
   const handleBurnComplete = useCallback(() => {
+    // Track successfully burned items before clearing selections
+    if (burnStatus.success && burnStatus.results.successful.length > 0) {
+      // Extract successfully burned token addresses
+      const newBurnedTokenAddresses = burnStatus.results.successful
+        .filter(r => r.item.type === 'token')
+        .map(r => {
+          const token = r.item.data as Token;
+          return token.contract_address;
+        });
+      
+      // Extract successfully burned NFT keys
+      const newBurnedNFTKeys = burnStatus.results.successful
+        .filter(r => r.item.type === 'nft')
+        .map(r => {
+          const nft = r.item.data as NFT;
+          return `${nft.contract_address}-${nft.token_id}`;
+        });
+      
+      // Update burned asset tracking
+      if (newBurnedTokenAddresses.length > 0) {
+        setBurnedTokenAddresses(prev => new Set([...prev, ...newBurnedTokenAddresses]));
+      }
+      
+      if (newBurnedNFTKeys.length > 0) {
+        setBurnedNFTKeys(prev => new Set([...prev, ...newBurnedNFTKeys]));
+      }
+    }
+    
+    // Clear selections and close modal
     clearAllSelectedItems();
     closeProgress();
-  }, [clearAllSelectedItems, closeProgress]);
+  }, [burnStatus.success, burnStatus.results.successful, clearAllSelectedItems, closeProgress]);
 
   const value: SelectedItemsContextValue = {
     // Unified state
@@ -279,6 +313,10 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
     // NFT-specific
     selectedNFTs,
     selectedNFTsCount,
+    
+    // Burned items tracking
+    burnedTokenAddresses,
+    burnedNFTKeys,
     
     // Selection methods
     toggleToken,

@@ -47,13 +47,16 @@ export default function UniversalBurnProgress({
   const failedCount = results.failed.length;
   const rejectedCount = results.userRejected.length;
 
-  // Separate results by type
-  const tokenResults = results.successful.concat(results.failed, results.userRejected)
-    .filter(r => r.item.type === 'token');
-  const nftResults = results.successful.concat(results.failed, results.userRejected)
-    .filter(r => r.item.type === 'nft');
+  // Separate results by type and status
+  const successfulTokens = results.successful.filter(r => r.item.type === 'token');
+  const failedTokens = results.failed.filter(r => r.item.type === 'token');
+  const cancelledTokens = results.userRejected.filter(r => r.item.type === 'token');
+  
+  const successfulNFTs = results.successful.filter(r => r.item.type === 'nft');
+  const failedNFTs = results.failed.filter(r => r.item.type === 'nft');
+  const cancelledNFTs = results.userRejected.filter(r => r.item.type === 'nft');
 
-  // Group NFT results by collection
+  // Group NFT results by collection for each status
   const groupNFTsByCollection = (nftBurnResults: BurnResult[]) => {
     return nftBurnResults.reduce((groups, result) => {
       if (result.item.type === 'nft' && 'collection_name' in result.item.data) {
@@ -65,16 +68,9 @@ export default function UniversalBurnProgress({
     }, {} as Record<string, BurnResult[]>);
   };
 
-  const nftResultsByCollection = groupNFTsByCollection(nftResults);
-
-  // Get user-friendly error message
-  const getErrorMessage = (result: BurnResult) => {
-    if (result.isUserRejection || result.errorType === 'user_rejection') {
-      return 'Transaction cancelled by user';
-    }
-    
-    return 'Transaction was reverted on-chain';
-  };
+  const successfulNFTsByCollection = groupNFTsByCollection(successfulNFTs);
+  const failedNFTsByCollection = groupNFTsByCollection(failedNFTs);
+  const cancelledNFTsByCollection = groupNFTsByCollection(cancelledNFTs);
 
   // Get dynamic header title
   const getHeaderTitle = () => {
@@ -205,154 +201,279 @@ export default function UniversalBurnProgress({
           )}
 
           {/* Transaction Results */}
-          {isComplete && (tokenResults.length > 0 || nftResults.length > 0) && (
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              {/* Tokens Section */}
-              {tokenResults.length > 0 && (
+          {isComplete && (successfulTokens.length > 0 || failedTokens.length > 0 || cancelledTokens.length > 0 || successfulNFTs.length > 0 || failedNFTs.length > 0 || cancelledNFTs.length > 0) && (
+            <div className="space-y-4 max-h-96 overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
+              
+              {/* Successful Tokens */}
+              {successfulTokens.length > 0 && (
                 <div>
                   <h3 className="text-white font-medium mb-2 flex items-center">
-                    <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mr-2 text-xs">
-                      T
-                    </div>
-                    Tokens ({tokenResults.length})
+                    <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mr-2 text-xs">T</div>
+                    Successful Token Burns ({successfulTokens.length})
                   </h3>
                   <div className="bg-gray-800 rounded-lg p-3 space-y-2">
-                    {tokenResults.map((result) => (
-                      <div key={result.item.id} className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-2 h-2 rounded-full ${
-                              result.success ? 'bg-green-500' : 
-                              result.isUserRejection ? 'bg-yellow-500' : 
-                              'bg-red-500'
-                            }`} />
-                            <span className="text-white">
-                              {result.item.metadata?.displayName || 'Unknown Token'}
-                            </span>
-                          </div>
-                          <div className="text-sm">
-                            {result.success && (
-                              <a 
-                                href={`https://basescan.org/tx/${result.txHash}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-green-400 hover:text-green-300"
-                              >
-                                ✓ View TX
-                              </a>
-                            )}
-                            {!result.success && (
-                              <div className="flex items-center gap-2">
-                                <span className={result.isUserRejection ? 'text-yellow-400' : 'text-red-400'}>
-                                  {result.isUserRejection ? 'Cancelled' : '❌'}
+                    {successfulTokens.map((result) => (
+                      <div key={result.item.id} className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0">
+                            {result.item.metadata?.imageUrl ? (
+                              <Image
+                                src={result.item.metadata.imageUrl}
+                                alt={result.item.metadata.displayName || 'Token'}
+                                width={24}
+                                height={24}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                                <span className="text-gray-400 text-xs font-bold">
+                                  {result.item.metadata?.displayName?.charAt(0) || 'T'}
                                 </span>
-                                {result.txHash && (
-                                  <a 
-                                    href={`https://basescan.org/tx/${result.txHash}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-red-400 hover:text-red-300 text-xs"
-                                  >
-                                    View TX
-                                  </a>
-                                )}
                               </div>
                             )}
                           </div>
+                          <span className="text-white">{result.item.metadata?.displayName || 'Unknown Token'}</span>
                         </div>
-                        {/* Error Details */}
-                        {!result.success && result.errorMessage && !result.isUserRejection && (
-                          <div className="ml-5 text-xs text-red-300 bg-red-900/20 rounded p-2">
-                            <div className="flex items-start justify-between gap-2">
-                              <span className="flex-1">{getErrorMessage(result)}</span>
-                              <button
-                                onClick={() => setShowEducationModal(true)}
-                                className="text-blue-400 hover:text-blue-300 underline whitespace-nowrap flex-shrink-0"
-                              >
-                                Learn More
-                              </button>
-                            </div>
-                          </div>
-                        )}
+                        <a 
+                          href={`https://basescan.org/tx/${result.txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-green-400 hover:text-green-300 text-sm"
+                        >
+                          ✓ View TX
+                        </a>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* NFTs Section */}
-              {nftResults.length > 0 && (
+              {/* Failed Tokens */}
+              {failedTokens.length > 0 && (
                 <div>
                   <h3 className="text-white font-medium mb-2 flex items-center">
-                    <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center mr-2 text-xs">
-                      N
+                    <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mr-2 text-xs">T</div>
+                    Failed Token Burns ({failedTokens.length})
+                  </h3>
+                  <div className="bg-red-900/10 rounded-lg p-3 mb-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-red-400 text-sm">These transactions were reverted on-chain</span>
+                      <button
+                        onClick={() => setShowEducationModal(true)}
+                        className="text-blue-400 hover:text-blue-300 underline whitespace-nowrap flex-shrink-0 text-sm"
+                      >
+                        Learn More
+                      </button>
                     </div>
-                    NFTs ({nftResults.length})
+                  </div>
+                  <div className="bg-gray-800 rounded-lg p-3 space-y-2">
+                    {failedTokens.map((result) => (
+                      <div key={result.item.id} className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0">
+                            {result.item.metadata?.imageUrl ? (
+                              <Image
+                                src={result.item.metadata.imageUrl}
+                                alt={result.item.metadata.displayName || 'Token'}
+                                width={24}
+                                height={24}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                                <span className="text-gray-400 text-xs font-bold">
+                                  {result.item.metadata?.displayName?.charAt(0) || 'T'}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-white">{result.item.metadata?.displayName || 'Unknown Token'}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-red-400">❌</span>
+                          {result.txHash && (
+                            <a 
+                              href={`https://basescan.org/tx/${result.txHash}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-red-400 hover:text-red-300"
+                            >
+                              View TX
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Cancelled Tokens */}
+              {cancelledTokens.length > 0 && (
+                <div>
+                  <h3 className="text-white font-medium mb-2 flex items-center">
+                    <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mr-2 text-xs">T</div>
+                    Cancelled Token Burns ({cancelledTokens.length})
+                  </h3>
+                  <div className="bg-gray-800 rounded-lg p-3 space-y-2">
+                    {cancelledTokens.map((result) => (
+                      <div key={result.item.id} className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0">
+                            {result.item.metadata?.imageUrl ? (
+                              <Image
+                                src={result.item.metadata.imageUrl}
+                                alt={result.item.metadata.displayName || 'Token'}
+                                width={24}
+                                height={24}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gray-700 flex items-center justify-center">
+                                <span className="text-gray-400 text-xs font-bold">
+                                  {result.item.metadata?.displayName?.charAt(0) || 'T'}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-white">{result.item.metadata?.displayName || 'Unknown Token'}</span>
+                        </div>
+                        <span className="text-yellow-400 text-sm">Cancelled</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Successful NFTs */}
+              {successfulNFTs.length > 0 && (
+                <div>
+                  <h3 className="text-white font-medium mb-2 flex items-center">
+                    <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center mr-2 text-xs">N</div>
+                    Successful NFT Burns ({successfulNFTs.length})
                   </h3>
                   <div className="bg-gray-800 rounded-lg p-3 space-y-4">
-                    {Object.entries(nftResultsByCollection).map(([collection, collectionResults]) => (
+                    {Object.entries(successfulNFTsByCollection).map(([collection, collectionResults]) => (
                       <div key={collection}>
                         <h4 className="text-sm font-medium text-blue-400 mb-2 border-b border-gray-700 pb-1">
                           {collection} ({collectionResults.length} NFT{collectionResults.length > 1 ? 's' : ''})
                         </h4>
                         <div className="space-y-2">
                           {collectionResults.map((result) => (
-                            <div key={result.item.id} className="space-y-1">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <div className={`w-2 h-2 rounded-full ${
-                                    result.success ? 'bg-green-500' : 
-                                    result.isUserRejection ? 'bg-yellow-500' : 
-                                    'bg-red-500'
-                                  }`} />
-                                  <span className="text-white text-sm">
-                                    {result.item.metadata?.displayName || 'Unknown NFT'}
-                                  </span>
+                            <div key={result.item.id} className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0">
+                                  <NFTImage
+                                    tokenId={(result.item.data as NFT).token_id}
+                                    name={(result.item.data as NFT).name}
+                                    imageUrl={result.item.metadata?.imageUrl}
+                                  />
                                 </div>
-                                <div className="text-sm">
-                                  {result.success && (
-                                    <a 
-                                      href={`https://basescan.org/tx/${result.txHash}`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-green-400 hover:text-green-300"
-                                    >
-                                      ✓ View TX
-                                    </a>
-                                  )}
-                                  {!result.success && (
-                                    <div className="flex items-center gap-2">
-                                      <span className={result.isUserRejection ? 'text-yellow-400' : 'text-red-400'}>
-                                        {result.isUserRejection ? 'Cancelled' : '❌'}
-                                      </span>
-                                      {result.txHash && (
-                                        <a 
-                                          href={`https://basescan.org/tx/${result.txHash}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-red-400 hover:text-red-300 text-xs"
-                                        >
-                                          View TX
-                                        </a>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
+                                <span className="text-white text-sm">{result.item.metadata?.displayName || 'Unknown NFT'}</span>
                               </div>
-                              {/* Error Details */}
-                              {!result.success && result.errorMessage && !result.isUserRejection && (
-                                <div className="ml-5 text-xs text-red-300 bg-red-900/20 rounded p-2">
-                                  <div className="flex items-start justify-between gap-2">
-                                    <span className="flex-1">{getErrorMessage(result)}</span>
-                                    <button
-                                      onClick={() => setShowEducationModal(true)}
-                                      className="text-blue-400 hover:text-blue-300 underline whitespace-nowrap flex-shrink-0"
-                                    >
-                                      Learn More
-                                    </button>
-                                  </div>
+                              <a 
+                                href={`https://basescan.org/tx/${result.txHash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-green-400 hover:text-green-300 text-sm"
+                              >
+                                ✓ View TX
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Failed NFTs */}
+              {failedNFTs.length > 0 && (
+                <div>
+                  <h3 className="text-white font-medium mb-2 flex items-center">
+                    <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center mr-2 text-xs">N</div>
+                    Failed NFT Burns ({failedNFTs.length})
+                  </h3>
+                  <div className="bg-red-900/10 rounded-lg p-3 mb-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-red-400 text-sm">These transactions were reverted on-chain</span>
+                      <button
+                        onClick={() => setShowEducationModal(true)}
+                        className="text-blue-400 hover:text-blue-300 underline whitespace-nowrap flex-shrink-0 text-sm"
+                      >
+                        Learn More
+                      </button>
+                    </div>
+                  </div>
+                  <div className="bg-gray-800 rounded-lg p-3 space-y-4">
+                    {Object.entries(failedNFTsByCollection).map(([collection, collectionResults]) => (
+                      <div key={collection}>
+                        <h4 className="text-sm font-medium text-blue-400 mb-2 border-b border-gray-700 pb-1">
+                          {collection} ({collectionResults.length} NFT{collectionResults.length > 1 ? 's' : ''})
+                        </h4>
+                        <div className="space-y-2">
+                          {collectionResults.map((result) => (
+                            <div key={result.item.id} className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0">
+                                  <NFTImage
+                                    tokenId={(result.item.data as NFT).token_id}
+                                    name={(result.item.data as NFT).name}
+                                    imageUrl={result.item.metadata?.imageUrl}
+                                  />
                                 </div>
-                              )}
+                                <span className="text-white text-sm">{result.item.metadata?.displayName || 'Unknown NFT'}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="text-red-400">❌</span>
+                                {result.txHash && (
+                                  <a 
+                                    href={`https://basescan.org/tx/${result.txHash}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-red-400 hover:text-red-300"
+                                  >
+                                    View TX
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Cancelled NFTs */}
+              {cancelledNFTs.length > 0 && (
+                <div>
+                  <h3 className="text-white font-medium mb-2 flex items-center">
+                    <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center mr-2 text-xs">N</div>
+                    Cancelled NFT Burns ({cancelledNFTs.length})
+                  </h3>
+                  <div className="bg-gray-800 rounded-lg p-3 space-y-4">
+                    {Object.entries(cancelledNFTsByCollection).map(([collection, collectionResults]) => (
+                      <div key={collection}>
+                        <h4 className="text-sm font-medium text-blue-400 mb-2 border-b border-gray-700 pb-1">
+                          {collection} ({collectionResults.length} NFT{collectionResults.length > 1 ? 's' : ''})
+                        </h4>
+                        <div className="space-y-2">
+                          {collectionResults.map((result) => (
+                            <div key={result.item.id} className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0">
+                                  <NFTImage
+                                    tokenId={(result.item.data as NFT).token_id}
+                                    name={(result.item.data as NFT).name}
+                                    imageUrl={result.item.metadata?.imageUrl}
+                                  />
+                                </div>
+                                <span className="text-white text-sm">{result.item.metadata?.displayName || 'Unknown NFT'}</span>
+                              </div>
+                              <span className="text-yellow-400 text-sm">Cancelled</span>
                             </div>
                           ))}
                         </div>
