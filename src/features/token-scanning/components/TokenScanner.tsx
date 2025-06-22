@@ -19,10 +19,10 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
     const [maxValue, setMaxValue] = useState<number | null>(10);
 
     // Use the global selected tokens context
-    const { selectedTokens, selectedTokensCount, toggleToken, setSelectedTokens } = useSelectedTokens();
+    const { selectedTokens, selectedTokensCount, toggleToken } = useSelectedTokens();
     
     // Get burned token addresses from context
-    const { burnedTokenAddresses } = useSelectedItems();
+    const { burnedTokenAddresses, clearAllSelectedItems } = useSelectedItems();
 
     // Default spam filters - enable all for best detection
     // Phase 17.2: Simplified to 3 filters (removed high risk indicators)
@@ -57,8 +57,8 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
 
     // Handle deselect all
     const handleDeselectAll = useCallback(() => {
-        setSelectedTokens(new Set());
-    }, [setSelectedTokens]);
+        clearAllSelectedItems();
+    }, [clearAllSelectedItems]);
 
     // Statistics data for display (using visible tokens only)
     const statistics: TokenStatistics = {

@@ -2,6 +2,7 @@ import React, { useState, memo } from 'react';
 import Image from 'next/image';
 import { NFT } from '@/types/nft';
 import NFTImage from './NFTImage';
+import { useSelectedItems } from '@/contexts/SelectedItemsContext';
 
 interface NFTCardProps {
   nft: NFT;
@@ -19,6 +20,21 @@ const NFTCard = memo(function NFTCard({
   onToggle
 }: NFTCardProps) {
   const [hover, setHover] = useState(false);
+  
+  // Use context for quantity management
+  const { 
+    toggleNFT, 
+    getNFTSelectedQuantity, 
+    incrementNFTQuantity, 
+    decrementNFTQuantity 
+  } = useSelectedItems();
+
+  // Get current state from context
+  const selectedQuantity = getNFTSelectedQuantity(nft.contract_address, nft.token_id);
+  const isNFTSelected = selectedQuantity > 0;
+  
+  // Use context selection state if available, otherwise fall back to prop
+  const actuallySelected = isNFTSelected || isSelected;
 
   const handleCardClick = () => {
     if (onNFTSelect) {
@@ -26,7 +42,22 @@ const NFTCard = memo(function NFTCard({
     }
     if (onToggle) {
       onToggle(nft.contract_address, nft.token_id);
+    } else {
+      // Use context method if no onToggle prop provided
+      toggleNFT(nft);
     }
+  };
+  
+  // Quantity control handlers
+  const handleIncrement = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const maxQuantity = parseInt(nft.balance || '1');
+    incrementNFTQuantity(nft.contract_address, nft.token_id, maxQuantity);
+  };
+  
+  const handleDecrement = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    decrementNFTQuantity(nft.contract_address, nft.token_id);
   };
 
   // Generate display name
@@ -57,7 +88,7 @@ const NFTCard = memo(function NFTCard({
   return (
     <div 
       className={`relative rounded-lg cursor-pointer transition-all duration-200 group overflow-hidden ${
-        isSelected 
+        actuallySelected 
           ? isSpam 
             ? 'ring-2 ring-red-400 dark:ring-red-500 shadow-lg transform scale-[1.02]'
             : 'ring-2 ring-blue-400 dark:ring-blue-500 shadow-lg transform scale-[1.02]' 
@@ -78,7 +109,7 @@ const NFTCard = memo(function NFTCard({
         />
         
         {/* Selection Indicator */}
-        {isSelected && (
+        {actuallySelected && (
           <div className={`absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center ${
             isSpam ? 'bg-red-500' : 'bg-blue-500'
           } text-white shadow-md`}>
@@ -117,11 +148,41 @@ const NFTCard = memo(function NFTCard({
           </div>
         )}
 
-
+        {/* Quantity Controls Overlay (for selected ERC-1155s with balance > 1) */}
+        {actuallySelected && isERC1155 && parseInt(nft.balance || '1') > 1 && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="bg-blue-500/80 backdrop-blur-sm px-3 py-2 rounded-lg">
+              <div className="flex items-center justify-center gap-3">
+                <button
+                  onClick={handleDecrement}
+                  className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors"
+                  title="Decrease quantity"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                  </svg>
+                </button>
+                <span className="text-sm font-bold text-white min-w-[16px] text-center">
+                  {selectedQuantity}
+                </span>
+                <button
+                  onClick={handleIncrement}
+                  className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors"
+                  disabled={selectedQuantity >= parseInt(nft.balance || '1')}
+                  title="Increase quantity"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
 
-      {/* Info Container */}
+            {/* Info Container */}
       <div className="p-3 bg-white dark:bg-gray-800">
         {/* NFT Name */}
         <div className="font-medium text-gray-900 dark:text-gray-100 text-sm mb-1 truncate" title={displayName}>
@@ -132,6 +193,8 @@ const NFTCard = memo(function NFTCard({
         <div className="text-xs text-gray-500 dark:text-gray-400 truncate mb-2" title={collectionName}>
           {shortCollectionName}
         </div>
+
+
 
         {/* Additional Info Row */}
         <div className="flex justify-between items-center text-xs">
@@ -173,7 +236,7 @@ const NFTCard = memo(function NFTCard({
       </div>
 
       {/* Hover Overlay */}
-      {hover && !isSelected && (
+      {hover && !actuallySelected && (
         <div className="absolute inset-0 bg-blue-500/10 pointer-events-none transition-opacity duration-200" />
       )}
     </div>

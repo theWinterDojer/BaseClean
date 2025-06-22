@@ -119,24 +119,7 @@ export default function NFTListsContainer({
     );
   }
 
-  // All NFTs filtered out state
-  if (nfts.length === 0 && totalNFTs > 0) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm">
-        <div className="bg-amber-900/90 border border-amber-700 text-white p-8 rounded-xl shadow-2xl text-center max-w-md mx-4">
-          <div className="mb-4">
-            <svg className="w-16 h-16 text-amber-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 2v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-            </svg>
-          </div>
-          <p className="text-xl font-medium mb-2">No NFTs match your filters</p>
-          <p className="text-amber-200 text-sm">
-            You have {totalNFTs} NFT{totalNFTs === 1 ? '' : 's'} in your wallet, but none match your current network or other filter settings.
-          </p>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="space-y-8">

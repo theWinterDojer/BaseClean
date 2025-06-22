@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { 
-  BurnableAsset, 
   BurnFlowContext, 
   UniversalBurnFlowStatus, 
   BurnResult, 
@@ -9,11 +8,10 @@ import {
   UniversalBurnFlowOptions,
   UniversalBurnFlowCallbacks,
   BurnSummary,
-  isToken,
-  isNFT,
   categorizeError,
   BurnFlowState
 } from '@/types/universalBurn';
+import { BurnableItem } from '@/types/nft';
 import { useDirectBurner } from '@/lib/directBurner';
 import { getTokenValue } from '@/features/token-scanning/utils/tokenUtils';
 import { Token } from '@/types/token';
@@ -91,10 +89,13 @@ export function useUniversalBurnFlow(
     }));
   }, [burnStatus.totalItems, burnStatus.processedItems]);
 
-  // Auto-detect burn context from mixed assets
-  const createBurnContext = useCallback((assets: BurnableAsset[]): BurnFlowContext => {
-    const tokens = assets.filter(isToken);
-    const nfts = assets.filter(isNFT);
+  // Auto-detect burn context from mixed items with quantities
+  const createBurnContext = useCallback((items: BurnableItem[]): BurnFlowContext => {
+    const tokenItems = items.filter(item => item.type === 'token');
+    const nftItems = items.filter(item => item.type === 'nft');
+    
+    const tokens = tokenItems.map(item => item.data as Token);
+    const nfts = nftItems.map(item => item.data as NFT);
     
     // Calculate token values and warnings
     const totalTokenValue = tokens.reduce((sum, token) => sum + getTokenValue(token), 0);
@@ -115,62 +116,48 @@ export function useUniversalBurnFlow(
     });
     const nftCollectionCount = nftsByCollection.size;
     
+    // Calculate NFT total quantity including ERC-1155 quantities
+    const nftTotalQuantity = nftItems.reduce((total, item) => {
+      return total + (item.selectedQuantity || 1);
+    }, 0);
+    
+    // Calculate total items (tokens + NFT quantities)
+    const totalItems = tokens.length + nftTotalQuantity;
+    const totalUniqueItems = items.length;
+    
     // Determine burn type
     let burnType: 'tokens-only' | 'nfts-only' | 'mixed';
     if (tokens.length > 0 && nfts.length === 0) burnType = 'tokens-only';
     else if (nfts.length > 0 && tokens.length === 0) burnType = 'nfts-only';  
     else burnType = 'mixed';
     
-    // Calculate estimated transaction count
-    const estimatedTransactionCount = assets.length;
+    // Calculate estimated transaction count (each item is one transaction)
+    const estimatedTransactionCount = totalItems;
     
     return {
+      originalItems: items,
       tokens,
       nfts,
-      totalItems: assets.length,
+      totalItems,
+      totalUniqueItems,
       totalTokenValue,
       hasHighValueTokens,
       hasETH,
       nftCollectionCount,
       nftsByCollection,
+      nftTotalQuantity,
       burnType,
       estimatedTransactionCount
     };
   }, []);
 
-  // Convert assets to burn flow items
-  const createBurnFlowItems = useCallback((assets: BurnableAsset[]): BurnFlowItem[] => {
-    return assets.map((asset, index) => {
-      if (isToken(asset)) {
-        return {
-          id: `token-${asset.contract_address}-${index}`,
-          type: 'token' as const,
-          data: asset,
-          metadata: {
-            displayName: asset.contract_ticker_symbol || 'Unknown Token',
-            value: getTokenValue(asset),
-            imageUrl: asset.logo_url
-          }
-        };
-      } else {
-        return {
-          id: `nft-${asset.contract_address}-${asset.token_id}-${index}`,
-          type: 'nft' as const,
-          data: asset,
-          metadata: {
-            displayName: asset.name || `NFT #${asset.token_id}`,
-            imageUrl: asset.image_url || undefined
-          }
-        };
-      }
-    });
-  }, []);
 
-  // Universal confirmation trigger
-  const showConfirmation = useCallback((assets: BurnableAsset[]) => {
-    if (assets.length === 0) return;
+
+  // Universal confirmation trigger - now accepts BurnableItem[] with quantities
+  const showConfirmation = useCallback((items: BurnableItem[]) => {
+    if (items.length === 0) return;
     
-    const context = createBurnContext(assets);
+    const context = createBurnContext(items);
     
     // Trigger onBurnStart callback if provided
     callbacks.onBurnStart?.(context);
@@ -213,7 +200,7 @@ export function useUniversalBurnFlow(
       if (item.type === 'token') {
         result = await burnSingleToken(item.data as Token);
       } else {
-        result = await burnSingleNFT(item.data as NFT, address!);
+        result = await burnSingleNFT(item.data as NFT, address!, item.selectedQuantity);
       }
 
       const itemEndTime = Date.now();
@@ -323,9 +310,39 @@ export function useUniversalBurnFlow(
   const executeBurn = useCallback(async () => {
     if (!burnStatus.burnContext || !address) return;
     
-    const { tokens, nfts } = burnStatus.burnContext;
-    const allAssets: BurnableAsset[] = [...tokens, ...nfts];
-    const burnItems = createBurnFlowItems(allAssets);
+    const { originalItems } = burnStatus.burnContext;
+    
+    // Convert BurnableItem[] to BurnFlowItem[] expanding ERC-1155 quantities for proper progress tracking
+    const burnItems: BurnFlowItem[] = [];
+    originalItems.forEach((item, index) => {
+      if (item.type === 'token') {
+        burnItems.push({
+          id: `token-${item.data.contract_address}-${index}`,
+          type: 'token' as const,
+          data: item.data,
+          metadata: {
+            displayName: item.data.contract_ticker_symbol || 'Unknown Token',
+            value: getTokenValue(item.data),
+            imageUrl: item.data.logo_url
+          }
+        });
+      } else {
+        const quantity = item.selectedQuantity || 1;
+        // For ERC-1155 with quantity > 1, create multiple entries for proper progress tracking
+        for (let q = 0; q < quantity; q++) {
+          burnItems.push({
+            id: `nft-${item.data.contract_address}-${item.data.token_id}-${index}-${q}`,
+            type: 'nft' as const,
+            data: item.data,
+            selectedQuantity: 1, // Each burn item represents 1 quantity
+            metadata: {
+              displayName: item.data.name || `NFT #${item.data.token_id}`,
+              imageUrl: item.data.image_url || undefined
+            }
+          });
+        }
+      }
+    });
 
     // Initialize burn process
     startTimeRef.current = Date.now();
@@ -339,7 +356,7 @@ export function useUniversalBurnFlow(
       success: false,
       error: null,
       processedItems: 0,
-      totalItems: burnItems.length,
+      totalItems: burnItems.length, // Now matches the actual expanded array length
       startTime: startTimeRef.current || undefined,
       currentItem: null,
       currentStepMessage: `Starting burn process for ${burnItems.length} items...`
@@ -384,10 +401,10 @@ export function useUniversalBurnFlow(
         }
       }
 
-      // Calculate completion summary
+      // Calculate completion summary - use the original context totals, not expanded array
       const duration = Date.now() - startTimeRef.current!;
       const summary: BurnSummary = {
-        totalItems: burnItems.length,
+        totalItems: burnStatus.burnContext.totalItems, // Use original total from context
         successfulBurns: allResults.filter(r => r.success).length,
         failedBurns: allResults.filter(r => !r.success && !r.isUserRejection).length,
         userRejections: allResults.filter(r => r.isUserRejection).length,
@@ -431,7 +448,6 @@ export function useUniversalBurnFlow(
   }, [
     burnStatus, 
     address, 
-    createBurnFlowItems, 
     mergedOptions, 
     processBatch, 
     processSingleItem, 

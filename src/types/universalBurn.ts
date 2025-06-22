@@ -1,14 +1,12 @@
 import { Token } from '@/types/token';
-import { NFT } from '@/types/nft';
+import { NFT, BurnableItem } from '@/types/nft';
 
-// Universal asset type for burning
-export type BurnableAsset = Token | NFT;
-
-// Enhanced burn flow item with metadata
+// Enhanced burn flow item with metadata and quantity support
 export interface BurnFlowItem {
   id: string;
   type: 'token' | 'nft';
   data: Token | NFT;
+  selectedQuantity?: number; // For ERC-1155 NFTs
   metadata?: {
     displayName?: string;
     value?: number;
@@ -18,10 +16,14 @@ export interface BurnFlowItem {
 
 // Comprehensive burn context with all necessary information
 export interface BurnFlowContext {
+  // Original items with quantity information
+  originalItems: BurnableItem[];
+  
   // Asset categorization
   tokens: Token[];
   nfts: NFT[];
-  totalItems: number;
+  totalItems: number; // Total count including NFT quantities
+  totalUniqueItems: number; // Just the number of unique assets
   
   // Value calculations (tokens only)
   totalTokenValue: number;
@@ -31,13 +33,14 @@ export interface BurnFlowContext {
   // NFT specifics
   nftCollectionCount: number;
   nftsByCollection: Map<string, NFT[]>;
+  nftTotalQuantity: number; // Total NFT quantity including ERC-1155 quantities
   
   // Flow type detection
   burnType: 'tokens-only' | 'nfts-only' | 'mixed';
   
   // Estimated gas costs
   estimatedGasCost?: bigint;
-  estimatedTransactionCount: number;
+  estimatedTransactionCount: number; // Based on total quantities
 }
 
 // Enhanced error types for better user feedback
@@ -151,12 +154,12 @@ export interface BurnPreferences {
   preferredBatchSize?: number;
 }
 
-// Helper type guards
-export function isToken(asset: BurnableAsset): asset is Token {
+// Helper type guards (currently unused - kept for potential future use)
+export function isToken(asset: Token | NFT): asset is Token {
   return 'contract_ticker_symbol' in asset;
 }
 
-export function isNFT(asset: BurnableAsset): asset is NFT {
+export function isNFT(asset: Token | NFT): asset is NFT {
   return 'token_id' in asset;
 }
 

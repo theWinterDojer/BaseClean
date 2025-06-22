@@ -254,7 +254,7 @@ export function useDirectBurner() {
    * Burn a single NFT directly - NO APPROVALS NEEDED!
    * User calls transferFrom (ERC-721) or safeTransferFrom (ERC-1155) directly
    */
-  const burnSingleNFT = async (nft: NFT, userAddress: string): Promise<DirectNFTBurnResult> => {
+  const burnSingleNFT = async (nft: NFT, userAddress: string, selectedQuantity?: number): Promise<DirectNFTBurnResult> => {
     setCurrentNFT(nft);
     
     try {
@@ -286,7 +286,8 @@ export function useDirectBurner() {
         }
       } else if (nft.token_standard === 'ERC1155') {
         // ERC-1155: Use safeTransferFrom - NO APPROVAL NEEDED!
-        const amount = BigInt(nft.balance || '1'); // Default to 1 if balance not specified
+        // Use selectedQuantity if provided, otherwise default to full balance or 1
+        const amount = selectedQuantity ? BigInt(selectedQuantity) : BigInt(nft.balance || '1');
         
         try {
           txHash = await writeContractAsync({

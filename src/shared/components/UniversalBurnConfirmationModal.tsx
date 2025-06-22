@@ -37,7 +37,7 @@ export default function UniversalBurnConfirmationModal({
           <h2 className="text-xl font-bold text-white mb-4 flex items-center">
             <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center mr-3">🔥</div>
             {burnType === 'tokens-only' && `Confirm Burn - ${tokens.length} Token${tokens.length > 1 ? 's' : ''}`}
-            {burnType === 'nfts-only' && `Confirm Burn - ${nfts.length} NFT${nfts.length > 1 ? 's' : ''}`}
+            {burnType === 'nfts-only' && `Confirm Burn - ${burnContext.nftTotalQuantity} NFT${burnContext.nftTotalQuantity > 1 ? 's' : ''}`}
             {burnType === 'mixed' && `Confirm Burn - ${totalItems} Items`}
           </h2>
           
@@ -94,8 +94,8 @@ export default function UniversalBurnConfirmationModal({
             )}
             {nfts.length > 0 && (
               <div className="bg-gray-800 rounded-lg p-4">
-                <div className="text-3xl font-bold text-white">{nfts.length}</div>
-                <div className="text-gray-400 text-sm">NFT{nfts.length > 1 ? 's' : ''}</div>
+                <div className="text-3xl font-bold text-white">{burnContext.nftTotalQuantity}</div>
+                <div className="text-gray-400 text-sm">NFT{burnContext.nftTotalQuantity > 1 ? 's' : ''}</div>
                 <div className="text-blue-400 text-sm mt-1">
                   {nftCollectionCount} collection{nftCollectionCount > 1 ? 's' : ''}
                 </div>
@@ -201,47 +201,59 @@ export default function UniversalBurnConfirmationModal({
                   <div className="bg-gray-800 rounded-lg p-4">
                     <h3 className="text-white font-medium mb-3 flex items-center">
                       <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center mr-2 text-xs">N</div>
-                      NFTs ({nfts.length})
+                      NFTs ({burnContext.nftTotalQuantity})
                     </h3>
                     <div className="space-y-2 max-h-64 overflow-y-auto pr-4 custom-scrollbar">
-                      {nfts.map((nft, index) => (
-                        <div key={`${nft.contract_address}-${nft.token_id}`} className="flex justify-between items-center py-1">
-                          <div className="flex items-center">
-                            <span className="text-gray-500 text-sm mr-2">{index + 1}.</span>
-                            <div className="w-8 h-8 mr-2 relative overflow-hidden rounded">
-                              <NFTImage
-                                tokenId={nft.token_id}
-                                name={nft.name}
-                                imageUrl={nft.image_url}
-                              />
+                      {burnContext.originalItems
+                        .filter(item => item.type === 'nft')
+                        .map((nftItem, index) => {
+                          const nft = nftItem.data;
+                          const quantity = nftItem.selectedQuantity || 1;
+                          
+                          return (
+                            <div key={`${nft.contract_address}-${nft.token_id}`} className="flex justify-between items-center py-1">
+                              <div className="flex items-center">
+                                <span className="text-gray-500 text-sm mr-2">{index + 1}.</span>
+                                <div className="w-8 h-8 mr-2 relative overflow-hidden rounded">
+                                  <NFTImage
+                                    tokenId={nft.token_id}
+                                    name={nft.name}
+                                    imageUrl={nft.image_url}
+                                  />
+                                </div>
+                                <div>
+                                  <span className="text-white font-medium">
+                                    {nft.name || `NFT #${nft.token_id}`}
+                                  </span>
+                                  <span className="text-gray-400 text-sm ml-2">
+                                    {nft.collection_name || 'Unknown Collection'}
+                                  </span>
+                                  {quantity > 1 && (
+                                    <span className="text-yellow-400 text-sm ml-2 font-medium">
+                                      ×{quantity}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <a
+                                href={`https://opensea.io/assets/base/${nft.contract_address}/${nft.token_id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-400 hover:text-blue-300 text-sm flex items-center"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Image
+                                  src="/opensealogo.png"
+                                  alt="OpenSea"
+                                  width={16}
+                                  height={16}
+                                  className="mr-1"
+                                />
+                                View
+                              </a>
                             </div>
-                            <div>
-                              <span className="text-white font-medium">
-                                {nft.name || `NFT #${nft.token_id}`}
-                              </span>
-                              <span className="text-gray-400 text-sm ml-2">
-                                {nft.collection_name || 'Unknown Collection'}
-                              </span>
-                            </div>
-                          </div>
-                          <a
-                            href={`https://opensea.io/assets/base/${nft.contract_address}/${nft.token_id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-400 hover:text-blue-300 text-sm flex items-center"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <Image
-                              src="/opensealogo.png"
-                              alt="OpenSea"
-                              width={16}
-                              height={16}
-                              className="mr-1"
-                            />
-                            View
-                          </a>
-                        </div>
-                      ))}
+                          );
+                        })}
                     </div>
                   </div>
                 )}

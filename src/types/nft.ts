@@ -43,6 +43,8 @@ export type BurnableItem = {
 } | {
   type: 'nft';
   data: NFT;
+  /** Selected quantity for ERC-1155 tokens (1 to balance). If undefined, burns full balance for backward compatibility. */
+  selectedQuantity?: number;
 };
 
 /**
@@ -56,6 +58,8 @@ export type BurnableItemToken = {
 export type BurnableItemNFT = {
   type: 'nft';
   data: NFT;
+  /** Selected quantity for ERC-1155 tokens (1 to balance). If undefined, burns full balance for backward compatibility. */
+  selectedQuantity?: number;
 };
 
 

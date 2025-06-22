@@ -5,7 +5,7 @@ import { useSelectedItems } from '@/contexts/SelectedItemsContext';
 
 export default function HeaderTabNavigation() {
   const router = useRouter();
-  const { selectedTokensCount, selectedNFTsCount } = useSelectedItems();
+  const { selectedTokensCount, selectedNFTsTotalQuantity } = useSelectedItems();
 
   // Determine active tab based on current route
   const isTokensActive = router.pathname === '/' || router.pathname === '/tokens';
@@ -24,7 +24,7 @@ export default function HeaderTabNavigation() {
       label: 'NFTs',
       href: '/nfts',
       isActive: isNFTsActive,
-      count: selectedNFTsCount,
+      count: selectedNFTsTotalQuantity,
     },
   ];
 

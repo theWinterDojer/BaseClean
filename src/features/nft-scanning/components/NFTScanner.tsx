@@ -168,7 +168,7 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
               <div className="lg:w-80 xl:w-96">
                 <NFTStatistics 
                   nfts={filteredNFTs}
-                  allNFTs={networkFilteredNFTs}
+                  allNFTs={allNFTs}
                   selectedNetworks={selectedNetworks}
                   onNetworkToggle={handleNetworkToggle}
                   filters={filters}

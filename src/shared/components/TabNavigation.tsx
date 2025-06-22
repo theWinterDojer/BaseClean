@@ -9,7 +9,7 @@ interface TabNavigationProps {
 
 export default function TabNavigation({ className = '' }: TabNavigationProps) {
   const router = useRouter();
-  const { selectedTokensCount, selectedNFTsCount } = useSelectedItems();
+  const { selectedTokensCount, selectedNFTsTotalQuantity } = useSelectedItems();
 
   // Determine active tab based on current route
   const isTokensActive = router.pathname === '/' || router.pathname === '/tokens';
@@ -28,7 +28,7 @@ export default function TabNavigation({ className = '' }: TabNavigationProps) {
       label: 'NFTs',
       href: '/nfts',
       isActive: isNFTsActive,
-      count: selectedNFTsCount,
+      count: selectedNFTsTotalQuantity,
     },
   ];
 

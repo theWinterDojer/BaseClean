@@ -10,6 +10,7 @@ interface SelectedItemsContextValue {
   // Unified selection state
   selectedItems: BurnableItem[];
   selectedItemsCount: number;
+  selectedItemsTotalQuantity: number; // Total count including NFT quantities
   
   // Token-specific getters (for backward compatibility)
   selectedTokens: Set<string>;
@@ -18,6 +19,7 @@ interface SelectedItemsContextValue {
   // NFT-specific getters
   selectedNFTs: NFT[];
   selectedNFTsCount: number;
+  selectedNFTsTotalQuantity: number; // Total quantity accounting for ERC-1155 quantities
   
   // Burned items tracking
   burnedTokenAddresses: Set<string>;
@@ -27,6 +29,12 @@ interface SelectedItemsContextValue {
   toggleToken: (contractAddress: string, tokens?: Token[]) => void;
   toggleNFT: (nft: NFT) => void;
   toggleItem: (item: BurnableItem) => void;
+  
+  // NFT quantity methods (for ERC-1155 support)
+  setNFTQuantity: (contractAddress: string, tokenId: string, quantity: number) => void;
+  getNFTSelectedQuantity: (contractAddress: string, tokenId: string) => number;
+  incrementNFTQuantity: (contractAddress: string, tokenId: string, maxQuantity: number) => void;
+  decrementNFTQuantity: (contractAddress: string, tokenId: string) => void;
   
   // Bulk operations
   setSelectedTokens: React.Dispatch<React.SetStateAction<Set<string>>>;
@@ -147,6 +155,18 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
   const selectedTokensCount = selectedTokens.size;
   const selectedNFTsCount = selectedNFTs.length;
   const selectedItemsCount = selectedItems.length;
+  
+  // Calculate total NFT quantity (accounting for ERC-1155 quantities)
+  const selectedNFTsTotalQuantity = useMemo(() => {
+    return selectedItems
+      .filter((item): item is BurnableItemNFT => item.type === 'nft')
+      .reduce((total, item) => total + (item.selectedQuantity || 1), 0);
+  }, [selectedItems]);
+  
+  // Calculate total item quantity (tokens + NFT quantities)
+  const selectedItemsTotalQuantity = useMemo(() => {
+    return selectedTokensCount + selectedNFTsTotalQuantity;
+  }, [selectedTokensCount, selectedNFTsTotalQuantity]);
 
   // Helper functions
   const isTokenSelected = useCallback((contractAddress: string) => {
@@ -198,7 +218,7 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
     });
   }, [isTokenSelected]);
 
-  // NFT selection
+  // NFT selection (updated to support quantities)
   const toggleNFT = useCallback((nft: NFT) => {
     const isCurrentlySelected = isNFTSelected(nft.contract_address, nft.token_id);
     
@@ -211,11 +231,76 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
             item.data.token_id === nft.token_id)
         );
       } else {
-        // Add NFT
-        return [...prev, { type: 'nft', data: nft }];
+        // Add NFT with default quantity = 1
+        return [...prev, { type: 'nft', data: nft, selectedQuantity: 1 }];
       }
     });
   }, [isNFTSelected]);
+
+  // NFT quantity management methods
+  const setNFTQuantity = useCallback((contractAddress: string, tokenId: string, quantity: number) => {
+    if (quantity <= 0) {
+      // Remove NFT if quantity is 0 or negative
+      setSelectedItems(prev => prev.filter(item => 
+        !(item.type === 'nft' && 
+          item.data.contract_address === contractAddress && 
+          item.data.token_id === tokenId)
+      ));
+      return;
+    }
+
+    setSelectedItems(prev => {
+      const existingIndex = prev.findIndex(item => 
+        item.type === 'nft' && 
+        item.data.contract_address === contractAddress && 
+        item.data.token_id === tokenId
+      );
+
+      if (existingIndex >= 0) {
+        // Update existing NFT quantity
+        const updated = [...prev];
+        updated[existingIndex] = { 
+          ...updated[existingIndex], 
+          selectedQuantity: quantity 
+        } as BurnableItem;
+        return updated;
+      }
+
+      // NFT not selected, ignore (shouldn't happen in normal UI flow)
+      return prev;
+    });
+  }, []);
+
+  const getNFTSelectedQuantity = useCallback((contractAddress: string, tokenId: string): number => {
+    const item = selectedItems.find(item => 
+      item.type === 'nft' && 
+      item.data.contract_address === contractAddress && 
+      item.data.token_id === tokenId
+    );
+    
+    if (item && item.type === 'nft') {
+      return item.selectedQuantity || 1; // Default to 1 for backward compatibility
+    }
+    
+    return 0; // Not selected
+  }, [selectedItems]);
+
+  const incrementNFTQuantity = useCallback((contractAddress: string, tokenId: string, maxQuantity: number) => {
+    const currentQuantity = getNFTSelectedQuantity(contractAddress, tokenId);
+    if (currentQuantity > 0 && currentQuantity < maxQuantity) {
+      setNFTQuantity(contractAddress, tokenId, currentQuantity + 1);
+    }
+  }, [getNFTSelectedQuantity, setNFTQuantity]);
+
+  const decrementNFTQuantity = useCallback((contractAddress: string, tokenId: string) => {
+    const currentQuantity = getNFTSelectedQuantity(contractAddress, tokenId);
+    if (currentQuantity > 1) {
+      setNFTQuantity(contractAddress, tokenId, currentQuantity - 1);
+    } else if (currentQuantity === 1) {
+      // Remove NFT when quantity reaches 0
+      setNFTQuantity(contractAddress, tokenId, 0);
+    }
+  }, [getNFTSelectedQuantity, setNFTQuantity]);
 
   // Generic item selection
   const toggleItem = useCallback((item: BurnableItem) => {
@@ -266,9 +351,8 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
 
   // Burn modal methods
   const openBurnModal = useCallback(() => {
-    // Convert BurnableItem[] to BurnableAsset[]
-    const assets = selectedItems.map(item => item.data);
-    showConfirmation(assets);
+    // Pass the full BurnableItem[] with quantity information
+    showConfirmation(selectedItems);
   }, [selectedItems, showConfirmation]);
 
   const closeBurnModal = useCallback(() => {
@@ -315,6 +399,7 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
     // Unified state
     selectedItems,
     selectedItemsCount,
+    selectedItemsTotalQuantity,
     
     // Token-specific (backward compatibility)
     selectedTokens,
@@ -323,6 +408,7 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
     // NFT-specific
     selectedNFTs,
     selectedNFTsCount,
+    selectedNFTsTotalQuantity,
     
     // Burned items tracking
     burnedTokenAddresses,
@@ -332,6 +418,12 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
     toggleToken,
     toggleNFT,
     toggleItem,
+    
+    // NFT quantity methods
+    setNFTQuantity,
+    getNFTSelectedQuantity,
+    incrementNFTQuantity,
+    decrementNFTQuantity,
     
     // Bulk operations
     setSelectedTokens,
