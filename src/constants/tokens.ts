@@ -113,7 +113,7 @@ export const SPAM_SIGNALS = {
     MIN_QUOTE_RATE: 0.000001,
     MAX_SUPPLY_THRESHOLD: 1_000_000_000_000, // 1 trillion
     SUSPICIOUS_DECIMALS: [0, 1, 2], // Most legitimate tokens use 18 decimals
-    LOW_VALUE_THRESHOLD: 0.10, // Changed from 1.0 to 0.10 for better spam detection
+    LOW_VALUE_THRESHOLD: 0.50, // Updated from $0.10 to $0.50 for more selective spam detection
   },
   
   // Airdrop signals

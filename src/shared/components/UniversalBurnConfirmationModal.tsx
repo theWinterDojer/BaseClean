@@ -152,7 +152,7 @@ export default function UniversalBurnConfirmationModal({
                       <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mr-2 text-xs">T</div>
                       Tokens ({tokens.length})
                     </h3>
-                    <div className="space-y-2 max-h-64 overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
+                    <div className="space-y-2 max-h-64 overflow-y-auto pr-4 custom-scrollbar">
                       {tokens.map((token, index) => {
                         const value = getTokenValue(token);
                         const formattedBalance = formatBalance(token.balance, token.contract_decimals);
@@ -203,7 +203,7 @@ export default function UniversalBurnConfirmationModal({
                       <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center mr-2 text-xs">N</div>
                       NFTs ({nfts.length})
                     </h3>
-                    <div className="space-y-2 max-h-64 overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
+                    <div className="space-y-2 max-h-64 overflow-y-auto pr-4 custom-scrollbar">
                       {nfts.map((nft, index) => (
                         <div key={`${nft.contract_address}-${nft.token_id}`} className="flex justify-between items-center py-1">
                           <div className="flex items-center">

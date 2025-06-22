@@ -397,8 +397,8 @@ export function useUniversalBurnFlow(
         burnType: burnStatus.burnContext.burnType
       };
 
-      // Trigger completion callback
-      callbacks.onBurnComplete?.(summary);
+      // Trigger completion callback with all results
+      callbacks.onBurnComplete?.(summary, allResults);
 
       // Complete the burn process
       setBurnStatus(prev => ({

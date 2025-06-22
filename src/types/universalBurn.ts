@@ -126,7 +126,7 @@ export interface UniversalBurnFlowCallbacks {
   onBurnStart?: (context: BurnFlowContext) => void;
   onItemProcessed?: (result: BurnResult, index: number, total: number) => void;
   onBatchComplete?: (batchNumber: number, results: BurnResult[]) => void;
-  onBurnComplete?: (summary: BurnSummary) => void;
+  onBurnComplete?: (summary: BurnSummary, allResults: BurnResult[]) => void;
   onError?: (error: Error, item?: BurnFlowItem) => void;
 }
 

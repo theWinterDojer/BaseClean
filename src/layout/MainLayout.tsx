@@ -4,6 +4,7 @@ import Image from 'next/image';
 import HeaderTabNavigation from '@/shared/components/HeaderTabNavigation';
 import TabNavigation from '@/shared/components/TabNavigation';
 import WalletConnectButton from '@/shared/components/WalletConnectButton';
+import BurnHistoryButton from '@/shared/components/BurnHistoryButton';
 import { ScamSnifferStatusIndicator } from '@/components/ScamSnifferStatusIndicator';
 
 interface MainLayoutProps {
@@ -41,6 +42,7 @@ export default function MainLayout({ children, stickyHeaderContent }: MainLayout
             
             <div className="flex items-center gap-4">
               <WalletConnectButton />
+              <BurnHistoryButton />
             </div>
           </div>
           

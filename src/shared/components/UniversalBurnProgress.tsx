@@ -90,7 +90,7 @@ export default function UniversalBurnProgress({
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-900 rounded-lg border border-gray-700 shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-gray-900 rounded-lg border border-gray-700 shadow-xl max-w-[45rem] w-full max-h-[90vh] overflow-hidden">
         <div className="p-6">
           {/* Header */}
           <div className="flex justify-between items-center mb-4">
@@ -202,7 +202,7 @@ export default function UniversalBurnProgress({
 
           {/* Transaction Results */}
           {isComplete && (successfulTokens.length > 0 || failedTokens.length > 0 || cancelledTokens.length > 0 || successfulNFTs.length > 0 || failedNFTs.length > 0 || cancelledNFTs.length > 0) && (
-            <div className="space-y-4 max-h-96 overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
+            <div className="space-y-4 max-h-96 overflow-y-auto pr-4 custom-scrollbar">
               
               {/* Successful Tokens */}
               {successfulTokens.length > 0 && (

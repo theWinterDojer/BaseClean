@@ -168,9 +168,13 @@ const TokenCard = memo(function TokenCard({
 }: TokenCardProps) {
   const [hover, setHover] = useState(false);
   
-  // Check if this is native ETH (cannot be burned)
+  // Check if this is native ETH or USDC (cannot be burned - important reference tokens)
   const isNativeETH = token.contract_address === '0x0000000000000000000000000000000000000000' || 
                       token.contract_address.toLowerCase() === '0x0000000000000000000000000000000000000000';
+  
+  const isUSDC = token.contract_address.toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913';
+  
+  const isNonBurnable = isNativeETH || isUSDC;
   
   const formattedBalance = formatBalance(token.balance, token.contract_decimals);
 
@@ -185,9 +189,14 @@ const TokenCard = memo(function TokenCard({
   })();
 
   const handleCardClick = () => {
-    // Prevent selection of native ETH
+    // Prevent selection of non-burnable tokens (ETH and USDC)
     if (isNativeETH) {
       alert('⚠️ Native ETH cannot be burned.\n\nETH is needed for gas fees on the network and cannot be burned using token burn methods. Only ERC-20 tokens can be burned.');
+      return;
+    }
+    
+    if (isUSDC) {
+      alert('⚠️ USDC cannot be burned.\n\nUSDC is a stablecoin pegged to the US Dollar and is typically kept as a stable store of value. BaseClean does not support burning USDC.');
       return;
     }
     
@@ -208,7 +217,7 @@ const TokenCard = memo(function TokenCard({
   return (
     <div 
       className={`p-4 rounded-lg transition-all duration-200 group mb-1 border ${
-        isNativeETH
+        isNonBurnable
           ? 'bg-gray-50 dark:bg-gray-900/50 border-gray-300 dark:border-gray-600 cursor-not-allowed opacity-60'
           : isSelected 
             ? isSpam 
@@ -219,9 +228,9 @@ const TokenCard = memo(function TokenCard({
               : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 cursor-pointer'
       }`}
       onClick={handleCardClick}
-      onMouseEnter={() => !isNativeETH && setHover(true)}
+      onMouseEnter={() => !isNonBurnable && setHover(true)}
       onMouseLeave={() => setHover(false)}
-      title={isNativeETH ? "ETH cannot be burned - needed for gas fees" : undefined}
+      title={isNonBurnable ? (isNativeETH ? "ETH cannot be burned - needed for gas fees" : "USDC cannot be burned - important stablecoin") : undefined}
     >
       <div className="flex items-center">
         <div className="relative w-12 h-12 mr-4 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700 shadow-sm flex-shrink-0">
@@ -238,7 +247,7 @@ const TokenCard = memo(function TokenCard({
               <span className="truncate">
                 {token.contract_ticker_symbol || token.contract_name || token.contract_address.substring(0, 8)}
               </span>
-              {isNativeETH && (
+              {isNonBurnable && (
                 <span className="flex-shrink-0 ml-1 text-yellow-600 dark:text-yellow-400" title="Cannot be burned">
                   ⛔
                 </span>

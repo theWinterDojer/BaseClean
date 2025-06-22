@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { Token } from '@/types/token';
 import { NFT, BurnableItem, BurnableItemToken, BurnableItemNFT } from '@/types/nft';
-import EthSelectionModal from '@/shared/components/EthSelectionModal';
 import { useUniversalBurnFlow } from '@/hooks/useUniversalBurnFlow';
+import { useBurnHistory } from '@/hooks/useBurnHistory';
 import UniversalBurnConfirmationModal from '@/shared/components/UniversalBurnConfirmationModal';
 import UniversalBurnProgress from '@/shared/components/UniversalBurnProgress';
 
@@ -75,9 +75,13 @@ interface SelectedItemsProviderProps {
   children: React.ReactNode;
 }
 
-// ETH token addresses on Base network
+// Non-burnable token addresses on Base network
 const ETH_ADDRESSES = [
   '0x4200000000000000000000000000000000000006', // Wrapped ETH on Base
+];
+
+const USDC_ADDRESSES = [
+  '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', // USDC on Base
 ];
 
 const isEthToken = (contractAddress: string, symbol?: string): boolean => {
@@ -89,24 +93,42 @@ const isEthToken = (contractAddress: string, symbol?: string): boolean => {
          normalizedSymbol === 'weth';
 };
 
+const isUSDCToken = (contractAddress: string, symbol?: string): boolean => {
+  const normalizedAddress = contractAddress.toLowerCase();
+  const normalizedSymbol = symbol?.toLowerCase();
+  
+  return USDC_ADDRESSES.some(addr => addr.toLowerCase() === normalizedAddress) ||
+         normalizedSymbol === 'usdc';
+};
+
 export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) {
   const [selectedItems, setSelectedItems] = useState<BurnableItem[]>([]);
-  const [showEthModal, setShowEthModal] = useState(false);
-  const [pendingEthToken, setPendingEthToken] = useState<Token | null>(null);
-  const [pendingEthAddress, setPendingEthAddress] = useState<string>('');
   
   // Track successfully burned assets
   const [burnedTokenAddresses, setBurnedTokenAddresses] = useState<Set<string>>(new Set());
   const [burnedNFTKeys, setBurnedNFTKeys] = useState<Set<string>>(new Set());
 
-  // Use universal burn flow for handling burns
+  // Initialize burn history tracking
+  const { addBurnToHistory } = useBurnHistory();
+
+  // Use universal burn flow for handling burns with history tracking
   const {
     burnStatus,
     showConfirmation,
     closeConfirmation,
     executeBurn,
     closeProgress
-  } = useUniversalBurnFlow();
+  } = useUniversalBurnFlow({}, {
+    onBurnComplete: (summary, allResults) => {
+      // Get only actual burn attempts (exclude user rejections)
+      const actualBurnResults = allResults.filter(result => !result.isUserRejection);
+      
+      // Only save to history if there were actual burn attempts
+      if (actualBurnResults.length > 0) {
+        addBurnToHistory(summary, actualBurnResults);
+      }
+    }
+  });
 
   // Computed values for backward compatibility
   const selectedTokens = useMemo(() => {
@@ -147,13 +169,17 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
   const toggleToken = useCallback((contractAddress: string, tokens?: Token[]) => {
     const token = tokens?.find(t => t.contract_address === contractAddress);
     const isEth = isEthToken(contractAddress, token?.contract_ticker_symbol);
+    const isUsdc = isUSDCToken(contractAddress, token?.contract_ticker_symbol);
     const isCurrentlySelected = isTokenSelected(contractAddress);
     
-    // If we're selecting (not deselecting) an ETH token, show confirmation modal
-    if (isEth && !isCurrentlySelected && token) {
-      setPendingEthToken(token);
-      setPendingEthAddress(contractAddress);
-      setShowEthModal(true);
+    // Prevent selection of non-burnable tokens with simple alerts
+    if (isEth && !isCurrentlySelected) {
+      alert('⚠️ ETH cannot be burned.\n\nETH is needed for gas fees and cannot be burned using token burn methods.');
+      return;
+    }
+    
+    if (isUsdc && !isCurrentlySelected) {
+      alert('⚠️ USDC cannot be burned.\n\nUSDC is a stablecoin and BaseClean does not support burning USDC.');
       return;
     }
 
@@ -199,22 +225,6 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
       toggleNFT(item.data);
     }
   }, [toggleToken, toggleNFT]);
-
-  // ETH confirmation handlers
-  const handleEthConfirm = useCallback(() => {
-    if (pendingEthAddress && pendingEthToken) {
-      setSelectedItems(prev => [...prev, { type: 'token', data: pendingEthToken }]);
-    }
-    setShowEthModal(false);
-    setPendingEthToken(null);
-    setPendingEthAddress('');
-  }, [pendingEthAddress, pendingEthToken]);
-
-  const handleEthCancel = useCallback(() => {
-    setShowEthModal(false);
-    setPendingEthToken(null);
-    setPendingEthAddress('');
-  }, []);
 
   // Bulk setters
   const setSelectedTokens = useCallback((setter: React.SetStateAction<Set<string>>) => {
@@ -347,12 +357,6 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
   return (
     <SelectedItemsContext.Provider value={value}>
       {children}
-      <EthSelectionModal
-        isOpen={showEthModal}
-        onClose={handleEthCancel}
-        onConfirm={handleEthConfirm}
-        ethToken={pendingEthToken}
-      />
       {burnStatus.burnContext && (
         <UniversalBurnConfirmationModal
           burnContext={burnStatus.burnContext}
