@@ -4,6 +4,7 @@ import { UniversalBurnFlowStatus, BurnResult } from '@/types/universalBurn';
 import NFTImage from '@/shared/components/NFTImage';
 import { NFT } from '@/types/nft';
 import BurnFailureEducationModal from '@/components/SpamNFTEducationModal';
+import confetti from 'canvas-confetti';
 
 interface UniversalBurnProgressProps {
   burnStatus: UniversalBurnFlowStatus;
@@ -15,6 +16,7 @@ export default function UniversalBurnProgress({
   onClose
 }: UniversalBurnProgressProps) {
   const [showEducationModal, setShowEducationModal] = React.useState(false);
+  const [hasTriggeredConfetti, setHasTriggeredConfetti] = React.useState(false);
   
   const { 
     isProgressOpen,
@@ -31,9 +33,6 @@ export default function UniversalBurnProgress({
     totalBatches
   } = burnStatus;
 
-  // Don't render if modal should not be open
-  if (!isProgressOpen) return null;
-
   // Calculate progress percentage
   const progressPercentage = totalItems > 0 
     ? Math.round((processedItems / totalItems) * 100)
@@ -46,6 +45,32 @@ export default function UniversalBurnProgress({
   const successCount = results.successful.length;
   const failedCount = results.failed.length;
   const rejectedCount = results.userRejected.length;
+
+  // Trigger confetti for successful burns
+  React.useEffect(() => {
+    if (isComplete && successCount > 0 && !hasTriggeredConfetti && isProgressOpen) {
+      // Trigger confetti celebration
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#0052FF', '#00D4AA', '#FFFFFF', '#22C55E'] // BaseClean blue, green, white, success green
+      });
+      
+      // Mark that we've triggered confetti for this session
+      setHasTriggeredConfetti(true);
+    }
+  }, [isComplete, successCount, hasTriggeredConfetti, isProgressOpen]);
+
+  // Reset confetti trigger when modal closes
+  React.useEffect(() => {
+    if (!isProgressOpen) {
+      setHasTriggeredConfetti(false);
+    }
+  }, [isProgressOpen]);
+
+  // Don't render if modal should not be open
+  if (!isProgressOpen) return null;
 
   // Separate results by type and status
   const successfulTokens = results.successful.filter(r => r.item.type === 'token');
@@ -86,6 +111,59 @@ export default function UniversalBurnProgress({
       }
     }
     return `Burning Assets - ${progressPercentage}%`;
+  };
+
+  // Generate dynamic tweet text based on burn results
+  const generateTweetText = () => {
+    const tokenCount = successfulTokens.length;
+    const nftCount = successfulNFTs.length;
+
+    // Fun messages based on what was burned
+    let message = '';
+    let emojis = '';
+
+    if (tokenCount > 0 && nftCount > 0) {
+      // Mixed burn
+      message = `Just cleaned my wallet with @Base_Clean! 🧹 Burned ${tokenCount} spam tokens and ${nftCount} junk NFTs in one go!`;
+      emojis = '🔥';
+    } else if (tokenCount > 0) {
+      // Token only burn
+      if (tokenCount >= 10) {
+        message = `Boom! Just torched ${tokenCount} spam tokens with @Base_Clean! 🔥 My wallet is sparkling clean!`;
+        emojis = '🧹⚡️';
+      } else if (tokenCount >= 5) {
+        message = `Cleaned house! 🏠 Just burned ${tokenCount} junk tokens with @Base_Clean. Feeling fresh!`;
+        emojis = '🔥💚✨';
+      } else {
+        message = `Just removed ${tokenCount} spam token${tokenCount > 1 ? 's' : ''} with @Base_Clean! Every bit counts! 🧹`;
+        emojis = '✨';
+      }
+    } else if (nftCount > 0) {
+      // NFT only burn
+      if (nftCount >= 5) {
+        message = `NFT cleanup complete! 🗑️ Just burned ${nftCount} junk NFTs with @Base_Clean. Wallet feels amazing!`;
+        emojis = '🔥🎨';
+      } else {
+        message = `Cleaned up ${nftCount} unwanted NFT${nftCount > 1 ? 's' : ''} with @Base_Clean! 🎨 Clean wallet vibes!`;
+        emojis = '✨🧹💫';
+      }
+    }
+
+    // Add closing and hashtags
+    const fullMessage = `${message} ${emojis}
+
+Clean your wallet. Strengthen your Base 💪
+
+#BaseClean`;
+
+    return encodeURIComponent(fullMessage);
+  };
+
+  // Handle share to Twitter
+  const handleShare = () => {
+    const tweetText = generateTweetText();
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}`;
+    window.open(twitterUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -487,6 +565,20 @@ export default function UniversalBurnProgress({
 
           {/* Action Buttons */}
           <div className="flex gap-3 justify-end mt-6">
+            {/* Share Button - Only show when there are successful burns */}
+            {isComplete && successCount > 0 && (
+              <button
+                type="button"
+                onClick={handleShare}
+                className="px-6 py-3 rounded-lg transition-all font-medium bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                </svg>
+                                 Share
+              </button>
+            )}
+            
             <button
               type="button"
               className={`px-6 py-3 rounded-lg transition-all font-medium ${

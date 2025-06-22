@@ -90,7 +90,7 @@ export default function MainLayout({ children, stickyHeaderContent }: MainLayout
             {/* Center - ScamSniffer Section */}
             <div className="flex flex-col items-center gap-1">
               <div className="text-sm text-gray-400">
-                Enhanced by <Link href="https://x.com/realScamSniffer" className="text-gray-300 hover:text-white transition-colors">Scam Sniffer</Link> community intelligence 👃
+                Enhanced by <Link href="https://x.com/realScamSniffer" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors">Scam Sniffer</Link> community intelligence 👃
               </div>
               <div className="text-sm text-gray-400">
                 <ScamSnifferStatusIndicator />
@@ -102,10 +102,10 @@ export default function MainLayout({ children, stickyHeaderContent }: MainLayout
               {/* Resources Section */}
               <div className="flex flex-col gap-2">
                 <h4 className="text-sm font-medium text-white mb-1">Resources</h4>
-                <Link href="https://docs.base.org" className="text-xs text-gray-400 hover:text-white transition-colors">
+                <Link href="https://docs.base.org" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-white transition-colors">
                   Base Docs
                 </Link>
-                <Link href="https://bridge.base.org" className="text-xs text-gray-400 hover:text-white transition-colors">
+                <Link href="https://relay.link/bridge/base?fromChainId=1&fromCurrency=0x0000000000000000000000000000000000000000&toCurrency=0x0000000000000000000000000000000000000000" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-white transition-colors">
                   Base Bridge
                 </Link>
               </div>
@@ -113,10 +113,10 @@ export default function MainLayout({ children, stickyHeaderContent }: MainLayout
               {/* Community Section */}
               <div className="flex flex-col gap-2">
                 <h4 className="text-sm font-medium text-white mb-1">Community</h4>
-                <Link href="https://x.com/Base_Clean" className="text-xs text-gray-400 hover:text-white transition-colors">
+                <Link href="https://x.com/Base_Clean" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-white transition-colors">
                   Twitter
                 </Link>
-                <Link href="https://github.com/theWinterDojer/BaseClean" className="text-xs text-gray-400 hover:text-white transition-colors">
+                <Link href="https://github.com/theWinterDojer/BaseClean" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-white transition-colors">
                   GitHub
                 </Link>
               </div>

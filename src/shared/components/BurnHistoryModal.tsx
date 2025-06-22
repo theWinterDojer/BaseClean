@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useBurnHistory } from '@/hooks/useBurnHistory';
 import { isToken, isNFT } from '@/types/universalBurn';
@@ -47,11 +47,16 @@ export default function BurnHistoryModal({ isOpen, onClose }: BurnHistoryModalPr
     setExpandedEntries(newExpanded);
   };
 
+  // Simple close handler
+  const handleClose = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
   // Handle escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        handleClose();
       }
     };
 
@@ -59,7 +64,7 @@ export default function BurnHistoryModal({ isOpen, onClose }: BurnHistoryModalPr
       document.addEventListener('keydown', handleEscape);
       return () => document.removeEventListener('keydown', handleEscape);
     }
-  }, [isOpen, onClose]);
+  }, [isOpen, handleClose]);
 
   if (!isOpen) return null;
 
@@ -87,7 +92,7 @@ export default function BurnHistoryModal({ isOpen, onClose }: BurnHistoryModalPr
   return createPortal(
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
-      onClick={onClose}
+      onClick={handleClose}
     >
       <div 
         className="bg-gray-900 rounded-lg border border-gray-700 shadow-xl max-w-4xl w-full max-h-[85vh] overflow-y-auto"
@@ -108,7 +113,7 @@ export default function BurnHistoryModal({ isOpen, onClose }: BurnHistoryModalPr
               </p>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="text-gray-400 hover:text-gray-200 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -397,7 +402,7 @@ export default function BurnHistoryModal({ isOpen, onClose }: BurnHistoryModalPr
               Are you sure you want to clear your burn history?
             </p>
             
-            <div className="flex gap-3 justify-end">
+            <div className="flex justify-between">
               <button
                 onClick={() => setShowClearConfirmation(false)}
                 className="px-4 py-2 text-gray-300 hover:text-white border border-gray-600 hover:border-gray-500 rounded transition-colors"
