@@ -22,7 +22,6 @@ BaseClean is a Web3 application that implements a **zero-approval architecture**
 
 | Document | Technical Focus | Audience |
 |----------|-----------------|----------|
-| `DEPLOYMENT_GUIDE.md` | Production deployment architecture and requirements | DevOps, Infrastructure |
 | `SPAM_DETECTION.md` | Multi-layer threat detection system implementation | Security Engineers, Developers |
 
 ## 🔬 **Technical Implementation**

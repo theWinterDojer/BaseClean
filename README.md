@@ -4,7 +4,7 @@ A Web3 application for burning unwanted ERC-20 tokens and NFTs on Base network w
 
 ## 🎯 What is BaseClean?
 
-BaseClean allows users to permanently remove unwanted tokens from their wallets by transferring them directly to a burn address (`0x000000000000000000000000000000000000dEaD`). Unlike traditional token burners that require users to approve smart contracts, BaseClean uses direct wallet transfers.
+BaseClean allows users to permanently remove unwanted tokens from their wallets by transferring them directly to a burn address (`0x000000000000000000000000000000000000dEaD`). 
 
 ## ✨ Features
 
@@ -40,13 +40,12 @@ BaseClean allows users to permanently remove unwanted tokens from their wallets 
 - **Network**: Base mainnet (chain ID 8453)
 
 ### For Developers
-This is a production SaaS application. For deployment information, see the [Deployment Guide](docs/DEPLOYMENT_GUIDE.md).
+This is a production SaaS application. For technical architecture details, see the [`docs/`](docs/) directory.
 
 ## 📚 Documentation
 
-For technical documentation and deployment guides, see the [`docs/`](docs/) directory:
+For technical documentation, see the [`docs/`](docs/) directory:
 
-- [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)
 - [Spam Detection System](docs/SPAM_DETECTION.md)
 
 ## 🛡️ Security
