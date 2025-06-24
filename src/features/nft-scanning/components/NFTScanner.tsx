@@ -95,7 +95,7 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
   return (
     <>
       <NFTDataManager onNFTsLoaded={handleNFTsLoaded} showDisclaimer={showDisclaimer}>
-        {({ loading, error, isConnected, refreshNFTs }) => {
+        {({ loading, error, isConnected, processedNFTs, refreshNFTs }) => {
         return (
         <>
           {/* Add bottom padding when NFTs are selected to prevent overlap with floating bar */}
@@ -131,10 +131,10 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
                   {/* Center - NFT Count - Only show when not loading */}
                   {!loading && (
                     <div className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      {filterStats.isFiltered ? (
-                        <>Showing {filteredNFTs.length} of {networkFilteredNFTs.length} NFTs</>
+                      {(filterStats.isFiltered || filteredNFTs.length < allNFTs.length) ? (
+                        <>Showing {filteredNFTs.length} of {allNFTs.length} NFTs</>
                       ) : (
-                        <>Showing all {networkFilteredNFTs.length} NFT{networkFilteredNFTs.length === 1 ? '' : 's'}</>
+                        <>Showing all {allNFTs.length} NFT{allNFTs.length === 1 ? '' : 's'}</>
                       )}
                     </div>
                   )}
@@ -160,6 +160,7 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
                 spamNFTs={[]}
                 gridSize={gridSize}
                 totalNFTs={allNFTs.length}
+                processedNFTs={processedNFTs}
               />
             </div>
 

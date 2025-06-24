@@ -1,20 +1,15 @@
-# Features Directory
+# 🎯 Features Directory
 
-This directory organizes components by feature rather than by type, following a domain-driven design approach.
+Organizes components by feature rather than by type, following a domain-driven design approach.
 
-## Purpose
-- Group related components, hooks, and utilities by feature
-- Encapsulate functionality in a modular way
-- Enable better code organization for feature teams
+## 🔥 Current Features
 
-## Structure
-Each feature should be in its own directory, containing:
-- Components specific to the feature
-- Feature-specific hooks
-- Feature-specific types
-- Feature-specific utilities
+- `token-scanning/` - 🪙 Token discovery, filtering, and burning UI
+- `nft-scanning/` - 🖼️ NFT discovery, filtering, and burning UI
 
-## Example Features
-- token-scanning
-- wallet-connection
-- token-burning 
+## 🏗️ Structure
+
+Each feature directory contains:
+- 🧩 Components specific to that feature
+- 🔧 Feature-specific utilities
+- 🤝 Related functionality grouped together 

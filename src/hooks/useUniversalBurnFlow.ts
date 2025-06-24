@@ -494,6 +494,8 @@ export function useUniversalBurnFlow(
   // Check if waiting for wallet confirmation
   const isWaitingForConfirmation = burnStatus.isConfirmationOpen && !burnStatus.inProgress;
 
+
+
   return {
     burnStatus,
     flowState,

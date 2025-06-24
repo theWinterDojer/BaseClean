@@ -8,6 +8,7 @@ interface NFTDataManagerProps {
   showDisclaimer: boolean; // Passed down from _app.tsx
   children: (props: {
     nfts: NFT[];
+    processedNFTs: NFT[];
     loading: boolean;
     error: string | null;
     isConnected: boolean;
@@ -26,6 +27,7 @@ export default function NFTDataManager({ onNFTsLoaded, showDisclaimer, children 
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const [nfts, setNFTs] = useState<NFT[]>([]);
+  const [processedNFTs, setProcessedNFTs] = useState<NFT[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -43,10 +45,34 @@ export default function NFTDataManager({ onNFTsLoaded, showDisclaimer, children 
     setError(null);
     
     try {
+      // Clear processed NFTs when starting
+      setProcessedNFTs([]);
+      
       // Fetch NFTs from Base and Zora networks
       const supportedChains = [8453, 7777777]; // Base and Zora
       const nftItems = await fetchNFTs(address, supportedChains);
+      
+      // If we have NFTs, simulate progressive loading for better UX
+      if (nftItems.length > 0) {
+        // Show NFTs progressively to demonstrate cycling effect
+        const batchSize = Math.max(1, Math.floor(nftItems.length / 3)); // Show in 3 batches
+        
+        for (let i = 0; i < nftItems.length; i += batchSize) {
+          const batch = nftItems.slice(0, i + batchSize);
+          setProcessedNFTs(batch);
+          
+          // Add delay between batches to show cycling effect
+          if (i + batchSize < nftItems.length) {
+            await new Promise(resolve => setTimeout(resolve, 800)); // 800ms delay between batches
+          }
+        }
+        
+        // Brief final delay to showcase the completed collection
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      
       setNFTs(nftItems);
+      setProcessedNFTs(nftItems); // Ensure final state is complete
       onNFTsLoaded(nftItems);
       
       // Log NFT image loading summary after processing completes
@@ -55,6 +81,7 @@ export default function NFTDataManager({ onNFTsLoaded, showDisclaimer, children 
     } catch (err) {
       console.error('Failed to fetch NFTs:', err);
       setError('Failed to load NFTs. Please try again.');
+      setProcessedNFTs([]); // Clear on error
     } finally {
       setLoading(false);
     }
@@ -82,6 +109,7 @@ export default function NFTDataManager({ onNFTsLoaded, showDisclaimer, children 
       {(!showDisclaimer || !isClient || !isConnected) && (
         children({
           nfts,
+          processedNFTs,
           loading,
           error,
           isConnected,

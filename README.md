@@ -1,254 +1,112 @@
-# 🔥 BaseClean - Zero-Approval Token Burner
+# 🔥 BaseClean
 
-The **safest and simplest** way to burn worthless ERC20 tokens from your wallet.
+A Web3 application for burning unwanted ERC-20 tokens and NFTs on Base network without requiring token approvals.
 
-## 🎯 **What Makes BaseClean Revolutionary**
+## 🎯 Overview
 
-BaseClean is the **first and only token burner** that requires **ZERO approvals** - making it completely secure and user-friendly:
+BaseClean allows users to permanently remove unwanted tokens from their wallets by transferring them directly to a burn address (`0x000000000000000000000000000000000000dEaD`). Unlike traditional token burners that require users to approve smart contracts, BaseClean uses direct wallet transfers.
 
-- 🔒 **Zero approvals** = Zero attack surface (no contract permissions ever)
-- ⚡ **Direct transfers** = Maximum transparency and simplicity  
-- 🛡️ **No smart contracts** = No code dependencies or security risks
-- 🎯 **One-click experience** = Select tokens → Click burn → Done!
-- 💰 **Cost efficient** = No approval gas fees, just burn transactions
+## 🔧 Technical Approach
 
-## 🚀 **Quick Start**
+**✅ Direct Transfer Method:**
+- Transfer tokens directly to burn address
+- No smart contract approvals required
+- Each token transfer is an independent transaction
+- No batch transaction dependencies
+
+**❌ Traditional Approval Method (not used):**
+- Approve smart contract for each token
+- Call batch burn function
+- Creates permanent approval attack surface
+- Complex transaction dependencies
+
+## ✨ Features
+
+- 🔍 **Token Discovery**: Scans wallet for ERC-20 tokens using Alchemy API
+- 🖼️ **NFT Support**: Supports ERC-721 and ERC-1155 tokens on Base and Zora networks
+- 🛡️ **Spam Detection**: Filters tokens by value, naming patterns, and metadata
+- ⚡ **Visual Filtering**: Burned assets disappear from UI immediately
+- 📊 **Transaction History**: Local storage of burn history with CSV export
+- 🔒 **Zero Approvals**: No token approvals ever required
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 15.3.2 with TypeScript
+- **Web3**: Wagmi v2.15.4, RainbowKit v2.2.5, Viem v2.29.4
+- **Styling**: Tailwind CSS 3.4.3
+- **APIs**: Alchemy for token/NFT data, ScamSniffer for security
+- **Network**: Base mainnet (chain ID 8453)
+
+## 🚀 Development Setup
 
 ```bash
-# Clone and install
-git clone <repository-url>
-cd baseclean
+# Install dependencies
 npm install
 
 # Start development server
 npm run dev
 
-# Open http://localhost:3000
-# Connect wallet → Select tokens → Burn them!
+# Build for production
+npm run build
+
+# Run production server
+npm start
 ```
 
-## 🔒 **How Direct Transfer Works**
+## 🔑 Environment Variables
 
-### **❌ Traditional Token Burners (Dangerous):**
-```
-1. Approve contract for Token A (permanent security risk)
-2. Approve contract for Token B (permanent security risk)  
-3. Approve contract for Token C (permanent security risk)
-4. Call batch burn function (complex, can fail)
-5. Result: 3 permanent approvals remain (ongoing attack surface)
-```
-
-### **✅ BaseClean Direct Transfer (Safe):**
-```
-1. Transfer Token A to burn address (simple, secure)
-2. Transfer Token B to burn address (simple, secure)
-3. Transfer Token C to burn address (simple, secure)
-4. Result: Tokens burned, zero approvals ever given
-```
-
-## 📱 **User Experience**
-
-### **🎯 For End Users:**
-1. **Connect Wallet** - MetaMask, Coinbase Wallet, or any Web3 wallet
-2. **Auto-Discovery** - App automatically finds all your ERC20 tokens
-3. **Smart Selection** - Choose worthless tokens with one click
-4. **Preview & Confirm** - See exactly what will happen before burning
-5. **One-Click Burn** - Seamless progress with individual token celebrations
-6. **Instant Results** - Tokens disappear from wallet immediately
-
-### **🔧 For Developers:**
-- **Zero setup** - No contracts to deploy or manage
-- **Network agnostic** - Works on any EVM chain  
-- **API integration** - Covalent API for comprehensive token discovery
-- **Type safe** - Full TypeScript implementation
-- **Modern stack** - Next.js 14, Wagmi v2, RainbowKit
-
-**Burn Address:** `0x000000000000000000000000000000000000dEaD`
-
-## 🌐 **Supported Networks**
-
-- ✅ **Base Mainnet** (Primary production network)
-- ✅ **Base Sepolia** (Testing and development)
-- 🔄 **Easily extensible** to any EVM-compatible chain
-
-## 🛠️ **Technical Architecture**
-
-### **Core Technologies:**
-- **Frontend:** Next.js 14 with App Router, TypeScript, Tailwind CSS
-- **Web3 Integration:** Wagmi v2, Viem, RainbowKit for wallet connections
-- **Token Discovery:** Covalent API for comprehensive token scanning
-- **State Management:** React hooks with TypeScript for type safety
-- **Deployment:** Vercel-optimized with automatic builds
-
-### **Key Components:**
-- `src/lib/directBurner.ts` - Core burning logic with zero approvals
-- `src/hooks/useBurnFlow.ts` - Complete burn workflow management  
-- `src/features/token-scanning/` - Token discovery and management
-- `src/shared/components/` - Reusable UI components
-- `src/config/web3.ts` - Network and Web3 configuration
-
-### **Security Features:**
-- **No approval requirements** - Direct token transfers only
-- **No smart contract dependencies** - Pure Web3 wallet interactions
-- **Open source codebase** - Fully auditable implementation
-- **No token custody** - Never holds or controls user funds
-- **Fail-safe design** - Individual token failures don't affect others
-
-## 📚 **Documentation**
-
-| Document | Purpose | Audience |
-|----------|---------|----------|
-| 📖 [`docs/TESTING_GUIDE.md`](docs/TESTING_GUIDE.md) | Complete testing instructions | Developers |
-| ⚡ [`docs/QUICK_START.md`](docs/QUICK_START.md) | 2-minute getting started | End users |
-| 🔥 [`docs/DIRECT_TRANSFER_EXPLANATION.md`](docs/DIRECT_TRANSFER_EXPLANATION.md) | Technical deep dive | Technical users |
-| 🧪 [`docs/GET_TESTNET_TOKENS_GUIDE.md`](docs/GET_TESTNET_TOKENS_GUIDE.md) | Testing setup guide | Developers |
-
-## 🔧 **Development Commands**
-
+Required for production:
 ```bash
-# Development
-npm run dev          # Start development server
-npm run build        # Build for production  
-npm run start        # Start production server
-
-# Code Quality
-npm run lint         # ESLint checking
-npm run type-check   # TypeScript validation
-
-# Testing
-npm test             # Run test suite (when implemented)
+NEXT_PUBLIC_ALCHEMY_API_KEY=your_alchemy_api_key
+NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=your_walletconnect_project_id
 ```
 
-## ⚠️ **Disclaimer & Safety Features**
+## 📁 Project Structure
 
-BaseClean includes a comprehensive disclaimer system to ensure users understand the risks and responsibilities of token burning.
-
-### **🛡️ First-Time User Experience:**
-1. **Disclaimer Modal** appears on first visit to the application
-2. **Risk Acknowledgment** - Users must explicitly agree to terms before proceeding
-3. **Persistent Agreement** - Agreement is stored locally, only shown once per user
-4. **Professional Disclaimer** - Clear explanation of risks and responsibilities
-
-### **📋 Disclaimer Content:**
-The disclaimer covers critical points including:
-- User responsibility for all burning actions
-- Permanent and irreversible nature of token burning
-- No liability for mistakes, misclicks, or technical errors
-- Explicit release of BaseClean and developers from claims
-- Emphasis on careful review before transactions
-
-### **🔧 Development & Testing:**
-
-```bash
-# Reset disclaimer during development:
-# 1. Open browser console (F12)
-# 2. Run: resetDisclaimer()
-# 3. Refresh page to see disclaimer again
-
-# OR clear localStorage manually:
-# localStorage.removeItem('baseClean_disclaimer_agreed')
+```
+src/
+├── 🧩 components/          # Shared UI components
+├── 🔄 contexts/           # React context providers
+├── 🎯 features/           # Feature-specific modules
+│   ├── token-scanning/    # Token discovery and management
+│   └── nft-scanning/      # NFT discovery and management
+├── 🪝 hooks/              # Custom React hooks
+├── 📚 lib/                # API clients and utilities
+├── 📄 pages/              # Next.js routes
+├── 🤝 shared/             # Shared components across features
+├── 📝 types/              # TypeScript type definitions
+└── 🔧 utils/              # Utility functions
 ```
 
-**Technical Implementation:**
-- `src/components/DisclaimerModal.tsx` - Modal component with disclaimer content
-- `src/hooks/useDisclaimer.ts` - State management for disclaimer display
-- `src/utils/disclaimer.ts` - Utility functions for disclaimer persistence
-- Automatically integrated into `src/pages/_app.tsx` for global coverage
+## 🔑 Key Components
 
-## 🎯 **Perfect Use Cases**
+- `useUniversalBurnFlow.ts` - Core burning logic for tokens and NFTs
+- `useBurnHistory.ts` - Transaction history management
+- `directBurner.ts` - Wallet transaction execution
+- `api.ts` - Token data fetching and caching
+- `nftApi.ts` - NFT data fetching and metadata
 
-### **🗑️ Token Cleanup:**
-- **Airdrop tokens** you don't want (SPAM, worthless drops)
-- **Meme coins** that went to zero (DOGE variants, etc.)
-- **Test tokens** cluttering your wallet (development artifacts)
-- **Scam tokens** you want to remove (suspicious airdrops)
-- **Duplicates** or unwanted forks
+## 🛡️ Security Considerations
 
-### **🛡️ Security Benefits:**
-- **Eliminate attack surface** from worthless token approvals
-- **Clean wallet interface** for better usability
-- **Reduce gas costs** from approval transactions
-- **Prevent accidental interactions** with scam tokens
-- **Maintain wallet hygiene** for professional use
+- 🚫 No token approvals eliminates approval-based attack vectors
+- 👀 Direct transfers are transparent and easily auditable
+- 🎯 No smart contract dependencies reduces complexity
+- 🏠 Local-only data storage (no external tracking)
+- 📖 Open source codebase for security review
 
-## 💡 **Why Choose BaseClean?**
+## 🌐 Deployment
 
-### **🔒 Security First:**
-```typescript
-// Other burners require this (DANGEROUS):
-await spamToken.approve(burnerContract, maxAmount); // ❌ Permanent risk
+The application is designed for deployment as a hosted service at `baseclean.io`. Key deployment requirements:
 
-// BaseClean does this (SAFE):
-await spamToken.transfer(burnAddress, amount); // ✅ Simple & secure
-```
+1. 🔧 Configure WalletConnect domains in Reown cloud dashboard
+2. ⚙️ Set production environment variables
+3. 🔒 Ensure HTTPS for wallet compatibility
+4. 🛡️ Configure proper CSP headers for security
 
-### **💰 Cost Efficient:**
-- **No approval gas fees** - Save 50%+ on gas costs
-- **Predictable costs** - Know exactly what you'll pay
-- **No failed batch transactions** - Each token burns independently
-- **No wasted approvals** - Never pay for unused permissions
+## 🧪 Testing
 
-### **🎯 User Experience:**
-- **One-click selection** - Smart token filtering and bulk selection
-- **Progress visualization** - Beautiful, real-time burning progress
-- **Individual celebrations** - Success feedback for each burned token
-- **Error resilience** - One failure doesn't stop the rest
-- **Mobile optimized** - Works perfectly on all devices
+The application includes spam detection filters and visual feedback systems. Test with various token types and edge cases before production deployment.
 
-## 🤝 **Contributing**
+## 📄 License
 
-We welcome contributions! BaseClean is built for the community.
-
-### **How to Contribute:**
-1. **Fork the repository** 
-2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Make your changes** with tests and documentation
-4. **Test thoroughly** using the testing guide
-5. **Submit a pull request** with clear description
-
-### **Development Guidelines:**
-- Follow TypeScript best practices
-- Maintain zero smart contract dependencies  
-- Ensure all features work without approvals
-- Add comprehensive tests for new features
-- Update documentation for user-facing changes
-
-## 🔐 **Security & Trust**
-
-### **🛡️ Built-in Security:**
-- **No approvals required** = No attack surface for malicious contracts
-- **Direct transfers only** = Full transparency of every transaction
-- **No smart contract risks** = No code dependencies or upgrade dangers
-- **Open source codebase** = Complete auditability by security experts
-- **No token custody** = App never controls or holds user funds
-
-### **🔍 Transparency:**
-- All transactions are simple ERC20 transfers
-- Burn address is the standard dead address used industry-wide
-- Source code is fully available for review
-- No hidden functionality or backdoors
-- No data collection or user tracking
-
-## 📄 **License**
-
-MIT License - see [`LICENSE`](LICENSE) file for details.
-
----
-
-## 🎉 **Ready to Clean Your Wallet?**
-
-> *"Finally, a token burner that doesn't require me to approve sketchy contracts!"*
-
-> *"So simple - just click and the tokens are gone. No complex steps or security worries."*
-
-> *"I cleaned out 20 worthless airdrops in under a minute. Love the progress animations!"*
-
-**Join thousands of users who have safely burned millions of worthless tokens with zero approvals required!** 
-
-🔥 **[Start Burning →](https://baseclean.vercel.app)** 🔥
-
----
-
-### 🏗️ **Built with ❤️ for the Web3 Community**
-
-BaseClean represents what token burning should be: **simple, safe, and user-friendly**. No approvals, no complexity, no security risks - just clean, efficient token burning that works.
+MIT License - see LICENSE file for details.

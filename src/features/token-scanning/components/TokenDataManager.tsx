@@ -315,13 +315,6 @@ function SmartLoadingScreen({ progress }: { progress: LoadingProgress }) {
               )}
             </div>
           )}
-          
-          <p className="text-sm text-gray-400 max-w-md mx-auto">
-            {progress.processedTokens.length > 0 
-              ? `Processed ${progress.processedTokens.length} of ${progress.tokenCount} tokens`
-              : 'Securely scanning your wallet for tokens'
-            }
-          </p>
         </div>
       </div>
     </div>
@@ -427,8 +420,6 @@ export default function TokenDataManager({ onTokensLoaded, showDisclaimer, child
     setTokens(newTokens);
     onTokensLoaded(newTokens);
   };
-
-
 
   return (
     <section className="mt-4 space-y-5" aria-labelledby="wallet-token-management">
