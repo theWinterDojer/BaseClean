@@ -226,7 +226,7 @@ export default function NFTListsContainer({
             </h2>
             
             <p className="text-lg text-gray-300 min-h-[28px] transition-all duration-300">
-              Discovering your NFT collection across Base and Zora networks
+              Discovering NFTs on Base and Zora networks
               <span className="inline-block w-6 text-left">{dots}</span>
             </p>
             

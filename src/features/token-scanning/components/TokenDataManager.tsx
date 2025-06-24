@@ -425,14 +425,14 @@ export default function TokenDataManager({ onTokensLoaded, showDisclaimer, child
     <section className="mt-4 space-y-5" aria-labelledby="wallet-token-management">
       {/* Not connected message - centered on page */}
       {isClient && !isConnected && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm">
-          <div className="bg-gray-800/90 border border-gray-700 text-white p-8 rounded-xl shadow-2xl text-center max-w-md mx-4">
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="text-center">
             <div className="mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16" />
               </svg>
             </div>
-            <span className="text-xl font-medium">Connect your wallet to start using BaseClean. A zero-approval cleaning tool for Base.</span>
+            <span className="text-xl font-medium text-white">Connect your wallet to start using BaseClean.</span>
           </div>
         </div>
       )}

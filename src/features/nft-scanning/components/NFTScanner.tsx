@@ -93,7 +93,7 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
   }, []);
 
   return (
-    <>
+    <div className="mt-4">
       <NFTDataManager onNFTsLoaded={handleNFTsLoaded} showDisclaimer={showDisclaimer}>
         {({ loading, error, isConnected, processedNFTs, refreshNFTs }) => {
         return (
@@ -190,6 +190,6 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
         );
       }}
     </NFTDataManager>
-    </>
+    </div>
   );
 } 
