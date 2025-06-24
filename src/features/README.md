@@ -1,25 +1,45 @@
-# ✨ BaseClean Features
+# 🎯 Feature Architecture
 
-BaseClean's powerful features work together to give you the safest, smartest wallet cleaning experience on Base network.
+BaseClean's modular feature architecture implements domain-driven design principles for maintainable Web3 application development.
 
-## 🔥 Core Capabilities
+## 🏗️ **System Organization**
 
-### 🪙 **Smart Token Management**
-- **Instant Discovery**: Automatically finds all tokens in your wallet
-- **Intelligent Filtering**: AI-powered spam and junk detection  
-- **Bulk Operations**: Select and burn multiple tokens at once
-- **Value Protection**: Warns you before burning valuable assets
+### 🪙 **Token Management Module**
+- **Discovery engine**: Alchemy API integration for comprehensive token detection
+- **Filtering system**: Multi-layer spam detection with configurable thresholds
+- **Burn execution**: Direct ERC-20 transfer implementation without approvals
+- **State management**: React Context for selection and burn tracking
 
-### 🖼️ **NFT Management**
-- **Multi-Network Scanning**: Discovers NFTs on Base and Zora networks
-- **Flexible Burning**: Handle ERC-721 and ERC-1155 tokens with custom quantities
-- **Collection Insights**: Groups NFTs by collection for easy management
-- **OpenSea Integration**: Quick links to verify NFT value before burning
+### 🖼️ **NFT Management Module**  
+- **Multi-network support**: Base and Zora network integration
+- **Standard compliance**: ERC-721 and ERC-1155 with quantity selection
+- **Metadata processing**: IPFS and HTTP image handling with fallbacks
+- **Burn implementation**: Direct `transferFrom` and `safeTransferFrom` calls
 
-## 🛡️ **Security & Trust Features**
+## 🔧 **Technical Implementation**
 
-Each feature is built with **zero-approval architecture**:
-- 🔒 **No permissions needed** - You control every transaction
-- 👀 **Transparent operations** - See exactly what's happening  
-- ⚡ **Instant results** - Burned assets vanish immediately
-- 📊 **Complete tracking** - Full history of all cleanup sessions 
+### 📦 **Component Structure**
+Each feature module contains:
+- **Scanner components**: Wallet connection and asset discovery
+- **Data managers**: API integration and state processing  
+- **UI containers**: Presentation and user interaction
+- **Utility functions**: Business logic and calculations
+
+### 🔄 **Data Flow Architecture**
+1. **Connection**: Wallet integration via RainbowKit/Wagmi
+2. **Discovery**: Asset scanning through blockchain APIs
+3. **Processing**: Spam detection and categorization
+4. **Selection**: User interaction and batch operations
+5. **Execution**: Direct burn transactions with progress tracking
+
+## 🛡️ **Security Implementation**
+
+### 🔒 **Zero-Approval Design**
+- **Direct transactions**: No intermediate smart contracts
+- **User validation**: Explicit confirmation for each operation
+- **Error isolation**: Comprehensive failure handling and recovery
+
+### 📊 **State Management**
+- **Immutable updates**: React state patterns for predictable behavior
+- **Context isolation**: Feature-specific state boundaries
+- **Persistence layer**: LocalStorage for user preferences and history 

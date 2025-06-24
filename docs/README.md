@@ -1,68 +1,62 @@
 # 📚 BaseClean Technical Documentation
 
-Comprehensive technical guides for understanding BaseClean's architecture, security model, and deployment strategies.
+Technical documentation for BaseClean's zero-approval token burning architecture and security implementation.
 
-## 🌐 About BaseClean
+## 🎯 About BaseClean
 
-BaseClean is a **production Web3 application** that revolutionizes wallet cleanup with its **zero-approval architecture**. Users connect their wallets and safely burn unwanted tokens and NFTs without ever granting smart contract permissions.
+BaseClean is a Web3 application that implements a **zero-approval architecture** for safely burning unwanted ERC-20 tokens and NFTs on Base network. The system eliminates traditional approval-based attack vectors through direct wallet transfers.
 
-## 🎯 **Who This Documentation Is For**
+## 🏗️ **Architecture Overview**
 
-### 👨‍💻 **Developers & Engineers**
-- Understanding the zero-approval architecture
-- Learning about secure Web3 application design
-- Exploring spam detection algorithms and threat intelligence
+### 🔒 **Zero-Approval System**
+- **Direct transfers**: Uses `transfer()` and `transferFrom()` calls without approvals
+- **No smart contracts**: Users interact directly with token contracts
+- **Sequential processing**: Each asset burned in separate transactions for maximum transparency
 
-### 🛡️ **Security Researchers**
-- Comprehensive security model analysis  
-- Threat detection system deep-dive
-- Code review and audit information
+### 🛡️ **Security Model**
+- **Eliminated attack surface**: No token approvals = no approval-based vulnerabilities
+- **User control**: Every transaction requires explicit user confirmation
+- **Transparent operations**: All burns visible on-chain with clear transaction hashes
 
-### 🚀 **DevOps & Infrastructure Teams**
-- Production deployment guides
-- Hosting and maintenance requirements
-- Performance optimization strategies
+## 📋 **Available Documentation**
 
-## 📋 **Available Technical Guides**
+| Document | Technical Focus | Audience |
+|----------|-----------------|----------|
+| `DEPLOYMENT_GUIDE.md` | Production deployment architecture and requirements | DevOps, Infrastructure |
+| `SPAM_DETECTION.md` | Multi-layer threat detection system implementation | Security Engineers, Developers |
 
-| Document | What You'll Learn | Perfect For |
-|----------|-------------------|-------------|
-| `DEPLOYMENT_GUIDE.md` | How to deploy BaseClean in production environments | DevOps, Infrastructure Teams |
-| `SPAM_DETECTION.md` | Deep dive into multi-layer threat detection system | Security Researchers, Developers |
+## 🔬 **Technical Implementation**
 
-## 🔒 **Security-First Architecture**
+### ⚡ **Performance Characteristics**
+- **Network**: Optimized for Base L2 (~2-3 second confirmations)
+- **Gas efficiency**: Direct transfers use ~150k gas per token, ~200k per NFT
+- **Scalability**: Sequential processing prevents wallet overload
 
-BaseClean's documentation emphasizes its **revolutionary security approach**:
+### 🧠 **Spam Detection Engine**
+- **Multi-layer filtering**: Value analysis, pattern recognition, community intelligence
+- **ScamSniffer integration**: Real-time threat database via GitHub API
+- **Configurable thresholds**: Users can adjust detection sensitivity
 
-### ✨ **Zero-Approval Innovation**
-- **No smart contract approvals** = Eliminated attack vectors
-- **Direct wallet transfers** = User maintains complete control
-- **Transparent operations** = Every action is auditable
+### 📊 **Data Architecture**
+- **Local-first**: No external user tracking or data collection
+- **Wallet-specific**: Burn history stored per wallet address
+- **Export capabilities**: CSV format for record keeping
 
-### 🛡️ **Multi-Layer Protection**
-- **Intelligent spam detection** with community threat intelligence
-- **Value-based warnings** to prevent accidental burns
-- **Real-time security monitoring** via ScamSniffer integration
+## 🔧 **Development Philosophy**
 
-## 🌟 **What Makes BaseClean Special**
+BaseClean prioritizes **security over convenience** and **transparency over efficiency**:
 
-### 🎯 **User-Centric Design**
-Our documentation reveals how every technical decision prioritizes user safety and experience over convenience or efficiency.
+- **Security first**: Every architectural decision evaluated for attack vectors
+- **User sovereignty**: No permissions, approvals, or third-party dependencies  
+- **Open development**: Public codebase enables community security review
 
-### 🔬 **Open Source Transparency**
-Complete architectural documentation enables community review, security audits, and contributions.
+## 🤝 **For Security Researchers**
 
-### 🚀 **Production-Ready Excellence**
-Learn from real-world deployment strategies and security practices battle-tested in production.
-
-## 🤝 **Community & Contributions**
-
-BaseClean welcomes security researchers, developers, and Web3 enthusiasts to:
-- 🔍 **Review our architecture** for security vulnerabilities
-- 💡 **Suggest improvements** to spam detection algorithms  
-- 🛠️ **Contribute enhancements** to the open source codebase
-- 📖 **Improve documentation** for better developer experience
+The codebase is structured for security analysis:
+- **Clear separation**: Burn logic isolated in dedicated modules
+- **Error handling**: Comprehensive user rejection vs. technical failure distinction
+- **Audit trails**: Complete transaction history with gas tracking
 
 ---
 
-*Built with security-first principles, deployed with confidence, documented with transparency.* 🔥 
+*Technical documentation maintained for transparency and community contribution.* 🔍 

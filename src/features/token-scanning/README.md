@@ -1,71 +1,72 @@
-# 🪙 Smart Token Discovery
+# 🪙 Token Scanning Architecture
 
-BaseClean's intelligent token scanning system automatically finds and categorizes all tokens in your wallet, making cleanup simple and safe.
+Technical implementation of BaseClean's token discovery and spam detection system for Base network assets.
 
-## 🎯 **What It Does For You**
+## 🔍 **Discovery Engine**
 
-### 🔍 **Automatic Discovery**
-- **Instant Scanning**: Connects to your wallet and finds all tokens immediately
-- **Real-Time Updates**: Sees new tokens as soon as they arrive
-- **Complete Coverage**: Discovers even the most obscure and unknown tokens
-- **Network Smart**: Focuses on Base mainnet for optimal performance
+### 📡 **Data Sources**
+- **Primary**: Alchemy Token API for comprehensive token metadata
+- **Fallback**: Direct contract calls for token information
+- **Pricing**: Real-time USD values via token quote rates
+- **Images**: CDN-cached logos with SVG fallback generation
 
-### 🧠 **Intelligent Spam Detection**
+### ⚡ **Performance Optimization**
+- **Batch requests**: Efficient API usage with pagination
+- **Caching layer**: Smart memoization of token data
+- **Error resilience**: Graceful degradation for missing metadata
 
-BaseClean uses a **three-layer filtering system** to protect you:
+## 🛡️ **Spam Detection System**
 
-#### 💰 **Low/Zero Value Filter**
-- Identifies tokens worth less than $0.50
-- Perfect for catching dust and worthless airdrops
-- Safeguards valuable tokens automatically
+### 🧠 **Multi-Layer Analysis**
 
-#### 🚨 **Suspicious Names/Symbols Filter**  
-- Detects obvious scam patterns and malicious naming
-- Flags tokens with suspicious URLs or domains
-- Protects against social engineering attempts
+#### 💰 **Value-Based Detection**
+- **Threshold analysis**: Tokens below $0.50 flagged as low-value
+- **Balance patterns**: Detection of dust amounts and fractional holdings
+- **Price validation**: Missing or suspicious pricing data identification
 
-#### 📦 **Airdrops/Junk Filter**
-- Recognizes common airdrop patterns and amounts
-- Identifies tokens with missing images or metadata
-- Catches promotional tokens and spam campaigns
+#### 🚨 **Pattern Recognition**
+- **Name analysis**: 67 spam keywords and 15 regex patterns
+- **Symbol validation**: Length checks and special character detection
+- **URL detection**: Domain patterns and suspicious link identification
 
-## 🛡️ **Safety Features**
+#### 📦 **Airdrop Classification**
+- **Amount patterns**: 70+ common airdrop quantities (1337, 88888, etc.)
+- **Precision analysis**: Unusual decimal patterns indicating automation
+- **Metadata gaps**: Missing images or contract information
 
-### ⚖️ **Smart Value Protection**
-- **High-Value Warnings**: Always alerts before burning valuable tokens
-- **ETH Protection**: Special warnings for burning native gas tokens
-- **Whitelist System**: Never flags legitimate tokens like USDC, DAI, etc.
-- **User Control**: You can override any filter decision
+### 🔗 **Community Intelligence**
+- **ScamSniffer integration**: GitHub-based threat database
+- **24-hour cache**: Performance optimization for threat data
+- **CORS proxy**: Server-side API route for browser compatibility
 
-### 📊 **Transparent Statistics**
-- **Portfolio Overview**: See total token count and estimated value
-- **Filter Breakdown**: Understand what each filter caught
-- **Selection Summary**: Clear view of what you're about to burn
-- **Real-Time Updates**: Statistics update as you make selections
+## ⚙️ **Technical Implementation**
 
-## 🚀 **User Experience**
+### 🏗️ **Component Architecture**
+- **TokenScanner**: Main orchestration component
+- **TokenDataManager**: API integration and data processing
+- **Filtering hooks**: Configurable detection logic
+- **Selection context**: Cross-component state management
 
-### ⚡ **Lightning Fast**
-- **Sub-Second Scanning**: Your tokens appear almost instantly  
-- **Smart Caching**: Repeated visits are even faster
-- **Optimized for Base**: Takes advantage of L2 speed
+### 🔄 **Processing Pipeline**
+1. **Wallet scan**: Enumerate all token holdings
+2. **Metadata fetch**: Retrieve token information and pricing
+3. **Filter application**: Apply spam detection algorithms
+4. **Categorization**: Organize results by filter type
+5. **Selection management**: Handle user interaction and bulk operations
 
-### 🎨 **Beautiful Interface**
-- **Visual Indicators**: Clear icons show token status and value
-- **Responsive Design**: Works perfectly on desktop and mobile
-- **Dark Theme**: Easy on the eyes for long cleanup sessions
-- **Professional Polish**: Feels like a premium financial app
+### 📊 **State Management**
+- **React Query**: Server state caching and synchronization
+- **Context providers**: Global selection and burn state
+- **Local persistence**: User filter preferences and history
 
-## 🌟 **Pro Tips**
+## 🔧 **Configuration & Extensibility**
 
-### 🔥 **Efficient Cleanup**
-1. **Start with filters**: Use "Low/Zero Value" for quick wins
-2. **Review suspicious**: Check the "Suspicious Names" filter carefully  
-3. **Bulk select**: Use the select-all options for faster workflow
-4. **Stay informed**: Read the value warnings before confirming burns
+### ⚙️ **Filter Configuration**
+- **Threshold adjustments**: Customizable value and pattern limits
+- **Whitelist management**: Protected token addresses
+- **Detection sensitivity**: User-configurable spam detection levels
 
-### 🎯 **Power User Features**
-- **CSV Export**: Download complete burn history for record-keeping
-- **Filter Combinations**: Mix and match filters for custom workflows
-- **Transaction Tracking**: Every burn is recorded with timestamps and TX hashes
-- **Cross-Session Memory**: Your preferences persist between visits 
+### 🔌 **API Integration**
+- **Rate limiting**: Respectful API usage patterns
+- **Error handling**: Comprehensive failure recovery
+- **Monitoring**: Performance tracking and optimization 

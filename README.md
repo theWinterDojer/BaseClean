@@ -33,47 +33,29 @@ BaseClean allows users to permanently remove unwanted tokens from their wallets 
 
 **BaseClean is a hosted Web3 application.** Simply visit the live app to start cleaning your wallet - no installation required!
 
-### 📱 **User Experience**
-- **Instant setup** - No downloads or installations required
-- **Smart detection** - Automatically identifies spam and junk tokens
-- **Real-time updates** - Burned assets vanish immediately from your wallet
-- **Complete history** - Track all your cleanup sessions with CSV export
+### Tech Stack
+- **Framework**: Next.js 15.3.2 with TypeScript
+- **Web3**: Wagmi v2.15.4, RainbowKit v2.2.5, Viem v2.29.4
+- **Styling**: Tailwind CSS 3.4.3
+- **Network**: Base mainnet (chain ID 8453)
 
-### 🌐 **Network Support**
-- **Primary**: Base L2 (lightning-fast, super cheap transactions)
-- **NFTs**: Base + Zora networks for comprehensive coverage
-- **Future**: Multi-chain expansion planned based on user demand
+### For Developers
+This is a production SaaS application. For deployment information, see the [Deployment Guide](docs/DEPLOYMENT_GUIDE.md).
 
-## 🏗️ Architecture & Security
+## 📚 Documentation
 
-BaseClean's **zero-approval architecture** sets it apart from traditional token burners:
+For technical documentation and deployment guides, see the [`docs/`](docs/) directory:
 
-### 🔒 **How It Works**
-1. **Connect** your wallet (MetaMask, Coinbase Wallet, etc.)
-2. **Scan** for tokens and NFTs automatically  
-3. **Filter** using intelligent spam detection
-4. **Burn** with direct transfers - no approvals needed!
+- [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)
+- [Spam Detection System](docs/SPAM_DETECTION.md)
 
-### 🛡️ **Security by Design**
-- **No smart contract approvals** = Zero attack surface
-- **Direct wallet transfers** = You control every transaction
-- **Open source code** = Transparent and auditable
-- **Local data only** = No tracking or data collection
+## 🛡️ Security
 
-## 💡 **Why Users Love BaseClean**
-
-### 🚀 **Instant Results**
-"Burned assets disappear from my wallet immediately - no waiting around!" - *Real user feedback*
-
-### 🛡️ **Peace of Mind** 
-"Finally, a token burner that doesn't ask for scary approvals." - *Community feedback*
-
-### 🧠 **Smart & Simple**
-"It knew exactly which tokens were junk - saved me hours of research!" - *Power user review*
-
-## 📖 **For Developers & Security Researchers**
-
-Technical documentation, deployment guides, and security architecture details are available in the [`docs/`](docs/) directory. BaseClean welcomes security review and community contributions!
+- 🚫 No token approvals eliminates approval-based attack vectors
+- 👀 Direct transfers are transparent and easily auditable
+- 🎯 No smart contract dependencies reduces complexity
+- 🏠 Local-only data storage (no external tracking)
+- 📖 Open source codebase for security review
 
 ## 📄 License
 
