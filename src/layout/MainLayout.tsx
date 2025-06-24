@@ -102,8 +102,8 @@ export default function MainLayout({ children, stickyHeaderContent }: MainLayout
               {/* Resources Section */}
               <div className="flex flex-col gap-2">
                 <h4 className="text-sm font-medium text-white mb-1">Resources</h4>
-                <Link href="https://docs.base.org" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-white transition-colors">
-                  Base Docs
+                <Link href="/faq" className="text-xs text-gray-400 hover:text-white transition-colors">
+                  FAQ
                 </Link>
                 <Link href="https://relay.link/bridge/base?fromChainId=1&fromCurrency=0x0000000000000000000000000000000000000000&toCurrency=0x0000000000000000000000000000000000000000" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-white transition-colors">
                   Base Bridge
