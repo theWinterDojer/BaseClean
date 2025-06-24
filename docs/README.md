@@ -14,6 +14,7 @@ This directory contains technical documentation for BaseClean development and de
 |------|---------|
 | `QUICK_START.md` | 👤 End user getting started guide |
 | `TESTING_GUIDE.md` | 🧪 Development setup and testing |
+| `DEPLOYMENT_GUIDE.md` | 🚀 Production deployment instructions |
 | `DIRECT_TRANSFER_EXPLANATION.md` | 🔧 Technical explanation of zero-approval approach |
 | `GET_TESTNET_TOKENS_GUIDE.md` | 🪙 How to obtain test tokens for development |
 
