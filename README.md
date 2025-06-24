@@ -29,20 +29,9 @@ BaseClean allows users to permanently remove unwanted tokens from their wallets 
 - Complex batch transactions that can fail
 - Ongoing security vulnerabilities
 
-## 🚀 For Developers
+## 🌐 Access BaseClean
 
-### Development Setup
-```bash
-# Clone the repository
-git clone https://github.com/theWinterDojer/BaseClean.git
-cd BaseClean/baseclean
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-```
+**BaseClean is a hosted Web3 application.** Simply visit the live app to start cleaning your wallet - no installation required!
 
 ### Tech Stack
 - **Framework**: Next.js 15.3.2 with TypeScript
@@ -50,19 +39,15 @@ npm run dev
 - **Styling**: Tailwind CSS 3.4.3
 - **Network**: Base mainnet (chain ID 8453)
 
-### Contributing
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes and test thoroughly
-4. Submit a pull request with a clear description
+### For Developers
+This is a production SaaS application. For deployment information, see the [Deployment Guide](docs/DEPLOYMENT_GUIDE.md).
 
 ## 📚 Documentation
 
-For detailed technical documentation, deployment guides, and testing instructions, see the [`docs/`](docs/) directory:
+For technical documentation and deployment guides, see the [`docs/`](docs/) directory:
 
-- [Technical Architecture](docs/DIRECT_TRANSFER_EXPLANATION.md)
-- [Development Guide](docs/TESTING_GUIDE.md)
-- [Quick Start Guide](docs/QUICK_START.md)
+- [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)
+- [Gas Optimization](docs/GAS_OPTIMIZATION_RECOMMENDATIONS.md)
 
 ## 🛡️ Security
 

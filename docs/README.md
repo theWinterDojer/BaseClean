@@ -1,30 +1,43 @@
-# 📚 Documentation
+# 📚 BaseClean Documentation
 
-This directory contains technical documentation for BaseClean development and deployment.
+Technical documentation for BaseClean - a hosted Web3 application for burning unwanted tokens and NFTs.
 
-## 🚀 Quick Start
+## 🌐 About BaseClean
 
-- [Main README](../README.md) - Project overview and setup
-- [Quick Start Guide](QUICK_START.md) - End user guide  
-- [Testing Guide](TESTING_GUIDE.md) - Development and testing instructions
+BaseClean is a **production SaaS application** hosted at `baseclean.io`. Users access the app directly through their web browser to clean their wallets safely with zero token approvals required.
 
-## 📋 Documentation Files
+## 📋 Available Documentation
 
-| File | Purpose |
-|------|---------|
-| `QUICK_START.md` | 👤 End user getting started guide |
-| `TESTING_GUIDE.md` | 🧪 Development setup and testing |
-| `DEPLOYMENT_GUIDE.md` | 🚀 Production deployment instructions |
-| `DIRECT_TRANSFER_EXPLANATION.md` | 🔧 Technical explanation of zero-approval approach |
-| `GET_TESTNET_TOKENS_GUIDE.md` | 🪙 How to obtain test tokens for development |
+| File | Purpose | Audience |
+|------|---------|----------|
+| `DEPLOYMENT_GUIDE.md` | 🚀 Production deployment instructions | DevOps/Infrastructure |
+| `GAS_OPTIMIZATION_RECOMMENDATIONS.md` | ⛽ Technical gas analysis and optimization strategies | Developers/Technical |
 
 ## 📦 Archive
 
-The `archive/` directory contains historical documentation from the development process. These files are kept for reference but are not relevant to current implementation.
+The `archive/` directory contains historical documentation from the development process, including:
+- Development guides and testing instructions
+- Historical implementation discussions
+- Legacy architectural decisions
+- Old user guides for self-hosted setups
 
-## ✍️ Documentation Standards
+These files are preserved for reference but are not relevant to the current hosted SaaS implementation.
 
-- ✅ Keep content current with actual implementation
-- 🎯 Use clear, technical language
-- 📝 Provide specific examples where helpful
-- 🔄 Update when features change 
+## 🎯 Documentation Philosophy
+
+BaseClean documentation focuses on:
+- **Production deployment** - How to host and maintain the service
+- **Technical architecture** - How the zero-approval system works
+- **Performance optimization** - Gas costs and efficiency considerations
+
+Since BaseClean is a hosted application, end-user documentation is integrated directly into the app interface rather than maintained as separate files.
+
+## 🔄 Maintenance
+
+Documentation is updated to reflect:
+- ✅ Current production architecture (zero-approval burns)
+- ✅ Hosting and deployment requirements
+- ✅ Security best practices
+- ✅ Performance characteristics
+
+Legacy development documentation is archived rather than deleted for historical reference. 
