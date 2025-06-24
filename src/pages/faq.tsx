@@ -35,6 +35,10 @@ export default function FAQ() {
         {
           question: "Can I override the spam filters if I disagree?",
           answer: "Yes. All filters are user-configurable and can be disabled entirely. BaseClean provides warnings and context, but you maintain complete control over which tokens to burn. The system protects legitimate tokens (ETH, USDC, DAI) and high-value assets automatically."
+        },
+        {
+          question: "How accurate is BaseClean's spam detection and price data?",
+          answer: "BaseClean's spam detection uses advanced algorithms but isn't 100% perfect - it may occasionally flag legitimate tokens or miss some spam. Token prices come from third-party APIs (Alchemy, Zapper) which can sometimes be delayed, inaccurate, or missing for newer tokens. Always double-check before burning valuable assets. The system is designed to err on the side of caution, protecting high-value tokens with extra warnings."
         }
       ]
     },
@@ -153,12 +157,12 @@ export default function FAQ() {
                 For comprehensive technical documentation, architecture details, and security implementation, 
                 visit our technical documentation.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <a 
                   href="https://github.com/theWinterDojer/BaseClean" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="inline-flex items-center px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+                  className="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
                 >
                   📖 View Source Code
                 </a>
@@ -166,7 +170,7 @@ export default function FAQ() {
                   href="https://github.com/theWinterDojer/BaseClean/tree/master/docs" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-lg transition-colors"
                 >
                   🔍 Technical Documentation
                 </a>

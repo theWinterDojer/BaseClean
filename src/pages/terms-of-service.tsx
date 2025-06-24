@@ -96,16 +96,30 @@ export default function TermsOfService() {
                   <li>Any direct, indirect, incidental, consequential, or punitive damages</li>
                 </ul>
 
-                <h3 className="text-xl font-medium text-blue-300">4.2 No Warranties</h3>
+                <h3 className="text-xl font-medium text-blue-300">4.2 Spam Detection and Data Accuracy Limitations</h3>
+                <div className="bg-yellow-900/20 border border-yellow-700 rounded-lg p-4 mb-4">
+                  <p className="text-yellow-200 font-semibold mb-2">⚠️ IMPORTANT: Data and Detection Limitations</p>
+                  <p className="text-gray-300 mb-2">You acknowledge and agree that:</p>
+                  <ul className="list-disc pl-6 space-y-1 text-gray-300 text-sm">
+                    <li><strong>Spam detection is not foolproof</strong> and may produce false positives or miss actual spam tokens</li>
+                    <li><strong>Third-party API data</strong> (Alchemy, Zapper, price feeds) may be inaccurate, delayed, or unavailable</li>
+                    <li><strong>Token prices and values</strong> may not reflect actual market conditions or be completely accurate</li>
+                    <li><strong>All filtering decisions</strong> are ultimately your responsibility regardless of system recommendations</li>
+                    <li><strong>External service dependencies</strong> may cause data inconsistencies or service interruptions</li>
+                  </ul>
+                </div>
+
+                <h3 className="text-xl font-medium text-blue-300">4.3 No Warranties</h3>
                 <p className="text-gray-300">THE SERVICE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO:</p>
                 <ul className="list-disc pl-6 space-y-2 text-gray-300">
                   <li>Warranties of merchantability or fitness for a particular purpose</li>
                   <li>Warranties of uninterrupted or error-free operation</li>
-                  <li>Warranties regarding the accuracy or reliability of information</li>
+                  <li>Warranties regarding the accuracy, completeness, or reliability of spam detection</li>
+                  <li>Warranties regarding the accuracy of third-party price or token data</li>
                   <li>Warranties of security or data protection</li>
                 </ul>
 
-                <h3 className="text-xl font-medium text-blue-300">4.3 Maximum Liability Cap</h3>
+                <h3 className="text-xl font-medium text-blue-300">4.4 Maximum Liability Cap</h3>
                 <p className="text-gray-300">In no event shall the total liability of BaseClean exceed $0.00 USD.</p>
               </div>
             </section>
