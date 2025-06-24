@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import Link from 'next/link';
 import MainLayout from '@/layout/MainLayout';
 
 export default function FAQ() {
@@ -7,12 +8,12 @@ export default function FAQ() {
       category: "🔒 Security & Architecture",
       questions: [
         {
-          question: "How does BaseClean&apos;s zero-approval architecture work?",
+          question: "How does BaseClean's zero-approval architecture work?",
           answer: "BaseClean uses direct ERC-20 transfer() and ERC-721/1155 transferFrom() calls to send tokens directly to the burn address (0x000...dEaD). Unlike traditional burners that require approve() calls to smart contracts, BaseClean eliminates the approval attack surface entirely. Each burn is an independent, transparent on-chain transaction."
         },
         {
           question: "What makes BaseClean safer than approval-based token burners?",
-          answer: "Approval-based burners create permanent attack vectors where malicious contracts can drain approved tokens later. BaseClean&apos;s direct transfers are atomic operations - once complete, there&apos;s zero residual risk. No smart contract holds permissions over your tokens, ever."
+          answer: "Approval-based burners create permanent attack vectors where malicious contracts can drain approved tokens later. BaseClean's direct transfers are atomic operations - once complete, there's zero residual risk. No smart contract holds permissions over your tokens, ever."
         },
         {
           question: "Can I verify what BaseClean is doing on-chain?",
@@ -59,7 +60,7 @@ export default function FAQ() {
       questions: [
         {
           question: "What data does BaseClean store about my wallet?",
-          answer: "BaseClean stores burn history and filter preferences locally in your browser&apos;s localStorage. No wallet addresses, transaction data, or personal information is sent to external servers. Token metadata is fetched from Alchemy API but not stored permanently."
+          answer: "BaseClean stores burn history and filter preferences locally in your browser's localStorage. No wallet addresses, transaction data, or personal information is sent to external servers. Token metadata is fetched from Alchemy API but not stored permanently."
         },
         {
           question: "How does the burn history feature work?",
@@ -88,7 +89,15 @@ export default function FAQ() {
         },
         {
           question: "What if a burn transaction fails?",
-          answer: "Failed burns are clearly indicated in the progress UI with specific error messages. Common causes include insufficient ETH for gas, network congestion, or token contract restrictions. Failed transactions don&apos;t charge gas fees and can be retried."
+          answer: "Failed burns are clearly indicated in the progress UI with specific error messages. Common causes include insufficient ETH for gas, network congestion, or token contract restrictions. Failed transactions don't charge gas fees and can be retried."
+        },
+        {
+          question: "Why do some tokens and NFTs fail to burn?",
+          answer: "Many spam tokens and NFTs are deliberately designed to be non-transferable to prevent removal from wallets. Common issues include: phantom ownership (assets appear in your wallet but you don't actually own them), transfer restrictions built into contracts, zero balance due to indexing issues, invalid token references, and custom logic that breaks normal ERC standards. BaseClean uses legitimate transfer methods, so failures typically indicate contract-level restrictions rather than BaseClean limitations."
+        },
+        {
+          question: "What does BaseClean do when burns fail?",
+          answer: "BaseClean uses zero-approval direct transfers for maximum safety, avoiding risky custom contract interactions. When burns fail, it's usually because spam creators intentionally disabled transfer functions to keep their assets visible in wallets for advertising. BaseClean prioritizes security over success rate - failed burns mean the system is protecting you from potentially malicious contract interactions."
         }
       ]
     }
@@ -98,20 +107,23 @@ export default function FAQ() {
     <>
       <Head>
         <title>FAQ - BaseClean</title>
-        <meta name="description" content="Frequently asked questions about BaseClean&apos;s zero-approval token burning architecture, security model, and technical implementation." />
+        <meta name="description" content="Frequently asked questions about BaseClean's zero-approval token burning architecture, security model, and technical implementation." />
       </Head>
       
-      <MainLayout>
+      <MainLayout hideNavigation={true}>
         <div className="min-h-screen py-8">
           <div className="max-w-4xl mx-auto">
+            <div className="mb-8">
+              <Link href="/" className="text-blue-400 hover:text-blue-300 underline">
+                ← Back to BaseClean
+              </Link>
+            </div>
+
             <div className="text-center mb-12">
               <h1 className="text-4xl font-bold text-white mb-4">
                 Frequently Asked Questions
               </h1>
-              <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                Technical answers for blockchain-savvy users about BaseClean&apos;s zero-approval architecture, 
-                security model, and advanced features.
-              </p>
+
             </div>
 
             <div className="space-y-12">

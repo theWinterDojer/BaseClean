@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import Link from 'next/link';
+import MainLayout from '@/layout/MainLayout';
 
 export default function PrivacyPolicy() {
   return (
@@ -10,15 +11,16 @@ export default function PrivacyPolicy() {
         <meta name="robots" content="noindex, nofollow" />
       </Head>
       
-      <div className="min-h-screen bg-gray-950 text-white">
-        <div className="max-w-4xl mx-auto py-12 px-6">
-          <div className="mb-8">
-            <Link href="/" className="text-blue-400 hover:text-blue-300 underline">
-              ← Back to BaseClean
-            </Link>
-          </div>
+      <MainLayout hideNavigation={true}>
+        <div className="min-h-screen py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-8">
+              <Link href="/" className="text-blue-400 hover:text-blue-300 underline">
+                ← Back to BaseClean
+              </Link>
+            </div>
 
-          <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
+            <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
           
           <div className="prose prose-invert max-w-none">
             <p className="text-lg mb-8 text-gray-300">
@@ -254,9 +256,10 @@ export default function PrivacyPolicy() {
               <p className="mb-4">
                 If you have questions about this Privacy Policy or how we handle your data, please contact us at:
               </p>
-              {/* TODO: Replace placeholder with actual contact email or form link before public launch */}
               <p className="mb-4">
-                [Insert Contact Email or Form Link]
+                <a href="mailto:contact@baseclean.io" className="text-blue-400 hover:text-blue-300 underline">
+                  contact@baseclean.io
+                </a>
               </p>
               <p className="text-sm text-gray-400">
                 For immediate privacy concerns, please include &quot;Privacy Policy&quot; in your subject line.
@@ -273,7 +276,8 @@ export default function PrivacyPolicy() {
             </div>
           </div>
         </div>
-      </div>
+        </div>
+      </MainLayout>
     </>
   );
 } 

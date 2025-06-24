@@ -10,9 +10,10 @@ import { ScamSnifferStatusIndicator } from '@/components/ScamSnifferStatusIndica
 interface MainLayoutProps {
   children: ReactNode;
   stickyHeaderContent?: ReactNode;
+  hideNavigation?: boolean;
 }
 
-export default function MainLayout({ children, stickyHeaderContent }: MainLayoutProps) {
+export default function MainLayout({ children, stickyHeaderContent, hideNavigation = false }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 text-white flex flex-col">
       <header className="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700 py-6 sticky top-0 z-10">
@@ -47,15 +48,19 @@ export default function MainLayout({ children, stickyHeaderContent }: MainLayout
           </div>
           
           {/* Tab Navigation in Header - Absolutely Centered */}
-          <div className="hidden md:flex absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <HeaderTabNavigation />
-          </div>
+          {!hideNavigation && (
+            <div className="hidden md:flex absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+              <HeaderTabNavigation />
+            </div>
+          )}
         </div>
         
         {/* Mobile Tab Navigation */}
-        <div className="md:hidden mt-4">
-          <TabNavigation />
-        </div>
+        {!hideNavigation && (
+          <div className="md:hidden mt-4">
+            <TabNavigation />
+          </div>
+        )}
         
         {/* Sticky header content for announcements, etc. */}
         {stickyHeaderContent && (
