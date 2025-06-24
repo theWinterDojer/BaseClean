@@ -12,16 +12,11 @@ BaseClean is a **production SaaS application** hosted at `baseclean.io`. Users a
 |------|---------|----------|
 | `DEPLOYMENT_GUIDE.md` | 🚀 Production deployment instructions | DevOps/Infrastructure |
 | `GAS_OPTIMIZATION_RECOMMENDATIONS.md` | ⛽ Technical gas analysis and optimization strategies | Developers/Technical |
+| `SPAM_DETECTION.md` | 🛡️ Comprehensive spam detection system documentation | Developers/Security/Technical |
 
-## 📦 Archive
+## 🧹 Documentation Maintenance
 
-The `archive/` directory contains historical documentation from the development process, including:
-- Development guides and testing instructions
-- Historical implementation discussions
-- Legacy architectural decisions
-- Old user guides for self-hosted setups
-
-These files are preserved for reference but are not relevant to the current hosted SaaS implementation.
+Historical development documentation has been removed to keep the repository focused on current, production-relevant information. The documentation structure prioritizes:
 
 ## 🎯 Documentation Philosophy
 
@@ -34,10 +29,10 @@ Since BaseClean is a hosted application, end-user documentation is integrated di
 
 ## 🔄 Maintenance
 
-Documentation is updated to reflect:
+Documentation is maintained to reflect:
 - ✅ Current production architecture (zero-approval burns)
-- ✅ Hosting and deployment requirements
-- ✅ Security best practices
-- ✅ Performance characteristics
+- ✅ Hosting and deployment requirements  
+- ✅ Security best practices and threat detection
+- ✅ Performance characteristics and optimizations
 
-Legacy development documentation is archived rather than deleted for historical reference. 
+The repository maintains only current, production-relevant documentation to ensure clarity and focus for users and developers. 

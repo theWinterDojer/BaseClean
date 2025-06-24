@@ -65,6 +65,9 @@ Thumbs.db
 # Project documentation (local only)
 PROJECT_STATUS_SUMMARY.md
 
+# Historical documentation archive (not needed in GitHub)
+docs/archive/
+
 # Additional environment files (more specific)
 .env.local
 .env.development.local
