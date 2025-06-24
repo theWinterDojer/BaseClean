@@ -44,9 +44,10 @@ This is a production SaaS application. For technical architecture details, see t
 
 ## 📚 Documentation
 
-For technical documentation, see the [`docs/`](docs/) directory:
+For comprehensive technical documentation and architecture details, see the [`docs/`](docs/) directory:
 
-- [Spam Detection System](docs/SPAM_DETECTION.md)
+- [Technical Documentation Index](docs/README.md) - Complete guide to BaseClean's architecture
+- [Spam Detection System](docs/SPAM_DETECTION.md) - Deep-dive into threat detection algorithms
 
 ## 🛡️ Security
 

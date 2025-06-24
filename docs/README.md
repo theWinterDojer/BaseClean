@@ -23,6 +23,8 @@ BaseClean is a Web3 application that implements a **zero-approval architecture**
 | Document | Technical Focus | Audience |
 |----------|-----------------|----------|
 | `SPAM_DETECTION.md` | Multi-layer threat detection system implementation | Security Engineers, Developers |
+| `../src/features/README.md` | Feature architecture and system organization | Software Architects, Developers |
+| `../src/features/token-scanning/README.md` | Token discovery and spam detection deep-dive | Security Researchers, Developers |
 
 ## 🔬 **Technical Implementation**
 
