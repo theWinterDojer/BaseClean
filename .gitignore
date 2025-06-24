@@ -68,6 +68,9 @@ PROJECT_STATUS_SUMMARY.md
 # Historical documentation archive (not needed in GitHub)
 docs/archive/
 
+# Internal development documentation (not public-facing)
+GAS_OPTIMIZATION_RECOMMENDATIONS.md
+
 # Additional environment files (more specific)
 .env.local
 .env.development.local

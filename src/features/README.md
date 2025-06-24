@@ -1,15 +1,25 @@
-# 🎯 Features Directory
+# ✨ BaseClean Features
 
-Organizes components by feature rather than by type, following a domain-driven design approach.
+BaseClean's powerful features work together to give you the safest, smartest wallet cleaning experience on Base network.
 
-## 🔥 Current Features
+## 🔥 Core Capabilities
 
-- `token-scanning/` - 🪙 Token discovery, filtering, and burning UI
-- `nft-scanning/` - 🖼️ NFT discovery, filtering, and burning UI
+### 🪙 **Smart Token Management**
+- **Instant Discovery**: Automatically finds all tokens in your wallet
+- **Intelligent Filtering**: AI-powered spam and junk detection  
+- **Bulk Operations**: Select and burn multiple tokens at once
+- **Value Protection**: Warns you before burning valuable assets
 
-## 🏗️ Structure
+### 🖼️ **NFT Management**
+- **Multi-Network Scanning**: Discovers NFTs on Base and Zora networks
+- **Flexible Burning**: Handle ERC-721 and ERC-1155 tokens with custom quantities
+- **Collection Insights**: Groups NFTs by collection for easy management
+- **OpenSea Integration**: Quick links to verify NFT value before burning
 
-Each feature directory contains:
-- 🧩 Components specific to that feature
-- 🔧 Feature-specific utilities
-- 🤝 Related functionality grouped together 
+## 🛡️ **Security & Trust Features**
+
+Each feature is built with **zero-approval architecture**:
+- 🔒 **No permissions needed** - You control every transaction
+- 👀 **Transparent operations** - See exactly what's happening  
+- ⚡ **Instant results** - Burned assets vanish immediately
+- 📊 **Complete tracking** - Full history of all cleanup sessions 
