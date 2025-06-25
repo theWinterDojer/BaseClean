@@ -2,6 +2,7 @@ import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 
 import '@rainbow-me/rainbowkit/styles.css';
 import { WagmiConfig } from 'wagmi';
@@ -36,6 +37,9 @@ function AppContent(props: AppProps) {
 
   return (
     <>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
       <DisclaimerModal isOpen={shouldShowDisclaimer} onAgree={handleAgree} />
       <Component {...pageProps} showDisclaimer={showDisclaimer} />
     </>
