@@ -70,6 +70,7 @@ docs/archive/
 
 # Internal development documentation (not public-facing)
 GAS_OPTIMIZATION_RECOMMENDATIONS.md
+PRODUCTION_LAUNCH_CHECKLIST.md
 
 # Additional environment files (more specific)
 .env.local
