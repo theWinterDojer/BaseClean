@@ -167,7 +167,7 @@ export default function TokenList({
               
               {/* Show warning text for regular tokens instead of Select All button */}
               {!isSpam && (
-                <span className="text-sm text-yellow-400 font-medium px-2 py-1">
+                <span className="text-sm text-yellow-400 font-medium px-2 py-2">
                   ⚠️ Use precaution selecting here
                 </span>
               )}

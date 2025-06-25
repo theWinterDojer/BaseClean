@@ -56,9 +56,9 @@ export default function FloatingActionBar({
     >
       <div className="max-w-4xl mx-auto">
         <div 
-          className="bg-gradient-to-r from-blue-900/95 to-blue-950/95 border-2 border-white/20 rounded-xl p-6 transition-all duration-300 shadow-2xl"
+          className="bg-gradient-to-r from-blue-900/95 to-blue-950/95 border-2 border-white/25 rounded-xl p-7 transition-all duration-300 shadow-2xl"
           style={{
-            boxShadow: '0 20px 40px -8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(59, 130, 246, 0.2)'
+            boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 255, 255, 0.12), 0 0 0 1px rgba(59, 130, 246, 0.3)'
           }}
         >
           <div className="flex items-center justify-between gap-4">
