@@ -135,7 +135,7 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com", // Allowing inline styles for Tailwind + Google Fonts
               "img-src 'self' data: blob: https:", // Liberal image policy (your images are already secured via next.config)
               "font-src 'self' data: https://fonts.gstatic.com",
-              "connect-src 'self' https://api.covalenthq.com https://coins.llama.fi https://api.coingecko.com https://base-mainnet.g.alchemy.com https://zora-mainnet.g.alchemy.com https://mainnet.base.org https://api.github.com https://raw.githubusercontent.com https://nft-cdn.alchemy.com https://res.cloudinary.com https://ipfs.io https://i.seadn.io https://arweave.net wss:",
+              "connect-src 'self' https://api.covalenthq.com https://coins.llama.fi https://api.coingecko.com https://base-mainnet.g.alchemy.com https://zora-mainnet.g.alchemy.com https://mainnet.base.org https://api.github.com https://raw.githubusercontent.com https://nft-cdn.alchemy.com https://res.cloudinary.com https://ipfs.io https://i.seadn.io https://arweave.net https://storage.googleapis.com wss:",
               "frame-src 'none'",
               "object-src 'none'",
               "base-uri 'self'",

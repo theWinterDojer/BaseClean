@@ -210,13 +210,6 @@ export default function NFTListsContainer({
             {/* Rotating rings */}
             <div className="absolute inset-0 w-20 h-20 border-4 border-transparent border-t-blue-400 rounded-full animate-spin"></div>
             <div className="absolute inset-2 w-16 h-16 border-4 border-transparent border-r-green-400 rounded-full animate-spin-slow"></div>
-          
-            {/* NFT name overlay when cycling through images */}
-            {currentNFT && (
-              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-80">
-                {currentNFT.name || `#${currentNFT.token_id}`}
-              </div>
-            )}
           </div>
 
           {/* Smart Loading Messages */}

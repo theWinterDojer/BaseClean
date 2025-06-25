@@ -71,7 +71,7 @@ export default function FilterPanel({
 }: FilterPanelProps) {
   const filterLabels = useMemo(() => ({
     valueIssues: {
-      label: 'Low/Zero Value',
+      label: 'Dust/Zero Value',
       description: 'Zero value, dust balances, or very low total value'
     },
     namingIssues: {
