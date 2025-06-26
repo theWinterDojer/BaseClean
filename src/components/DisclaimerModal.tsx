@@ -12,7 +12,7 @@ export default function DisclaimerModal({
   if (!isOpen) return null;
 
   const openTermsOfService = () => {
-    window.open('/terms-of-service', '_blank');
+    window.location.href = '/terms-of-service';
   };
 
   return (
