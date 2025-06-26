@@ -29,7 +29,6 @@
     "**/*.tsx"
   ],
   "exclude": [
-    "node_modules",
-    "contracts"
+    "node_modules"
   ]
 }
