@@ -12,7 +12,7 @@ BaseClean allows users to permanently remove unwanted tokens from their wallets 
 - 🖼️ **NFT Support**: Supports ERC-721 and ERC-1155 tokens on Base and Zora networks
 - 🛡️ **Spam Detection**: Smart filters to identify low-value and suspicious tokens
 - ⚡ **Instant Updates**: Burned assets disappear from your wallet immediately
-- 📊 **Transaction History**: Keep track of all your burn transactions
+- 📊 **Transaction History**: Keep track of all your burn transactions (with CSV exports)
 - 🔒 **Zero Approvals**: No token approvals ever required - maximum security
 
 ## 🔧 Why Zero Approvals Matter
@@ -31,7 +31,7 @@ BaseClean allows users to permanently remove unwanted tokens from their wallets 
 
 ## 🌐 Access BaseClean
 
-**BaseClean is a hosted Web3 application.** Visit [baseclean.io](https://baseclean.io) to start cleaning your wallet - no installation required!
+**BaseClean is a hosted Web3 application.** Visit [baseclean.io](https://baseclean.io) to start cleaning your wallet!
 
 ### Tech Stack
 - **Framework**: Next.js 15.3.2 with TypeScript
