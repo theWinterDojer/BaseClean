@@ -140,7 +140,8 @@ const nextConfig: NextConfig = {
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
-              "frame-ancestors 'none'"
+              "frame-ancestors 'none'",
+              "report-uri 'none'" // Suppress CSP violation reports in console
             ].join('; ')
           }
         ],
