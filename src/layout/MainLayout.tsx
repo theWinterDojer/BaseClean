@@ -16,7 +16,7 @@ interface MainLayoutProps {
 export default function MainLayout({ children, stickyHeaderContent, hideNavigation = false }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 text-white flex flex-col">
-      <header className="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700 py-6 sticky top-0 z-10">
+      <header className="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700 py-4 md:py-6 sticky top-0 z-10">
         <div className="container mx-auto px-4 relative">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-4">
@@ -41,7 +41,7 @@ export default function MainLayout({ children, stickyHeaderContent, hideNavigati
               </div>
             </Link>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 md:gap-4">
               <WalletConnectButton />
               <BurnHistoryButton />
             </div>
@@ -75,9 +75,9 @@ export default function MainLayout({ children, stickyHeaderContent, hideNavigati
       </main>
       
       {/* Footer */}
-      <footer className="bg-gray-900/80 backdrop-blur-sm border-t border-gray-700 py-8 mt-auto">
+      <footer className="bg-gray-900/80 backdrop-blur-sm border-t border-gray-700 py-6 md:py-8 mt-auto">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+                      <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8">
             {/* Left side - Logo and Copyright */}
             <div className="flex items-center gap-3">
               <div className="overflow-hidden rounded-full">
@@ -103,7 +103,7 @@ export default function MainLayout({ children, stickyHeaderContent, hideNavigati
             </div>
             
             {/* Right side - Organized Link Sections */}
-            <div className="flex flex-col md:flex-row gap-8 md:gap-12">
+            <div className="flex flex-col md:flex-row gap-6 md:gap-8 lg:gap-12">
               {/* Resources Section */}
               <div className="flex flex-col gap-2">
                 <h4 className="text-sm font-medium text-white mb-1">Resources</h4>
