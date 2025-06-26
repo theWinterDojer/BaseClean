@@ -31,7 +31,7 @@ BaseClean allows users to permanently remove unwanted tokens from their wallets 
 
 ## 🌐 Access BaseClean
 
-**BaseClean is a hosted Web3 application.** Simply visit the live app to start cleaning your wallet - no installation required!
+**BaseClean is a hosted Web3 application.** Visit [baseclean.io](https://baseclean.io) to start cleaning your wallet - no installation required!
 
 ### Tech Stack
 - **Framework**: Next.js 15.3.2 with TypeScript
@@ -56,7 +56,7 @@ For comprehensive technical documentation and architecture details, see the [`do
 
 ## 📄 License
 
-MIT License - see LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
