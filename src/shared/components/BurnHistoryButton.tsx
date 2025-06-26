@@ -19,9 +19,9 @@ export default function BurnHistoryButton() {
       <button
         onClick={() => setIsModalOpen(true)}
         className={`
-          relative px-3 py-2 rounded-lg transition-all duration-200 flex items-center justify-center
+          relative px-3 py-2 rounded-md font-medium transition-colors flex items-center justify-center h-10
           ${hasAnyHistory 
-            ? 'bg-gray-800 hover:bg-gray-700 border border-gray-600 text-gray-200 hover:text-white' 
+            ? 'bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-200 hover:text-white' 
             : 'bg-gray-800/50 border border-gray-700 text-gray-400 hover:text-gray-300'
           }
         `}

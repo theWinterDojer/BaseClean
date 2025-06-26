@@ -116,36 +116,35 @@ export default function PrivacyPolicy() {
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4">4. Future Features: $BCLEAN Token</h2>
+              <h2 className="text-2xl font-semibold mb-4">4. Potential Future Features</h2>
               
               <div className="bg-purple-900/30 border border-purple-700 rounded-lg p-6 mb-4">
-                <h3 className="text-lg font-semibold mb-2 text-purple-300">🚀 Planned Token Features</h3>
+                <h3 className="text-lg font-semibold mb-2 text-purple-300">🚀 Potential Platform Enhancements</h3>
                 <p className="text-sm">
-                  When $BCLEAN token features are implemented, additional data collection may include:
+                  As BaseClean evolves, additional features may be implemented that could require 
+                  expanded data collection practices, including but not limited to:
                 </p>
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-xl font-medium text-blue-300">4.1 Token Gating</h3>
+                <h3 className="text-xl font-medium text-blue-300">4.1 Access Control Systems</h3>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>$BCLEAN Holdings:</strong> Token balance verification for access control</li>
-                  <li><strong>Access Levels:</strong> Premium features based on token holdings</li>
-                  <li><strong>Staking Data:</strong> If staking mechanisms are implemented</li>
+                  <li><strong>[ Redacted ] Holdings:</strong> Asset balance verification for tiered access</li>
+                  <li><strong>Participation Data:</strong> If community participation mechanisms are implemented</li>
                 </ul>
 
-                <h3 className="text-xl font-medium text-blue-300">4.2 Gamification Features</h3>
+                <h3 className="text-xl font-medium text-blue-300">4.2 Enhanced User Experience</h3>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>Burn History:</strong> Record of tokens/NFTs burned for achievements</li>
-                  <li><strong>Achievement Data:</strong> Progress tracking and reward systems</li>
-                  <li><strong>Leaderboards:</strong> Ranking data (if competitive features are added)</li>
-                  <li><strong>User Profiles:</strong> Optional profile information and preferences</li>
+                  <li><strong>Activity History:</strong> Extended record keeping for user achievements</li>
+                  <li><strong>Progress Tracking:</strong> Achievement systems and milestone recognition</li>
+                  <li><strong>Community Rankings:</strong> Comparative data (if competitive features are added)</li>
+                  <li><strong>User Preferences:</strong> Enhanced personalization and profile options</li>
                 </ul>
 
-                <h3 className="text-xl font-medium text-blue-300">4.3 Enhanced Analytics</h3>
+                <h3 className="text-xl font-medium text-blue-300">4.3 Platform Analytics</h3>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>Usage Metrics:</strong> Feature adoption and user engagement</li>
-                  <li><strong>Reward Distribution:</strong> $BCLEAN token rewards and distributions</li>
-                  <li><strong>Community Features:</strong> Social interactions and sharing (if implemented)</li>
+                  <li><strong>Usage Metrics:</strong> Feature adoption and user engagement patterns</li>
+                  <li><strong>Community Features:</strong> Social interactions and content sharing (if implemented)</li>
                 </ul>
               </div>
             </section>
@@ -234,7 +233,7 @@ export default function PrivacyPolicy() {
               <h2 className="text-2xl font-semibold mb-4">10. Changes to This Policy</h2>
               <p className="mb-4">
                 We may update this Privacy Policy from time to time, especially when implementing new features 
-                like $BCLEAN token functionality. We will notify users of significant changes by updating the 
+                and functionality. We will notify users of significant changes by updating the 
                 &quot;Last Updated&quot; date at the top of this policy. Continued use of BaseClean after changes 
                 constitutes acceptance of the updated policy.
               </p>
