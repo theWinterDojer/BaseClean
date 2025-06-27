@@ -533,24 +533,26 @@ export const fetchTokenBalances = async (
         
         // Sort tokens by USD value (descending)
         allTokens.sort((a, b) => {
-          const valueA = parseFloat(calculateTokenValue(
-            formatBalance(a.balance, a.contract_decimals), 
-            a.quote_rate
-          ) || '0');
-          const valueB = parseFloat(calculateTokenValue(
-            formatBalance(b.balance, b.contract_decimals), 
-            b.quote_rate
-          ) || '0');
+          // FIXED: Use direct numeric calculation instead of formatted string
+          const rawBalanceA = parseFloat(a.balance) / Math.pow(10, a.contract_decimals);
+          const valueA = rawBalanceA * (a.quote_rate || 0);
+          
+          const rawBalanceB = parseFloat(b.balance) / Math.pow(10, b.contract_decimals);
+          const valueB = rawBalanceB * (b.quote_rate || 0);
           
           return valueB - valueA; // Descending order (highest value first)
         });
         
         // Debug: Log some sample tokens with their values
-        const sampleTokens = allTokens.slice(0, 5).map(token => ({
-          symbol: token.contract_ticker_symbol,
-          balance: formatBalance(token.balance, token.contract_decimals),
-          usdValue: calculateTokenValue(formatBalance(token.balance, token.contract_decimals), token.quote_rate)
-        }));
+        const sampleTokens = allTokens.slice(0, 5).map(token => {
+          const rawBalance = parseFloat(token.balance) / Math.pow(10, token.contract_decimals);
+          const usdValue = rawBalance * (token.quote_rate || 0);
+          return {
+            symbol: token.contract_ticker_symbol,
+            balance: formatBalance(token.balance, token.contract_decimals),
+            usdValue: usdValue.toFixed(2)
+          };
+        });
         console.log('Top 5 tokens by value:', sampleTokens);
         
         onProgress?.(allTokens.length, 'Complete');

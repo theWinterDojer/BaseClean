@@ -4,7 +4,7 @@ Technical documentation for BaseClean's zero-approval token burning architecture
 
 ## 🎯 About BaseClean
 
-BaseClean is a Web3 application that implements a **zero-approval architecture** for safely burning unwanted ERC-20 tokens and NFTs on Base network. The system eliminates traditional approval-based attack vectors through direct wallet transfers.
+BaseClean is a Web3 application that implements a **zero-approval architecture** for safely burning unwanted ERC-20 tokens and NFTs on Base network. The system eliminates traditional approval-based attack vectors through direct wallet transfers with **value-first protection** - any token worth more than $0.10 is automatically protected from spam filtering.
 
 ## 🏗️ **Architecture Overview**
 
@@ -15,6 +15,7 @@ BaseClean is a Web3 application that implements a **zero-approval architecture**
 
 ### 🛡️ **Security Model**
 - **Eliminated attack surface**: No token approvals = no approval-based vulnerabilities
+- **Value-first protection**: Tokens > $0.10 automatically protected from spam filtering
 - **User control**: Every transaction requires explicit user confirmation
 - **Transparent operations**: All burns visible on-chain with clear transaction hashes
 
@@ -22,9 +23,8 @@ BaseClean is a Web3 application that implements a **zero-approval architecture**
 
 | Document | Technical Focus | Audience |
 |----------|-----------------|----------|
-| [SPAM_DETECTION.md](SPAM_DETECTION.md) | Multi-layer threat detection system implementation | Security Engineers, Developers |
+| [SPAM_DETECTION.md](SPAM_DETECTION.md) | 3-filter spam detection with value-first protection | Security Engineers, Developers |
 | [Feature Architecture](../src/features/README.md) | Feature architecture and system organization | Software Architects, Developers |
-| [Token Scanning Deep-Dive](../src/features/token-scanning/README.md) | Token discovery and spam detection deep-dive | Security Researchers, Developers |
 
 ## 🔬 **Technical Implementation**
 
@@ -32,22 +32,26 @@ BaseClean is a Web3 application that implements a **zero-approval architecture**
 - **Network**: Optimized for Base L2 (~2-3 second confirmations)
 - **Gas efficiency**: Direct transfers use ~150k gas per token, ~200k per NFT
 - **Scalability**: Sequential processing prevents wallet overload
+- **Optimized filtering**: Single-pass analysis with early exit for valuable tokens
 
 ### 🧠 **Spam Detection Engine**
-- **Multi-layer filtering**: Value analysis, pattern recognition, community intelligence
-- **ScamSniffer integration**: Real-time threat database via GitHub API
-- **Configurable thresholds**: Users can adjust detection sensitivity
+- **3-filter system**: Low/Zero Value, Suspicious Names/Symbols, Airdrops/Junk
+- **Value-first protection**: $0.10 threshold prevents false positives on valuable assets
+- **ScamSniffer integration**: Community threat intelligence via GitHub database
+- **Efficient processing**: Pre-calculated values with sorted results (highest to lowest USD value)
 
 ### 📊 **Data Architecture**
 - **Local-first**: No external user tracking or data collection
 - **Wallet-specific**: Burn history stored per wallet address
 - **Export capabilities**: CSV format for record keeping
+- **Optimized calculations**: Direct numeric value calculations prevent formatting bugs
 
 ## 🔧 **Development Philosophy**
 
 BaseClean prioritizes **security over convenience** and **transparency over efficiency**:
 
 - **Security first**: Every architectural decision evaluated for attack vectors
+- **Value protection**: Automatic safeguards prevent accidental burning of valuable assets
 - **User sovereignty**: No permissions, approvals, or third-party dependencies  
 - **Open development**: Public codebase enables community security review
 
@@ -55,6 +59,7 @@ BaseClean prioritizes **security over convenience** and **transparency over effi
 
 The codebase is structured for security analysis:
 - **Clear separation**: Burn logic isolated in dedicated modules
+- **Value protection**: Multiple layers prevent false positive burns
 - **Error handling**: Comprehensive user rejection vs. technical failure distinction
 - **Audit trails**: Complete transaction history with gas tracking
 

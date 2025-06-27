@@ -1,5 +1,4 @@
 import { Token } from '@/types/token';
-import { formatBalance, calculateTokenValue } from '@/lib/api';
 
 /**
  * Get the estimated value of a token in USD
@@ -7,8 +6,8 @@ import { formatBalance, calculateTokenValue } from '@/lib/api';
  * @returns The value in USD as a number
  */
 export function getTokenValue(token: Token): number {
-  const balance = formatBalance(token.balance, token.contract_decimals);
-  return parseFloat(calculateTokenValue(balance, token.quote_rate) || '0');
+  const rawBalance = parseFloat(token.balance) / Math.pow(10, token.contract_decimals);
+  return rawBalance * (token.quote_rate || 0);
 }
 
 /**

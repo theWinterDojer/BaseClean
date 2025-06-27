@@ -26,7 +26,7 @@ export default function FAQ() {
       questions: [
         {
           question: "How does BaseClean identify spam tokens?",
-          answer: "BaseClean uses a multi-layer system: value analysis (tokens <$0.50), pattern recognition (67+ spam keywords, 15 regex patterns), airdrop detection (70+ common amounts like 1337, 88888), and ScamSniffer community intelligence. Multiple signals are required to flag tokens, minimizing false positives."
+          answer: "BaseClean uses a 3-filter system with value-first protection: any token worth more than $0.10 is automatically protected from spam filtering. For lower-value tokens, you can enable: Low/Zero Value filter (dust and worthless tokens), Suspicious Names/Symbols filter (scam keywords and suspicious patterns), and Airdrops/Junk filter (common airdrop amounts like 1337, 88888). ScamSniffer community intelligence provides additional threat detection."
         },
         {
           question: "What is ScamSniffer integration and how does it work?",
@@ -34,11 +34,11 @@ export default function FAQ() {
         },
         {
           question: "Can I override the spam filters if I disagree?",
-          answer: "Yes. All filters are user-configurable and can be disabled entirely. BaseClean provides warnings and context, but you maintain complete control over which tokens to burn. The system protects legitimate tokens (ETH, USDC, DAI) and high-value assets automatically."
+          answer: "Yes. All 3 filters are user-configurable and can be disabled entirely. BaseClean provides warnings and context, but you maintain complete control over which tokens to burn. The system automatically protects legitimate tokens (ETH, USDC, DAI) and any token worth more than $0.10, ensuring valuable assets are never accidentally flagged as spam."
         },
         {
           question: "How accurate is BaseClean's spam detection and price data?",
-          answer: "BaseClean's spam detection uses advanced algorithms but isn't 100% perfect - it may occasionally flag legitimate tokens or miss some spam. Token prices come from third-party APIs (Alchemy, Zapper) which can sometimes be delayed, inaccurate, or missing for newer tokens. Always double-check before burning valuable assets. The system is designed to err on the side of caution, protecting high-value tokens with extra warnings."
+          answer: "BaseClean's spam detection uses advanced algorithms with value-first protection - any token worth more than $0.10 is automatically protected from spam filtering, preventing false positives on valuable assets. Token prices come from third-party APIs (Alchemy) which can sometimes be delayed, inaccurate, or missing for newer tokens. Always double-check before burning valuable assets via the supplied DEX Screener and OpenSea links available during token selection. The system is designed to err on the side of caution, requiring user confirmation before burning and providing clear warnings for valuable tokens."
         }
       ]
     },
