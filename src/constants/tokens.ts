@@ -64,10 +64,14 @@ export const SPAM_KEYWORDS = [
 // Regex patterns for suspicious naming
 // Phase 17.1: Refined to focus on clear spam indicators while reducing false positives
 // Phase 17.3: Removed ALL CAPS detection to prevent false positives on legitimate tokens
+// Phase 17.4: Enhanced URL detection to catch bracketed domains and additional TLDs
 export const SUSPICIOUS_NAME_PATTERNS = [
-  /\.(com|io|xyz|org|net|fi)\b/i, // Domain names in token names
+  /\.(com|io|xyz|org|net|fi|gg|cash|app|pro|site|online|click|link|me|cc|tv)\b/i, // Extended domain names in token names
   /https?:\/\//i,                 // URLs in token names
+  /www\./i,                       // www. prefix (common in spam token names)
   /t\.me\//i,                     // Telegram links
+  /\[[^\]]*\.(com|io|xyz|org|net|fi|gg|cash|app|pro|site|online|click|link|me|cc|tv)[^\]]*\]/i, // Bracketed domains like [www.example.com]
+  /\[[^\]]*www\.[^\]]*\]/i,       // Bracketed www URLs like [via www.site.com]
   /\d{6,}/,                       // Very long numbers (6+ digits, more specific than before)
   /\$+[a-z]+\$+/i,               // Dollar signs wrapping text
   /\([^)]*\)/,                    // Text in parentheses (often spam instructions)
