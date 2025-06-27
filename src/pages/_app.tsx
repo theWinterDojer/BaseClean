@@ -15,6 +15,7 @@ import DisclaimerModal from '@/components/DisclaimerModal';
 import { useDisclaimer } from '@/hooks/useDisclaimer';
 import { parseWalletError, isUserRejectionError } from '@/utils/errorHandling';
 import { SelectedItemsProvider } from '@/contexts/SelectedItemsContext';
+import { Analytics } from '@vercel/analytics/next';
 
 const queryClient = new QueryClient();
 
@@ -109,6 +110,7 @@ export default function App(props: AppProps) {
           </SelectedItemsProvider>
         </RainbowKitProvider>
       </WagmiConfig>
+      <Analytics />
     </QueryClientProvider>
   );
 }
