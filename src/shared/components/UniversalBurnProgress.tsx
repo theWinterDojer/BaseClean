@@ -203,11 +203,6 @@ Clean your wallet. Strengthen your Base 💪
                 <span className="text-gray-400">
                   {processedItems} of {totalItems} processed
                 </span>
-                {estimatedTimeRemaining && (
-                  <span className="text-blue-400">
-                    ~{Math.ceil(estimatedTimeRemaining)} seconds remaining
-                  </span>
-                )}
               </div>
               {currentBatch && totalBatches && (
                 <div className="text-center mt-1 text-sm text-blue-400">
