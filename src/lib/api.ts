@@ -1,15 +1,22 @@
 import { Token } from '@/types/token';
 import { API_CONFIG } from '@/config/web3';
 
-// Enhanced cache for token logo URLs with permanent storage
-const TOKEN_LOGO_CACHE: Record<string, string> = {};
+// Enhanced cache for token logo URLs with timestamp-based expiration
+interface CachedImage {
+  url: string;
+  timestamp: number;
+  isExternal: boolean; // true for external URLs, false for fallback SVGs
+}
 
-// Add new caches for performance optimization
+const TOKEN_LOGO_CACHE: Record<string, CachedImage> = {};
+
+// Add new caches for performance optimization  
 const TOKEN_METADATA_CACHE: Record<string, TokenMetadata> = {};
 const TOKEN_PRICE_CACHE: Record<string, {price: number, source: string, timestamp: number}> = {};
 
-// Cache duration for prices (5 minutes)
-const PRICE_CACHE_DURATION = 5 * 60 * 1000;
+// Cache durations
+const PRICE_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const SUCCESSFUL_IMAGE_CACHE_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 // Type definitions for better type safety
 interface TokenMetadata {
@@ -39,7 +46,22 @@ if (typeof window !== 'undefined') {
     const cachedLogos = localStorage.getItem('token_logo_cache');
     if (cachedLogos) {
       const cachedLogoData = JSON.parse(cachedLogos);
-      Object.assign(TOKEN_LOGO_CACHE, cachedLogoData);
+      
+      // Handle both old format (string) and new format (CachedImage)
+      Object.keys(cachedLogoData).forEach(address => {
+        const cached = cachedLogoData[address];
+        if (typeof cached === 'string') {
+          // Convert old format to new format
+          TOKEN_LOGO_CACHE[address] = {
+            url: cached,
+            timestamp: Date.now(),
+            isExternal: !cached.startsWith('data:image/svg+xml')
+          };
+        } else if (cached && typeof cached === 'object' && cached.url) {
+          // Use new format directly
+          TOKEN_LOGO_CACHE[address] = cached;
+        }
+      });
     }
     
     // Load metadata cache
@@ -54,16 +76,21 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * Save token logo URL to cache including localStorage
+ * Save token logo URL to cache including localStorage with timestamp
  */
 const saveToCache = (address: string, url: string): void => {
-  // Always save to memory cache for current session
-  TOKEN_LOGO_CACHE[address] = url;
+  const isExternal = !url.startsWith('data:image/svg+xml');
   
-  // Only save to localStorage if it's NOT a fallback SVG image
-  // This allows fallback images to be generated fresh each session,
-  // giving external sources a chance to be retried
-  if (typeof window !== 'undefined' && !url.startsWith('data:image/svg+xml')) {
+  // Always save to memory cache for current session
+  TOKEN_LOGO_CACHE[address] = {
+    url,
+    timestamp: Date.now(),
+    isExternal
+  };
+  
+  // Only save to localStorage if it's an external image
+  // Fallback SVGs are generated fresh each session for retry opportunities
+  if (typeof window !== 'undefined' && isExternal) {
     try {
       localStorage.setItem('token_logo_cache', JSON.stringify(TOKEN_LOGO_CACHE));
     } catch {
@@ -389,10 +416,24 @@ export async function getTokenLogoUrl(address: string, symbol: string = ''): Pro
     return ethLogoUrl;
   }
 
-  // 1. Check cache first
-  if (TOKEN_LOGO_CACHE[cleanAddress]) {
-    imageLoadingSummary.cacheHits++;
-    return TOKEN_LOGO_CACHE[cleanAddress];
+  // 1. Check cache first with expiration logic
+  const cached = TOKEN_LOGO_CACHE[cleanAddress];
+  if (cached) {
+    const now = Date.now();
+    const age = now - cached.timestamp;
+    
+    // Check if cache is still valid based on type
+    const isValid = cached.isExternal 
+      ? age < SUCCESSFUL_IMAGE_CACHE_DURATION  // 30 days for external images
+      : true; // Fallback SVGs are always valid for the session
+      
+    if (isValid) {
+      imageLoadingSummary.cacheHits++;
+      return cached.url;
+    } else {
+      // Cache expired, remove it
+      delete TOKEN_LOGO_CACHE[cleanAddress];
+    }
   }
   
   imageLoadingSummary.cacheMisses++;
@@ -443,17 +484,40 @@ export function clearTokenLogoCache(): void {
   if (typeof window !== 'undefined') {
     try {
       localStorage.removeItem('token_logo_cache');
-      // Also clear any ETH-specific cache entries
-      const ethAddresses = [
-        '0x0000000000000000000000000000000000000000',
-        '0x4200000000000000000000000000000000000006'
-      ];
-      ethAddresses.forEach(addr => {
-        delete TOKEN_LOGO_CACHE[addr];
-      });
       console.log('Token logo cache manually cleared (including ETH logos)');
     } catch {
       console.error('Failed to clear token logo cache from localStorage');
+    }
+  }
+}
+
+/**
+ * Clear expired cache entries based on timestamps
+ */
+export function clearExpiredCache(): void {
+  if (typeof window !== 'undefined') {
+    const now = Date.now();
+    let clearedCount = 0;
+    
+    Object.keys(TOKEN_LOGO_CACHE).forEach(key => {
+      const cached = TOKEN_LOGO_CACHE[key];
+      if (cached && cached.isExternal) {
+        const age = now - cached.timestamp;
+        if (age > SUCCESSFUL_IMAGE_CACHE_DURATION) {
+          delete TOKEN_LOGO_CACHE[key];
+          clearedCount++;
+        }
+      }
+    });
+    
+    if (clearedCount > 0) {
+      console.log(`Cleared ${clearedCount} expired external image cache entries`);
+      // Update localStorage
+      try {
+        localStorage.setItem('token_logo_cache', JSON.stringify(TOKEN_LOGO_CACHE));
+      } catch {
+        console.debug('Failed to update localStorage after expired cache cleanup');
+      }
     }
   }
 }
@@ -465,7 +529,8 @@ export function clearOutdatedFallbacks(): void {
   if (typeof window !== 'undefined') {
     let clearedCount = 0;
     Object.keys(TOKEN_LOGO_CACHE).forEach(key => {
-      if (TOKEN_LOGO_CACHE[key].startsWith('data:image/svg+xml')) {
+      const cached = TOKEN_LOGO_CACHE[key];
+      if (cached && !cached.isExternal) {
         delete TOKEN_LOGO_CACHE[key];
         clearedCount++;
       }

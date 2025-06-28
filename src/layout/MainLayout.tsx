@@ -6,6 +6,7 @@ import TabNavigation from '@/shared/components/TabNavigation';
 import WalletConnectButton from '@/shared/components/WalletConnectButton';
 import BurnHistoryButton from '@/shared/components/BurnHistoryButton';
 import { ScamSnifferStatusIndicator } from '@/components/ScamSnifferStatusIndicator';
+import TipButton from '@/shared/components/TipButton';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -110,33 +111,40 @@ export default function MainLayout({ children, stickyHeaderContent, hideNavigati
       {/* Footer */}
       <footer className="bg-gray-900/80 backdrop-blur-sm border-t border-gray-700 py-6 md:py-8 mt-auto">
         <div className="container mx-auto px-4">
-                      <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8">
-            {/* Left side - Logo and Copyright */}
-            <div className="flex items-center gap-3">
-              <div className="overflow-hidden rounded-full">
-                <Image 
-                  src="/BaseCleanlogo.png" 
-                  alt="BaseClean Logo" 
-                  width={64}
-                  height={64}
-                  className="w-16 h-16"
-                />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-8 items-center">
+            {/* Column 1 - BaseClean Logo/Copyright */}
+            <div className="flex flex-col items-center md:items-start gap-2">
+              <div className="flex items-center gap-3">
+                <div className="overflow-hidden rounded-full">
+                  <Image 
+                    src="/BaseCleanlogo.png" 
+                    alt="BaseClean Logo" 
+                    width={64}
+                    height={64}
+                    className="w-16 h-16"
+                  />
+                </div>
+                <span className="text-sm text-gray-400">© 2025 BaseClean</span>
               </div>
-              <span className="text-sm text-gray-400">© 2025 BaseClean</span>
             </div>
             
-            {/* Center - ScamSniffer Section */}
+            {/* Column 2 - ScamSniffer Info */}
             <div className="flex flex-col items-center gap-1">
-              <div className="text-sm text-gray-400">
+              <div className="text-xs text-gray-400 text-center">
                 Enhanced by <Link href="https://x.com/realScamSniffer" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white transition-colors">Scam Sniffer</Link> community intelligence 👃
               </div>
-              <div className="text-sm text-gray-400">
+              <div className="text-xs text-gray-400 flex justify-center">
                 <ScamSnifferStatusIndicator />
               </div>
             </div>
             
-            {/* Right side - Organized Link Sections */}
-            <div className="flex flex-row md:flex-row gap-4 sm:gap-6 md:gap-8 lg:gap-12">
+            {/* Column 3 - Tip Section */}
+            <div className="flex flex-col items-center gap-2">
+              <TipButton address="0x92e40F4A6ceb168de63f8b6A06984083065AFD14" />
+            </div>
+            
+            {/* Column 4 - Website Links */}
+            <div className="flex flex-row justify-center md:justify-end gap-4 sm:gap-6 md:gap-8">
               {/* Resources Section */}
               <div className="flex flex-col gap-2">
                 <h4 className="text-sm font-medium text-white mb-1">Resources</h4>
