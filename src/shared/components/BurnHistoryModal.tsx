@@ -251,9 +251,6 @@ export default function BurnHistoryModal({ isOpen, onClose }: BurnHistoryModalPr
                                 {entry.failedBurns > 0 && (
                                   <span className="text-red-400">❌ {entry.failedBurns}</span>
                                 )}
-                                <span className="text-gray-400">
-                                  {formatDuration(entry.duration)}
-                                </span>
                               </div>
                             </div>
                             

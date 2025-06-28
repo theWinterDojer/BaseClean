@@ -71,6 +71,7 @@ docs/archive/
 # Internal development documentation (not public-facing)
 GAS_OPTIMIZATION_RECOMMENDATIONS.md
 PRODUCTION_LAUNCH_CHECKLIST.md
+WALLET_TIMEOUT_IMPLEMENTATION_PLAN.md
 
 # Additional environment files (more specific)
 .env.local

@@ -52,7 +52,7 @@ export default function FloatingActionBar({
 
   return (
     <div 
-      className="fixed bottom-8 left-4 right-4 z-50 transition-all duration-300 ease-in-out animate-in slide-in-from-bottom-2"
+      className="fixed bottom-12 left-4 right-4 z-50 transition-all duration-300 ease-in-out animate-in slide-in-from-bottom-2"
     >
       <div className="max-w-4xl mx-auto">
         <div 
