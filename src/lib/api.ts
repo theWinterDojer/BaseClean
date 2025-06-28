@@ -319,14 +319,6 @@ function generateFallbackDataUri(address: string, symbol: string = ''): string {
  */
 const IMAGE_SOURCE_STATS = {
   zapper: 0,
-  defillama_tokens: 0, 
-  defillama_base: 0,
-  web3icons: 0,
-  basescan: 0,
-  coingecko: 0,
-  oneinch: 0,
-  moralis: 0,
-  trustwallet: 0,
   fallback_svg: 0
 };
 
@@ -777,7 +769,7 @@ async function fetchTokensFromAlchemy(address: string, onProgress?: (discovered:
           contract_decimals: metadata.decimals || 18,
           quote_rate: priceData.price,
           logo_url: logoUrl,
-          price_source: priceData.source
+          price_source: priceData.source as 'defillama' | 'none'
         };
       })
     );
@@ -1165,7 +1157,7 @@ async function fetchNativeETHBalance(address: string): Promise<Token | null> {
       contract_decimals: 18,
       quote_rate: ethPrice,
       logo_url: logoUrl,
-      price_source: priceSource
+      price_source: priceSource as 'defillama' | 'none'
     };
     
   } catch (error) {

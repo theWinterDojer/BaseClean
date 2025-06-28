@@ -76,17 +76,7 @@ export default function BurnHistoryModal({ isOpen, onClose }: BurnHistoryModalPr
     return new Date(timestamp).toLocaleString();
   };
 
-  // Format duration
-  const formatDuration = (duration: number) => {
-    const seconds = Math.floor(duration / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    
-    if (minutes > 0) {
-      return `${minutes}m ${remainingSeconds}s`;
-    }
-    return `${remainingSeconds}s`;
-  };
+
 
   // Main history view - render using portal to bypass header constraints
   return createPortal(
