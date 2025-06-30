@@ -34,7 +34,7 @@ export default function TokenListsContainer({
   }, [nonSpamTokens]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-5">
       {/* Suspected Spam Tokens */}
       <div>
         <div className="bg-red-900/10 border border-red-900/30 rounded-lg overflow-hidden">

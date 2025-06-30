@@ -104,7 +104,7 @@ export default function MainLayout({ children, stickyHeaderContent, hideNavigati
         )}
       </header>
       
-      <main className="container mx-auto px-4 py-4 flex-1">
+      <main className="container mx-auto px-4 py-2 md:py-4 flex-1">
         {children}
       </main>
       
