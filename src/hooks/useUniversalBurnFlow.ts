@@ -42,7 +42,8 @@ const initialBurnStatus: UniversalBurnFlowStatus = {
   results: {
     successful: [],
     failed: [],
-    userRejected: []
+    userRejected: [],
+    cancelled: []
   },
   totalGasUsed: undefined,
   totalGasEstimated: undefined,
@@ -73,6 +74,10 @@ export function useUniversalBurnFlow(
   // Refs for timing calculations
   const itemTimings = useRef<number[]>([]);
   const startTimeRef = useRef<number | null>(null);
+  
+  // Cancellation state
+  const [isCancelling, setIsCancelling] = useState(false);
+  const cancelSignalRef = useRef(false);
 
   // Calculate average time per item for estimates
   const updateTimeEstimates = useCallback(() => {
@@ -168,7 +173,7 @@ export function useUniversalBurnFlow(
       isProgressOpen: false,
       burnContext: context,
       error: null,
-      results: { successful: [], failed: [], userRejected: [] }
+      results: { successful: [], failed: [], userRejected: [], cancelled: [] }
     }));
     
     setFlowState({ type: 'confirming', context });
@@ -184,6 +189,12 @@ export function useUniversalBurnFlow(
     }));
     
     setFlowState({ type: 'idle' });
+  }, []);
+
+  // Cancel burn process
+  const cancelBurn = useCallback(() => {
+    cancelSignalRef.current = true;
+    setIsCancelling(true);
   }, []);
 
   // Process a single item
@@ -249,7 +260,8 @@ export function useUniversalBurnFlow(
     setBurnStatus(prev => {
       const successful = result.success ? [...prev.results.successful, result] : prev.results.successful;
       const userRejected = result.isUserRejection ? [...prev.results.userRejected, result] : prev.results.userRejected;
-      const failed = (!result.success && !result.isUserRejection) ? [...prev.results.failed, result] : prev.results.failed;
+      const cancelled = result.isCancelled ? [...prev.results.cancelled, result] : prev.results.cancelled;
+      const failed = (!result.success && !result.isUserRejection && !result.isCancelled) ? [...prev.results.failed, result] : prev.results.failed;
 
       const totalGasUsed = result.gasUsed 
         ? (prev.totalGasUsed || BigInt(0)) + result.gasUsed 
@@ -258,7 +270,7 @@ export function useUniversalBurnFlow(
       return {
         ...prev,
         processedItems: processedCount,
-        results: { successful, failed, userRejected },
+        results: { successful, failed, userRejected, cancelled },
         totalGasUsed
       };
     });
@@ -283,6 +295,29 @@ export function useUniversalBurnFlow(
     
     // Process items in the batch sequentially
     for (let i = 0; i < items.length; i++) {
+      // Check for cancellation before processing each item
+      if (cancelSignalRef.current) {
+        // Mark remaining items in this batch as cancelled
+        const remainingItems = items.slice(i);
+        const cancelledResults: BurnResult[] = remainingItems.map(item => ({
+          item,
+          success: false,
+          isCancelled: true,
+          isUserRejection: false,
+          timestamp: Date.now()
+        }));
+        
+        batchResults.push(...cancelledResults);
+        
+        // Update progress for all cancelled items in this batch
+        for (let j = 0; j < cancelledResults.length; j++) {
+          const processedCount = (batchNumber - 1) * mergedOptions.batchSize! + i + j + 1;
+          updateBurnProgress(cancelledResults[j], processedCount);
+        }
+        
+        break; // Exit the batch processing loop
+      }
+      
       const item = items[i];
       const globalIndex = (batchNumber - 1) * mergedOptions.batchSize! + i;
       
@@ -387,6 +422,29 @@ export function useUniversalBurnFlow(
       } else {
         // Process sequentially
         for (let i = 0; i < burnItems.length; i++) {
+          // Check for cancellation before processing each item
+          if (cancelSignalRef.current) {
+            // Mark remaining items as cancelled
+            const remainingItems = burnItems.slice(i);
+            const cancelledResults: BurnResult[] = remainingItems.map(item => ({
+              item,
+              success: false,
+              isCancelled: true,
+              isUserRejection: false,
+              timestamp: Date.now()
+            }));
+            
+            // Add cancelled results and update progress
+            allResults.push(...cancelledResults);
+            
+            // Update progress for all cancelled items
+            for (let j = 0; j < cancelledResults.length; j++) {
+              updateBurnProgress(cancelledResults[j], i + j + 1);
+            }
+            
+            break; // Exit the burn loop
+          }
+          
           const item = burnItems[i];
           
           setBurnStatus(prev => ({
@@ -406,7 +464,7 @@ export function useUniversalBurnFlow(
       const summary: BurnSummary = {
         totalItems: burnStatus.burnContext.totalItems, // Use original total from context
         successfulBurns: allResults.filter(r => r.success).length,
-        failedBurns: allResults.filter(r => !r.success && !r.isUserRejection).length,
+        failedBurns: allResults.filter(r => !r.success && !r.isUserRejection && !r.isCancelled).length,
         userRejections: allResults.filter(r => r.isUserRejection).length,
         totalValue: burnStatus.burnContext.totalTokenValue,
         totalGasUsed: burnStatus.totalGasUsed || BigInt(0),
@@ -423,7 +481,7 @@ export function useUniversalBurnFlow(
         inProgress: false,
         success: true,
         currentItem: null,
-        currentStepMessage: createCompletionMessage(summary),
+        currentStepMessage: createCompletionMessage(summary, allResults),
         currentBatch: undefined,
         totalBatches: undefined
       }));
@@ -456,10 +514,13 @@ export function useUniversalBurnFlow(
   ]);
 
   // Create user-friendly completion message
-  const createCompletionMessage = (summary: BurnSummary): string => {
+  const createCompletionMessage = (summary: BurnSummary, results: BurnResult[]): string => {
     const { successfulBurns, failedBurns, userRejections } = summary;
+    const cancelled = results.filter(r => r.isCancelled).length;
     
-    if (successfulBurns > 0 && failedBurns === 0 && userRejections === 0) {
+    if (cancelled > 0) {
+      return `🛑 Burn process cancelled. ${successfulBurns} completed, ${cancelled} cancelled.`;
+    } else if (successfulBurns > 0 && failedBurns === 0 && userRejections === 0) {
       return `🎉 Successfully burned ${successfulBurns} item${successfulBurns > 1 ? 's' : ''}!`;
     } else if (successfulBurns > 0) {
       let message = `✅ Burned ${successfulBurns} item${successfulBurns > 1 ? 's' : ''}`;
@@ -481,6 +542,8 @@ export function useUniversalBurnFlow(
   const closeProgress = useCallback(() => {
     setBurnStatus(initialBurnStatus);
     setFlowState({ type: 'idle' });
+    setIsCancelling(false);
+    cancelSignalRef.current = false;
   }, []);
 
   // Reset everything
@@ -489,6 +552,8 @@ export function useUniversalBurnFlow(
     setFlowState({ type: 'idle' });
     itemTimings.current = [];
     startTimeRef.current = null;
+    setIsCancelling(false);
+    cancelSignalRef.current = false;
   }, []);
 
   // Check if waiting for wallet confirmation
@@ -505,6 +570,8 @@ export function useUniversalBurnFlow(
     closeProgress,
     resetBurnFlow,
     isWaitingForConfirmation,
+    cancelBurn,
+    isCancelling,
     options: mergedOptions
   };
 } 

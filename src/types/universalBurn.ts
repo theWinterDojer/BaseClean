@@ -61,6 +61,7 @@ export interface BurnResult {
   errorMessage?: string;
   errorType?: BurnErrorType;
   isUserRejection: boolean;
+  isCancelled?: boolean; // When user cancels the burn process
   timestamp: number;
   gasUsed?: bigint;
   gasEstimate?: bigint;
@@ -111,6 +112,7 @@ export interface UniversalBurnFlowStatus {
     successful: BurnResult[];
     failed: BurnResult[];
     userRejected: BurnResult[];
+    cancelled: BurnResult[];
   };
   
   // Gas tracking

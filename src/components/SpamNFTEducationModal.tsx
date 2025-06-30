@@ -1,4 +1,5 @@
 import React from 'react';
+import { useModalBackButton } from '@/hooks/useModalBackButton';
 
 interface BurnFailureEducationModalProps {
   isOpen: boolean;
@@ -6,6 +7,9 @@ interface BurnFailureEducationModalProps {
 }
 
 export default function BurnFailureEducationModal({ isOpen, onClose }: BurnFailureEducationModalProps) {
+  // Handle browser back button to close modal
+  useModalBackButton(isOpen, onClose);
+
   if (!isOpen) return null;
 
   return (

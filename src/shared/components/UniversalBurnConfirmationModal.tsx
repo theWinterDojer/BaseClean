@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BurnFlowContext } from '@/types/universalBurn';
 import { formatBalance } from '@/lib/api';
 import { getTokenValue } from '@/features/token-scanning/utils/tokenUtils';
+import { useModalBackButton } from '@/hooks/useModalBackButton';
 import NFTImage from '@/shared/components/NFTImage';
 import Image from 'next/image';
 
@@ -21,6 +22,9 @@ export default function UniversalBurnConfirmationModal({
   isConfirming = false
 }: UniversalBurnConfirmationModalProps) {
   const [showDetails, setShowDetails] = useState(false);
+
+  // Handle browser back button to close modal
+  useModalBackButton(isOpen, onClose);
 
   if (!isOpen || !burnContext) return null;
 

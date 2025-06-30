@@ -9,14 +9,19 @@ import confetti from 'canvas-confetti';
 interface UniversalBurnProgressProps {
   burnStatus: UniversalBurnFlowStatus;
   onClose: () => void;
+  cancelBurn?: () => void;
+  isCancelling?: boolean;
 }
 
 export default function UniversalBurnProgress({
   burnStatus,
-  onClose
+  onClose,
+  cancelBurn,
+  isCancelling
 }: UniversalBurnProgressProps) {
   const [showEducationModal, setShowEducationModal] = React.useState(false);
   const [hasTriggeredConfetti, setHasTriggeredConfetti] = React.useState(false);
+  const [showCancelConfirmation, setShowCancelConfirmation] = React.useState(false);
   
   const { 
     isProgressOpen,
@@ -28,7 +33,6 @@ export default function UniversalBurnProgress({
     results,
     currentItem,
     currentStepMessage,
-    estimatedTimeRemaining,
     currentBatch,
     totalBatches
   } = burnStatus;
@@ -45,6 +49,7 @@ export default function UniversalBurnProgress({
   const successCount = results.successful.length;
   const failedCount = results.failed.length;
   const rejectedCount = results.userRejected.length;
+  const cancelledCount = results.cancelled.length;
 
   // Trigger confetti for successful burns
   React.useEffect(() => {
@@ -75,11 +80,15 @@ export default function UniversalBurnProgress({
   // Separate results by type and status
   const successfulTokens = results.successful.filter(r => r.item.type === 'token');
   const failedTokens = results.failed.filter(r => r.item.type === 'token');
-  const cancelledTokens = results.userRejected.filter(r => r.item.type === 'token');
+  const userRejectedTokens = results.userRejected.filter(r => r.item.type === 'token');
+  const cancelledTokens = results.cancelled.filter(r => r.item.type === 'token');
+  const allCancelledTokens = [...userRejectedTokens, ...cancelledTokens]; // Combined for display
   
   const successfulNFTs = results.successful.filter(r => r.item.type === 'nft');
   const failedNFTs = results.failed.filter(r => r.item.type === 'nft');
-  const cancelledNFTs = results.userRejected.filter(r => r.item.type === 'nft');
+  const userRejectedNFTs = results.userRejected.filter(r => r.item.type === 'nft');
+  const cancelledNFTs = results.cancelled.filter(r => r.item.type === 'nft');
+  const allCancelledNFTs = [...userRejectedNFTs, ...cancelledNFTs]; // Combined for display
 
   // Group NFT results by collection for each status
   const groupNFTsByCollection = (nftBurnResults: BurnResult[]) => {
@@ -95,16 +104,16 @@ export default function UniversalBurnProgress({
 
   const successfulNFTsByCollection = groupNFTsByCollection(successfulNFTs);
   const failedNFTsByCollection = groupNFTsByCollection(failedNFTs);
-  const cancelledNFTsByCollection = groupNFTsByCollection(cancelledNFTs);
+  const cancelledNFTsByCollection = groupNFTsByCollection(allCancelledNFTs);
 
   // Get dynamic header title
   const getHeaderTitle = () => {
     if (isComplete) {
-      if (successCount > 0 && failedCount === 0 && rejectedCount === 0) {
+      if (successCount > 0 && failedCount === 0 && rejectedCount === 0 && cancelledCount === 0) {
         return 'Burn Complete!';
       } else if (successCount > 0) {
         return 'Burn Process Complete';
-      } else if (rejectedCount === totalItems) {
+      } else if (rejectedCount + cancelledCount === totalItems) {
         return 'Burn Process Cancelled';
       } else {
         return 'Burn Process Complete';
@@ -223,7 +232,7 @@ Clean your wallet. Strengthen your Base 💪
               <div className="text-xs text-gray-400">Successful</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-red-400">{failedCount + rejectedCount}</div>
+              <div className="text-2xl font-bold text-red-400">{failedCount + rejectedCount + cancelledCount}</div>
               <div className="text-xs text-gray-400">Failed/Rejected</div>
             </div>
           </div>
@@ -274,7 +283,7 @@ Clean your wallet. Strengthen your Base 💪
           )}
 
           {/* Transaction Results */}
-          {isComplete && (successfulTokens.length > 0 || failedTokens.length > 0 || cancelledTokens.length > 0 || successfulNFTs.length > 0 || failedNFTs.length > 0 || cancelledNFTs.length > 0) && (
+          {isComplete && (successfulTokens.length > 0 || failedTokens.length > 0 || allCancelledTokens.length > 0 || successfulNFTs.length > 0 || failedNFTs.length > 0 || allCancelledNFTs.length > 0) && (
             <div className="space-y-4 max-h-96 overflow-y-auto pr-4 custom-scrollbar">
               
               {/* Successful Tokens */}
@@ -382,14 +391,14 @@ Clean your wallet. Strengthen your Base 💪
               )}
 
               {/* Cancelled Tokens */}
-              {cancelledTokens.length > 0 && (
+              {allCancelledTokens.length > 0 && (
                 <div>
                   <h3 className="text-white font-medium mb-2 flex items-center">
                     <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mr-2 text-xs">T</div>
-                    Cancelled Token Burns ({cancelledTokens.length})
+                    Cancelled Token Burns ({allCancelledTokens.length})
                   </h3>
                   <div className="bg-gray-800 rounded-lg p-3 space-y-2">
-                    {cancelledTokens.map((result) => (
+                    {allCancelledTokens.map((result) => (
                       <div key={result.item.id} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0">
@@ -521,11 +530,11 @@ Clean your wallet. Strengthen your Base 💪
               )}
 
               {/* Cancelled NFTs */}
-              {cancelledNFTs.length > 0 && (
+              {allCancelledNFTs.length > 0 && (
                 <div>
                   <h3 className="text-white font-medium mb-2 flex items-center">
                     <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center mr-2 text-xs">N</div>
-                    Cancelled NFT Burns ({cancelledNFTs.length})
+                    Cancelled NFT Burns ({allCancelledNFTs.length})
                   </h3>
                   <div className="bg-gray-800 rounded-lg p-3 space-y-4">
                     {Object.entries(cancelledNFTsByCollection).map(([collection, collectionResults]) => (
@@ -559,38 +568,108 @@ Clean your wallet. Strengthen your Base 💪
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-3 justify-end mt-6">
-            {/* Share Button - Only show when there are successful burns */}
-            {isComplete && successCount > 0 && (
-              <button
-                type="button"
-                onClick={handleShare}
-                className="px-6 py-3 rounded-lg transition-all font-medium bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                </svg>
-                                 Share
-              </button>
+          <div className="mt-6">
+            {/* When burning is in progress - Cancel on left, Burning button on right */}
+            {inProgress && !isComplete && (
+              <div className="flex gap-3 justify-between">
+                {/* Cancel Button - Left side, only show when cancel function is available */}
+                {cancelBurn && (
+                  <button
+                    type="button"
+                    onClick={() => setShowCancelConfirmation(true)}
+                    disabled={isCancelling}
+                    className={`px-6 py-3 rounded-lg transition-all font-medium ${
+                      isCancelling 
+                        ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                        : 'bg-red-600 hover:bg-red-700 text-white'
+                    }`}
+                  >
+                    {isCancelling ? 'Cancelling...' : 'Cancel'}
+                  </button>
+                )}
+                
+                {/* Burning in Progress button on right */}
+                <button
+                  type="button"
+                  className="px-6 py-3 rounded-lg transition-all font-medium bg-gray-700 hover:bg-gray-600 text-white cursor-not-allowed opacity-50"
+                  disabled
+                >
+                  Burning in Progress...
+                </button>
+              </div>
             )}
             
-            <button
-              type="button"
-              className={`px-6 py-3 rounded-lg transition-all font-medium ${
-                isComplete
-                  ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white'
-                  : 'bg-gray-700 hover:bg-gray-600 text-white cursor-not-allowed opacity-50'
-              }`}
-              onClick={onClose}
-              disabled={!isComplete}
-            >
-              {isComplete ? 'Done' : 'Burning in Progress...'}
-            </button>
+            {/* When burn is complete - Share and Done buttons on right */}
+            {isComplete && (
+              <div className="flex gap-3 justify-end">
+                {/* Share Button - Only show when there are successful burns */}
+                {successCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    className="px-6 py-3 rounded-lg transition-all font-medium bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                    </svg>
+                    Share
+                  </button>
+                )}
+                
+                <button
+                  type="button"
+                  className="px-6 py-3 rounded-lg transition-all font-medium bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white"
+                  onClick={onClose}
+                >
+                  Done
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
       
-             {/* Educational Modal */}
+      {/* Cancel Confirmation Modal */}
+      {showCancelConfirmation && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div className="bg-gray-900 rounded-lg border border-gray-700 shadow-xl max-w-md w-full">
+            <div className="p-6">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-yellow-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">⚠️</span>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3">Cancel Burn Process?</h3>
+                <div className="mb-6">
+                  <p className="text-gray-300 text-center">
+                    This will cancel {totalItems - processedItems} remaining items in queue. Be sure to close current action in your wallet after this dialog.
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowCancelConfirmation(false)}
+                    className="flex-1 px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+                  >
+                    Keep Burning
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowCancelConfirmation(false);
+                      cancelBurn?.();
+                    }}
+                    className="flex-1 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors"
+                  >
+                    Yes, Cancel Remaining
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Educational Modal */}
        <BurnFailureEducationModal 
          isOpen={showEducationModal}
          onClose={() => setShowEducationModal(false)}

@@ -125,7 +125,9 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
     showConfirmation,
     closeConfirmation,
     executeBurn,
-    closeProgress
+    closeProgress,
+    cancelBurn,
+    isCancelling
   } = useUniversalBurnFlow({}, {
     onBurnComplete: (summary, allResults) => {
       // Get only actual burn attempts (exclude user rejections)
@@ -461,6 +463,8 @@ export function SelectedItemsProvider({ children }: SelectedItemsProviderProps) 
       <UniversalBurnProgress
         burnStatus={burnStatus}
         onClose={handleBurnComplete}
+        cancelBurn={cancelBurn}
+        isCancelling={isCancelling}
       />
     </SelectedItemsContext.Provider>
   );

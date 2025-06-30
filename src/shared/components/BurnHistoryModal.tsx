@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useBurnHistory } from '@/hooks/useBurnHistory';
+import { useModalBackButton } from '@/hooks/useModalBackButton';
 import { isToken, isNFT } from '@/types/universalBurn';
 import { Token } from '@/types/token';
 import { NFT } from '@/types/nft';
@@ -24,6 +25,12 @@ export default function BurnHistoryModal({ isOpen, onClose }: BurnHistoryModalPr
   const [selectedBurnType, setSelectedBurnType] = useState<'all' | 'tokens-only' | 'nfts-only' | 'mixed'>('all');
   const [expandedEntries, setExpandedEntries] = useState<Set<string>>(new Set());
   const [showClearConfirmation, setShowClearConfirmation] = useState(false);
+
+  // Handle browser back button to close modal
+  useModalBackButton(isOpen, onClose);
+  
+  // Handle browser back button for clear confirmation dialog
+  useModalBackButton(showClearConfirmation, () => setShowClearConfirmation(false));
 
   // Filter history based on selections
   const filteredHistory = useMemo(() => {
