@@ -758,14 +758,14 @@ async function fetchTokensFromAlchemy(address: string, onProgress?: (discovered:
         // Get token logo URL (this can be async since it's cached efficiently)
         const logoUrl = await getTokenLogoUrl(contractAddress, metadata.symbol || '');
         
-        // Convert hex balance to decimal string for easier processing
-        const balanceDecimal = parseInt(token.tokenBalance, 16);
+        // FIXED: Use BigInt for precise balance conversion (no precision loss)
+        const balanceBigInt = BigInt(token.tokenBalance);
         
         return {
           contract_address: contractAddress,
           contract_ticker_symbol: metadata.symbol || '',
           contract_name: metadata.name || '',
-          balance: balanceDecimal.toString(),
+          balance: balanceBigInt.toString(),
           contract_decimals: metadata.decimals || 18,
           quote_rate: priceData.price,
           logo_url: logoUrl,
