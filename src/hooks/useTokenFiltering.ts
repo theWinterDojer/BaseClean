@@ -42,6 +42,8 @@ export function useTokenFiltering(
     const balanceNum = rawBalance; // Use raw numeric balance, not formatted string
     const usdValue = rawBalance * (token.quote_rate || 0);
     
+
+    
     // Determine if token is protected from spam filtering
     const chainId: ChainId = 8453; // Base chain
     const isProtected = (
@@ -215,9 +217,30 @@ export function useTokenFiltering(
     
     // Efficient sorting using pre-calculated values
     const sortByValue = (a: Token, b: Token) => {
-      const valueA = tokenAnalysisMap.get(a.contract_address)?.usdValue || 0;
-      const valueB = tokenAnalysisMap.get(b.contract_address)?.usdValue || 0;
-      return valueB - valueA; // Descending order (highest value first)
+      const analysisA = tokenAnalysisMap.get(a.contract_address);
+      const analysisB = tokenAnalysisMap.get(b.contract_address);
+      const valueA = analysisA?.usdValue || 0;
+      const valueB = analysisB?.usdValue || 0;
+      
+      // Threshold for "effectively zero" USD values (displays as $0.00 in UI)
+      const DISPLAY_ZERO_THRESHOLD = 0.01;
+      
+      // Check if both values are below the display threshold (both show as $0.00)
+      const valueAIsDisplayZero = valueA < DISPLAY_ZERO_THRESHOLD;
+      const valueBIsDisplayZero = valueB < DISPLAY_ZERO_THRESHOLD;
+      
+      // If both values display as $0.00, sort by balance instead
+      if (valueAIsDisplayZero && valueBIsDisplayZero) {
+        const balanceA = analysisA?.balanceNum || 0;
+        const balanceB = analysisB?.balanceNum || 0;
+        
+
+        
+        return balanceB - balanceA; // Sort by balance (highest first)
+      }
+      
+      // Primary sort: USD value (highest first) for tokens with meaningful USD differences
+      return valueB - valueA;
     };
     
     return {

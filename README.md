@@ -17,11 +17,12 @@ BaseClean allows users to permanently remove unwanted tokens from their wallets 
 
 ## 🔧 Why Zero Approvals Matter
 
-**✅ BaseClean Direct Transfer (Safe):**
-- Transfer tokens directly to burn address
-- No smart contract approvals required
-- Each transaction is independent and transparent
-- Zero ongoing security risks
+**✅ BaseClean Wallet-Initiated Transfer (Safe):**
+- Direct wallet-to-burn-address transfers (no intermediary contracts)
+- Zero token approvals ever required
+- Each transaction is independent and transparent  
+- Real-time balance verification prevents all transfer errors
+- Maximum wallet compatibility with automatic gas estimation
 
 **❌ Traditional Approval Method (Risky):**
 - Approve smart contract for each token
@@ -48,11 +49,12 @@ For comprehensive technical documentation and architecture details, see the [`do
 
 ## 🛡️ Security
 
-- 🚫 No token approvals eliminates approval-based attack vectors
-- 👀 Direct transfers are transparent and easily auditable
-- 🎯 No smart contract dependencies reduces complexity
-- 🏠 Local-only data storage (no external tracking)
-- 📖 Open source codebase for security review
+- 🚫 **Zero approvals required** - eliminates all approval-based attack vectors
+- 🔗 **Wallet-initiated transfers** - direct token transfers from your wallet to burn address
+- 👀 **Fully transparent** - each transaction is independently auditable on-chain
+- 🎯 **No smart contract dependencies** - reduces complexity and attack surface
+- 🏠 **Local-only data storage** - no external tracking or data collection
+- 📖 **Open source codebase** - complete transparency for security review
 
 ## 📄 License
 
