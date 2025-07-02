@@ -75,7 +75,7 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
                 {({ loading, isConnected, isClient }) => (
                     <>
                         {isClient && isConnected && !loading && (
-                            <div className="space-y-5 pb-24">
+                            <div className="space-y-5 pb-8 md:pb-16">
                             {/* ScamSniffer Loading Indicator (subtle) */}
                             {scamSnifferLoading && (
                                 <div className="text-xs text-gray-500 text-center py-1">

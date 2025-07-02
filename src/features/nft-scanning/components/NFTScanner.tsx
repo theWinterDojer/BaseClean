@@ -116,7 +116,7 @@ export default function NFTScanner({ showDisclaimer }: NFTScannerProps) {
         return (
         <>
           {/* Add bottom padding when NFTs are selected to prevent overlap with floating bar */}
-          <div className={`flex flex-col lg:flex-row gap-6 ${selectedNFTsCount > 0 ? 'pb-24' : ''}`}>
+          <div className={`flex flex-col lg:flex-row gap-6 ${selectedNFTsCount > 0 ? 'pb-8 md:pb-16' : ''}`}>
             {/* Main Content */}
             <div className="flex-1">
               {/* Header Controls - Mobile responsive layout */}

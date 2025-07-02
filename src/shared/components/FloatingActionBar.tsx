@@ -52,25 +52,25 @@ export default function FloatingActionBar({
 
   return (
     <div 
-      className="fixed bottom-12 left-4 right-4 z-50 transition-all duration-300 ease-in-out animate-in slide-in-from-bottom-2"
+      className="fixed bottom-6 md:bottom-12 left-4 right-4 z-50 transition-all duration-300 ease-in-out animate-in slide-in-from-bottom-2"
     >
       <div className="max-w-4xl mx-auto">
         <div 
-          className="bg-gradient-to-r from-blue-900/95 to-blue-950/95 border-2 border-white/25 rounded-xl p-7 transition-all duration-300 shadow-2xl"
+          className="bg-gradient-to-r from-blue-900/95 to-blue-950/95 border-2 border-white/25 rounded-xl p-4 md:p-7 transition-all duration-300 shadow-2xl"
           style={{
             boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.5), 0 0 25px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 255, 255, 0.12), 0 0 0 1px rgba(59, 130, 246, 0.3)'
           }}
         >
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-3 md:gap-4">
             {/* Left side - Selection info */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center shadow-lg flex-shrink-0 ring-2 ring-white/30">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
               <div>
-                <h4 className="text-lg font-bold text-white leading-tight drop-shadow-md">
+                <h4 className="text-base md:text-lg font-bold text-white leading-tight drop-shadow-md">
                   {selectionLabel}
                 </h4>
                 <p className="text-xs text-blue-200 font-medium drop-shadow-sm">
@@ -80,7 +80,7 @@ export default function FloatingActionBar({
             </div>
             
             {/* Right side - Action buttons */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
               {/* Deselect All Button */}
               <button
                 onClick={onDeselectAll}
