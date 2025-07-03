@@ -38,7 +38,6 @@ export default function BurnFailureEducationModal({ isOpen, onClose }: BurnFailu
                 <li><strong>Transfer Restrictions:</strong> Contracts prevent transfers to make removal difficult</li>
                 <li><strong>Zero Balance:</strong> Assets show up due to indexing issues but have no real balance</li>
                 <li><strong>Invalid References:</strong> Point to non-existent or destroyed tokens</li>
-                <li><strong>Custom Logic:</strong> Non-standard implementations that break normal transfer rules</li>
               </ul>
             </div>
 
@@ -46,34 +45,25 @@ export default function BurnFailureEducationModal({ isOpen, onClose }: BurnFailu
               <h3 className="text-lg font-semibold text-white mb-2">
                 🎯 Why This Happens
               </h3>
-              <p className="mb-4">
-                Spam token and NFT creators often design their contracts to be difficult or impossible to remove:
-              </p>
               <ul className="space-y-2 list-disc list-inside">
                 <li>They want their assets to stay visible in wallets for advertising</li>
                 <li>They use non-standard implementations that break normal transfer rules</li>
                 <li>They exploit wallet indexing to show assets without real ownership</li>
-                <li>They disable transfer functions to prevent cleanup</li>
                 <li>They add complex restrictions that only allow specific interactions</li>
               </ul>
             </div>
 
             <div>
               <h3 className="text-lg font-semibold text-white mb-2">
-                ✅ What BaseClean Does
+                💡 TLDR;
               </h3>
-              <p className="mb-4">
-                BaseClean uses a zero-approval mechanism to transfer tokens and NFTs directly from your wallet without requiring contract approvals. This approach prioritizes safety by avoiding custom contract interactions that could pose security risks.
-              </p>
-              <ul className="space-y-2 list-disc list-inside">
-                <li><strong>Zero-Approval Transfers:</strong> Direct wallet transfers without contract approvals for maximum safety</li>
-                <li><strong>Standard Methods:</strong> Uses legitimate ERC-20, ERC-721, and ERC-1155 transfer methods</li>
-                <li><strong>Safe Architecture:</strong> Avoids risky custom contract approvals</li>
-                <li><strong>Expected Failures:</strong> Some burns fail due to contract restrictions, not BaseClean limitations</li>
-                <li><strong>Universal Approach:</strong> Same burn method works for both tokens and NFTs</li>
-              </ul>
+              <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4">
+                <p className="text-blue-200">
+                  <strong>Don&apos;t worry about failed token burns</strong> - they are intentionally irremovable by design.
+                  Most wallets filter them these tokens out automatically, so you will effectively never see them.
+                </p>
+              </div>
             </div>
-
 
           </div>
 

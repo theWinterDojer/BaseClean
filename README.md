@@ -21,7 +21,7 @@ BaseClean allows users to permanently remove unwanted tokens from their wallets 
 - Direct wallet-to-burn-address transfers (no intermediary contracts)
 - Zero token approvals ever required
 - Each transaction is independent and transparent  
-- Real-time balance verification prevents all transfer errors
+- Real-time balance verification prevents invalid amount errors
 - Maximum wallet compatibility with automatic gas estimation
 
 **❌ Traditional Approval Method (Risky):**
