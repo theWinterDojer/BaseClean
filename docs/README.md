@@ -9,8 +9,8 @@ BaseClean is a Web3 application that implements a **zero-approval architecture**
 ## 🏗️ **Architecture Overview**
 
 ### 🔒 **Zero-Approval System**
-- **Direct transfers**: Uses `transfer()` and `transferFrom()` calls without approvals
-- **No smart contracts**: Users interact directly with token contracts
+- **Direct transfers**: Uses `transfer()`, `transferFrom()`, and `safeTransferFrom()` calls without approvals
+- **No intermediary contracts**: Wallet calls token contracts directly, no burner contracts
 - **Sequential processing**: Each asset burned in separate transactions for maximum transparency
 
 ### 🛡️ **Security Model**
