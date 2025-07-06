@@ -59,8 +59,8 @@ export default function BurnFailureEducationModal({ isOpen, onClose }: BurnFailu
               </h3>
               <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4">
                 <p className="text-blue-200">
-                  <strong>Don&apos;t worry about failed token burns</strong> - they are intentionally irremovable by design.
-                  Most wallets filter them these tokens out automatically, so you will effectively never see them.
+                  <strong>Don&apos;t worry about failed burns</strong> - they are intentionally non-transferable by design.
+                  Most wallets will hide these tokens by default. BaseClean exists to help identify and attempt removal of transferable spam.
                 </p>
               </div>
             </div>

@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { UniversalBurnFlowStatus, BurnResult } from '@/types/universalBurn';
 import NFTImage from '@/shared/components/NFTImage';
 import { NFT } from '@/types/nft';
-import BurnFailureEducationModal from '@/components/SpamNFTEducationModal';
+import BurnFailureEducationModal from '@/components/BurnFailureEducationModal';
 import confetti from 'canvas-confetti';
 
 interface UniversalBurnProgressProps {

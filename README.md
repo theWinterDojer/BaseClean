@@ -14,10 +14,12 @@ BaseClean allows users to permanently remove unwanted tokens from their wallets 
 - ⚡ **Instant Updates**: Burned assets disappear from your wallet immediately
 - 📊 **Transaction History**: Keep track of all your burn transactions (with CSV exports)
 - 🔒 **Zero Approvals**: No token approvals ever required - maximum security
+- 🏠 **Privacy-First**: All data stored locally in your browser (no external tracking)
+- 📖 **Open Source**: Complete transparency for security review and audit
 
 ## 🔧 Why Zero Approvals Matter
 
-**✅ BaseClean Wallet-Initiated Transfer (Safe):**
+**✅ BaseClean Direct Transfer (Safe):**
 - Direct wallet-to-burn-address transfers (no intermediary contracts)
 - Zero token approvals ever required
 - Each transaction is independent and transparent  
@@ -46,15 +48,6 @@ For comprehensive technical documentation and architecture details, see the [`do
 
 - [Technical Documentation Index](docs/README.md) - Complete guide to BaseClean's architecture
 - [Spam Detection System](docs/SPAM_DETECTION.md) - Deep-dive into threat detection algorithms
-
-## 🛡️ Security
-
-- 🚫 **Zero approvals required** - eliminates all approval-based attack vectors
-- 🔗 **Wallet-initiated transfers** - direct token transfers from your wallet to burn address
-- 👀 **Fully transparent** - each transaction is independently auditable on-chain
-- 🎯 **No smart contract dependencies** - reduces complexity and attack surface
-- 🏠 **Local-only data storage** - no external tracking or data collection
-- 📖 **Open source codebase** - complete transparency for security review
 
 ## 📄 License
 

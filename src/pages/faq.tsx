@@ -9,7 +9,7 @@ export default function FAQ() {
       questions: [
         {
           question: "How does BaseClean's zero-approval architecture work?",
-          answer: "BaseClean uses direct ERC-20 transfer() and ERC-721/1155 transferFrom() calls to send tokens directly to the burn address (0x000...dEaD). Unlike traditional burners that require approve() calls to smart contracts, BaseClean eliminates the approval attack surface entirely. Each burn is an independent, transparent on-chain transaction."
+          answer: "BaseClean uses direct transfers where your wallet sends tokens straight to the burn address (0x000...dEaD) without any smart contract intermediaries. Unlike traditional burners that require approve() calls to smart contracts, BaseClean's direct transfer approach eliminates the approval attack surface entirely. Each burn is an independent, transparent on-chain transaction."
         },
         {
           question: "What makes BaseClean safer than approval-based token burners?",
@@ -17,7 +17,7 @@ export default function FAQ() {
         },
         {
           question: "Can I verify what BaseClean is doing on-chain?",
-          answer: "Absolutely. Every burn transaction is a standard ERC-20/721/1155 transfer to 0x000000000000000000000000000000000000dEaD. You can verify on BaseScan that BaseClean never calls approve(), only transfer functions. The entire codebase is open source for audit."
+          answer: "Absolutely. Every burn transaction is a standard direct transfer to 0x000000000000000000000000000000000000dEaD. You can verify on BaseScan that BaseClean never calls approve() or interacts with smart contracts - only direct transfers. The entire codebase is open source for audit."
         }
       ]
     },
@@ -38,7 +38,7 @@ export default function FAQ() {
         },
         {
           question: "How accurate is BaseClean's spam detection and price data?",
-          answer: "BaseClean's spam detection uses advanced algorithms with value-first protection - any token worth more than $0.10 is automatically protected from spam filtering, preventing false positives on valuable assets. Token prices come from third-party APIs (Alchemy) which can sometimes be delayed, inaccurate, or missing for newer tokens. Always double-check before burning valuable assets via the supplied DEX Screener and OpenSea links available during token selection. The system is designed to err on the side of caution, requiring user confirmation before burning and providing clear warnings for valuable tokens."
+          answer: "Token prices come from third-party APIs (Alchemy) which can sometimes be delayed, inaccurate, or missing for newer tokens. Always double-check before burning valuable assets via the supplied DEX Screener and OpenSea links available during token selection. The system is designed to err on the side of caution, requiring user confirmation before burning and providing clear warnings for valuable tokens."
         }
       ]
     },
@@ -47,11 +47,11 @@ export default function FAQ() {
       questions: [
         {
           question: "Why does BaseClean process burns sequentially instead of batching?",
-          answer: "Sequential processing maintains the zero-approval architecture while preventing wallet UI overload. On Base L2, each transaction confirms in ~2-3 seconds with ~150k gas. Batching would require smart contracts and approvals, compromising security for marginal time savings."
+          answer: "Sequential processing maintains the direct transfer architecture while preventing wallet UI overload. On Base L2, each transaction confirms in ~2-3 seconds with automatic gas estimation. Batching would require smart contracts and approvals, compromising security for marginal time savings."
         },
         {
           question: "What are the gas costs for burning tokens and NFTs?",
-          answer: "Direct transfers use approximately 150k gas per ERC-20 token and 200k gas per NFT. On Base L2, this typically costs under $0.001 per transaction. The zero-approval architecture eliminates approve() transaction costs that traditional burners require."
+          answer: "Zero-approval transfers use automatic gas estimation for optimal efficiency, typically costing under $0.001 per transaction on Base L2. The zero-approval architecture eliminates approve() transaction costs that traditional burners require."
         },
         {
           question: "Does BaseClean support networks other than Base?",
@@ -96,12 +96,8 @@ export default function FAQ() {
           answer: "Failed burns are clearly indicated in the progress UI with specific error messages. Common causes include insufficient ETH for gas, network congestion, or token contract restrictions. Failed transactions don't charge gas fees and can be retried."
         },
         {
-          question: "Why do some tokens and NFTs fail to burn?",
-          answer: "Many spam tokens and NFTs are deliberately designed to be non-transferable to prevent removal from wallets. Common issues include: phantom ownership (assets appear in your wallet but you don't actually own them), transfer restrictions built into contracts, zero balance due to indexing issues, invalid token references, and custom logic that breaks normal ERC standards. BaseClean uses legitimate transfer methods, so failures typically indicate contract-level restrictions rather than BaseClean limitations."
-        },
-        {
-          question: "What does BaseClean do when burns fail?",
-          answer: "BaseClean uses zero-approval direct transfers for maximum safety, avoiding risky custom contract interactions. When burns fail, it's usually because spam creators intentionally disabled transfer functions to keep their assets visible in wallets for advertising. BaseClean prioritizes security over success rate - failed burns mean the system is protecting you from potentially malicious contract interactions."
+          question: "Why do some tokens and NFTs fail to burn, and how does BaseClean handle failures?",
+          answer: "Many spam tokens and NFTs are deliberately designed to be non-transferable to prevent removal from wallets. Common issues include: phantom ownership (assets appear in your wallet but you don't actually own them), transfer restrictions built into contracts, zero balance due to indexing issues, invalid token references, and custom logic that breaks normal ERC standards. BaseClean uses zero-approval direct transfers for maximum safety, avoiding risky custom contract interactions. When burns fail, it's usually because spam creators intentionally disabled transfer functions to keep their assets visible in wallets for advertising. BaseClean prioritizes security over success rate - failed burns mean the system is protecting you from potentially malicious contract interactions."
         }
       ]
     }

@@ -30,7 +30,7 @@ BaseClean is a Web3 application that implements a **zero-approval architecture**
 
 ### ⚡ **Performance Characteristics**
 - **Network**: Optimized for Base L2 (~2-3 second confirmations)
-- **Gas efficiency**: Direct transfers use ~150k gas per token, ~200k per NFT
+- **Gas efficiency**: Direct transfers use automatic gas estimation for optimal efficiency
 - **Scalability**: Sequential processing prevents wallet overload
 - **Optimized filtering**: Single-pass analysis with early exit for valuable tokens
 
