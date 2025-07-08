@@ -5,6 +5,7 @@ import { getTokenValue } from '@/features/token-scanning/utils/tokenUtils';
 import { useModalBackButton } from '@/hooks/useModalBackButton';
 import NFTImage from '@/shared/components/NFTImage';
 import Image from 'next/image';
+import { openDexScreener } from '@/utils/dexscreener';
 
 interface UniversalBurnConfirmationModalProps {
   burnContext: BurnFlowContext;
@@ -167,13 +168,16 @@ export default function UniversalBurnConfirmationModal({
                               <span className="text-gray-500 text-sm mr-2">{index + 1}.</span>
                               <div className="flex items-center">
                                 {token.logo_url ? (
-                                  <img 
+                                  <Image 
                                     src={token.logo_url} 
                                     alt={token.contract_ticker_symbol || ''} 
+                                    width={20}
+                                    height={20}
                                     className="w-5 h-5 rounded-full mr-2"
                                     onError={(e) => {
                                       (e.target as HTMLImageElement).style.display = 'none';
                                     }}
+                                    unoptimized
                                   />
                                 ) : (
                                   <div className="w-5 h-5 bg-gray-700 rounded-full mr-2 flex items-center justify-center text-xs text-gray-400">
@@ -190,9 +194,28 @@ export default function UniversalBurnConfirmationModal({
                                 </div>
                               </div>
                             </div>
-                            <span className="text-yellow-400 text-sm">
-                              ${value.toFixed(2)}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openDexScreener(token.contract_address, token.contract_ticker_symbol);
+                                }}
+                                className="w-4 h-4 opacity-60 hover:opacity-100 transition-opacity focus:opacity-100 focus:outline-none"
+                                title={`View ${token.contract_ticker_symbol || 'token'} on DexScreener`}
+                                aria-label={`View ${token.contract_ticker_symbol || 'token'} on DexScreener`}
+                              >
+                                <Image 
+                                  src="/dexscreener.png" 
+                                  alt="DexScreener" 
+                                  width={16} 
+                                  height={16}
+                                  className="rounded-sm"
+                                />
+                              </button>
+                              <span className="text-yellow-400 text-sm">
+                                ${value.toFixed(2)}
+                              </span>
+                            </div>
                           </div>
                         );
                       })}

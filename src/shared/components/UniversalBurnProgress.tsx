@@ -22,6 +22,8 @@ export default function UniversalBurnProgress({
   const [showEducationModal, setShowEducationModal] = React.useState(false);
   const [hasTriggeredConfetti, setHasTriggeredConfetti] = React.useState(false);
   const [showCancelConfirmation, setShowCancelConfirmation] = React.useState(false);
+  const [hasScrollbar, setHasScrollbar] = React.useState(false);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   
   const { 
     isProgressOpen,
@@ -73,6 +75,30 @@ export default function UniversalBurnProgress({
       setHasTriggeredConfetti(false);
     }
   }, [isProgressOpen]);
+
+  // Check if scrollbar is needed
+  React.useEffect(() => {
+    const checkScrollbar = () => {
+      if (scrollContainerRef.current) {
+        const element = scrollContainerRef.current;
+        const hasScroll = element.scrollHeight > element.clientHeight;
+        setHasScrollbar(hasScroll);
+      }
+    };
+
+    // Check on mount and when content changes
+    checkScrollbar();
+    
+    // Use ResizeObserver for more accurate detection
+    const resizeObserver = new ResizeObserver(checkScrollbar);
+    if (scrollContainerRef.current) {
+      resizeObserver.observe(scrollContainerRef.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [isComplete, results]);
 
   // Don't render if modal should not be open
   if (!isProgressOpen) return null;
@@ -284,7 +310,10 @@ Clean your wallet. Strengthen your Base 💪
 
           {/* Transaction Results */}
           {isComplete && (successfulTokens.length > 0 || failedTokens.length > 0 || allCancelledTokens.length > 0 || successfulNFTs.length > 0 || failedNFTs.length > 0 || allCancelledNFTs.length > 0) && (
-            <div className="space-y-4 max-h-96 overflow-y-auto pr-4 custom-scrollbar">
+            <div 
+              ref={scrollContainerRef}
+              className={`space-y-4 max-h-96 overflow-y-auto custom-scrollbar ${hasScrollbar ? 'pr-4' : ''}`}
+            >
               
               {/* Successful Tokens */}
               {successfulTokens.length > 0 && (

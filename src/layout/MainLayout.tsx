@@ -15,6 +15,14 @@ interface MainLayoutProps {
 }
 
 export default function MainLayout({ children, stickyHeaderContent, hideNavigation = false }: MainLayoutProps) {
+  // Scroll to top function
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950 text-white flex flex-col">
       <header className="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700 py-4 md:py-6 md:sticky md:top-0 z-10">
@@ -115,7 +123,12 @@ export default function MainLayout({ children, stickyHeaderContent, hideNavigati
             {/* Column 1 - BaseClean Logo/Copyright */}
             <div className="flex flex-col items-center md:items-start gap-2">
               <div className="flex items-center gap-3">
-                <div className="overflow-hidden rounded-full">
+                <button 
+                  onClick={scrollToTop}
+                  className="overflow-hidden rounded-full cursor-pointer hover:scale-105 transition-transform duration-200 focus:outline-none"
+                  aria-label="Scroll to top"
+                  title="Click to scroll to top"
+                >
                   <Image 
                     src="/BaseCleanlogo.png" 
                     alt="BaseClean Logo" 
@@ -123,7 +136,7 @@ export default function MainLayout({ children, stickyHeaderContent, hideNavigati
                     height={64}
                     className="w-16 h-16"
                   />
-                </div>
+                </button>
                 <span className="text-sm text-gray-400">© 2025 BaseClean</span>
               </div>
             </div>
