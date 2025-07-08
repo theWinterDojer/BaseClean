@@ -203,7 +203,7 @@ const testImageUrl = async (url: string): Promise<boolean> => {
   
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1000); // 1 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 300); // Reduced timeout for faster NFT loading
     
     const response = await fetch(url, {
       method: 'HEAD', // Use HEAD to avoid downloading the full image
