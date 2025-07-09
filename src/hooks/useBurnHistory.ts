@@ -16,7 +16,8 @@ export interface BurnHistoryEntry {
   userRejections: number; // Always 0 for new entries (kept for backwards compatibility)
   totalValue: number;
   duration: number;
-  gasUsed?: string; // Stored as string to avoid BigInt serialization issues
+  gasUsed?: string; // Stored as string to avoid BigInt serialization issues (legacy)
+  gasCostGwei?: number; // Gas cost in GWEI - new field
   txHashes: string[];
 }
 
@@ -100,6 +101,11 @@ export function useBurnHistory() {
     const actualSuccessful = results.filter(r => r.success).length;
     const actualFailed = results.filter(r => !r.success).length;
 
+    // Use total gas cost from summary if available, otherwise calculate from individual results
+    const totalGasCostGwei = summary.totalGasCostGwei ?? results.reduce((sum, result) => {
+      return sum + (result.gasCostGwei || 0);
+    }, 0);
+
     const newEntry: BurnHistoryEntry = {
       id: `burn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
@@ -114,6 +120,7 @@ export function useBurnHistory() {
       totalValue: summary.totalValue,
       duration: summary.duration,
       gasUsed: summary.totalGasUsed?.toString(),
+      gasCostGwei: totalGasCostGwei,
       txHashes
     };
 
@@ -150,6 +157,11 @@ export function useBurnHistory() {
     const totalBurns = history.length;
     const totalItemsBurned = history.reduce((sum, entry) => sum + entry.successfulBurns, 0);
     const totalValueBurned = history.reduce((sum, entry) => sum + entry.totalValue, 0);
+    const totalGasCostGwei = history.reduce((sum, entry) => {
+      return sum + (entry.gasCostGwei || 0);
+    }, 0);
+    
+    // Legacy gas calculation (kept for backwards compatibility)
     const totalGasUsed = history.reduce((sum, entry) => {
       return sum + (entry.gasUsed ? parseInt(entry.gasUsed, 10) : 0);
     }, 0);
@@ -158,7 +170,8 @@ export function useBurnHistory() {
       totalBurns,
       totalItemsBurned,
       totalValueBurned,
-      totalGasUsed,
+      totalGasCostGwei,
+      totalGasUsed, // Legacy field
       recentActivity: history.slice(0, 5) // Last 5 burns
     };
   }, [history]);
@@ -203,7 +216,7 @@ export function useBurnHistory() {
       'Failed',
       'Value Burned ($)',
       'Duration (s)',
-      'Gas Used',
+      'Gas Cost (Gwei)',
       'Transaction Hashes'
     ];
 
@@ -213,7 +226,7 @@ export function useBurnHistory() {
       const burnType = entry.burnType === 'tokens-only' ? 'Tokens' : 
                        entry.burnType === 'nfts-only' ? 'NFTs' : 'Mixed';
       const duration = Math.round(entry.duration / 1000); // Convert to seconds
-      const gasUsed = entry.gasUsed || '0';
+      const gasCostGwei = entry.gasCostGwei ? entry.gasCostGwei.toFixed(1) : '0.0';
       const txHashes = entry.txHashes.join('; ');
 
       return [
@@ -224,7 +237,7 @@ export function useBurnHistory() {
         entry.failedBurns,
         entry.totalValue.toFixed(2),
         duration,
-        gasUsed,
+        gasCostGwei,
         txHashes
       ];
     });

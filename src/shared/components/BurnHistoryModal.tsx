@@ -5,6 +5,7 @@ import { useModalBackButton } from '@/hooks/useModalBackButton';
 import { isToken, isNFT } from '@/types/universalBurn';
 import { Token } from '@/types/token';
 import { NFT } from '@/types/nft';
+import GasDisplay from './GasDisplay';
 
 interface BurnHistoryModalProps {
   isOpen: boolean;
@@ -149,8 +150,11 @@ export default function BurnHistoryModal({ isOpen, onClose }: BurnHistoryModalPr
                   <div className="text-sm text-gray-400">Value Burned</div>
                 </div>
                 <div className="bg-gray-800 rounded-lg p-4 text-center">
-                  <div className="text-2xl font-bold text-purple-400">{stats.totalGasUsed.toLocaleString()}</div>
-                  <div className="text-sm text-gray-400">Gas Used</div>
+                  <GasDisplay 
+                    gasCostGwei={stats.totalGasCostGwei} 
+                    className="text-2xl font-bold text-purple-400"
+                  />
+                  <div className="text-sm text-gray-400">Gas Cost</div>
                 </div>
               </div>
 
@@ -266,7 +270,7 @@ export default function BurnHistoryModal({ isOpen, onClose }: BurnHistoryModalPr
                         {isExpanded && entry.results && entry.results.length > 0 && (
                           <div className="border-t border-gray-700 p-4 pt-3">
                             <div className="space-y-2">
-                              {entry.results.map((result, index) => {
+                              {entry.results.sort((a, b) => (b.success ? 1 : 0) - (a.success ? 1 : 0)).map((result, index) => {
                                 const item = result.item;
                                 const isTokenItem = isToken(item.data);
                                 const isNFTItem = isNFT(item.data);
@@ -279,22 +283,18 @@ export default function BurnHistoryModal({ isOpen, onClose }: BurnHistoryModalPr
                                     {/* Status Icon */}
                                     <div className="flex-shrink-0">
                                       {result.success ? (
-                                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                          </svg>
-                                        </div>
+                                        <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
                                       ) : (
-                                        <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
-                                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                          </svg>
-                                        </div>
+                                        <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
                                       )}
                                     </div>
 
                                     {/* Item Image */}
-                                    <div className="flex-shrink-0 w-8 h-8 rounded-lg overflow-hidden bg-gray-600">
+                                    <div className="flex-shrink-0 w-8 h-8 overflow-hidden">
                                       {isTokenItem && (() => {
                                         const token = item.data as Token;
                                         return (
@@ -350,7 +350,7 @@ export default function BurnHistoryModal({ isOpen, onClose }: BurnHistoryModalPr
                                     </div>
 
                                     {/* Transaction Link */}
-                                    {result.success && result.txHash && (
+                                    {result.txHash && (
                                       <a
                                         href={`https://basescan.org/tx/${result.txHash}`}
                                         target="_blank"

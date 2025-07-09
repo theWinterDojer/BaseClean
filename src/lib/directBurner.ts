@@ -83,6 +83,7 @@ export type DirectBurnResult = {
   timestamp?: number;
   parsedError?: ParsedError;
   isUserRejection?: boolean;
+  gasCostGwei?: number; // Gas cost in GWEI at time of transaction
 };
 
 // Result type for direct NFT burn operations
@@ -95,6 +96,7 @@ export type DirectNFTBurnResult = {
   timestamp?: number;
   parsedError?: ParsedError;
   isUserRejection?: boolean;
+  gasCostGwei?: number; // Gas cost in GWEI at time of transaction
 };
 
 // Union type for all burn results
@@ -192,6 +194,12 @@ export function useWalletInitiatedBurner() {
 
         const isSuccessful = receipt?.status === 'success';
 
+        // Calculate gas cost in GWEI if transaction was successful
+        let gasCostGwei = 0;
+        if (isSuccessful && receipt?.gasUsed && receipt?.effectiveGasPrice) {
+          gasCostGwei = await calculateGasCostGwei(receipt.gasUsed, receipt.effectiveGasPrice);
+        }
+
         const result: DirectBurnResult = {
           token,
           success: isSuccessful,
@@ -199,6 +207,7 @@ export function useWalletInitiatedBurner() {
           timestamp: Date.now(),
           error: !isSuccessful ? 'Transaction was reverted on-chain' : undefined,
           errorMessage: !isSuccessful ? 'Transaction was reverted on-chain' : undefined,
+          gasCostGwei,
         };
         
         setBurnResults(prev => [...prev, result]);
@@ -218,6 +227,7 @@ export function useWalletInitiatedBurner() {
           timestamp: Date.now(),
           parsedError,
           isUserRejection: false,
+          gasCostGwei: undefined // No gas cost data available for failed transaction receipt
         };
         
         setBurnResults(prev => [...prev, result]);
@@ -242,6 +252,7 @@ export function useWalletInitiatedBurner() {
         timestamp: Date.now(),
         parsedError,
         isUserRejection: isRejection,
+        gasCostGwei: undefined // No gas cost data for exceptions/user rejections
       };
       
       setBurnResults(prev => [...prev, result]);
@@ -317,6 +328,12 @@ export function useWalletInitiatedBurner() {
 
         const isSuccessful = receipt?.status === 'success';
 
+        // Calculate gas cost in GWEI if transaction was successful
+        let gasCostGwei = 0;
+        if (isSuccessful && receipt?.gasUsed && receipt?.effectiveGasPrice) {
+          gasCostGwei = await calculateGasCostGwei(receipt.gasUsed, receipt.effectiveGasPrice);
+        }
+
         const result: DirectNFTBurnResult = {
           nft,
           success: isSuccessful,
@@ -324,6 +341,7 @@ export function useWalletInitiatedBurner() {
           timestamp: Date.now(),
           error: !isSuccessful ? 'Transaction was reverted on-chain' : undefined,
           errorMessage: !isSuccessful ? 'Transaction was reverted on-chain' : undefined,
+          gasCostGwei,
         };
         
         setNFTBurnResults(prev => [...prev, result]);
@@ -343,6 +361,7 @@ export function useWalletInitiatedBurner() {
           timestamp: Date.now(),
           parsedError,
           isUserRejection: false,
+          gasCostGwei: undefined // No gas cost data available for failed transaction receipt
         };
         
         setNFTBurnResults(prev => [...prev, result]);
@@ -367,6 +386,7 @@ export function useWalletInitiatedBurner() {
         timestamp: Date.now(),
         parsedError,
         isUserRejection: isRejection,
+        gasCostGwei: undefined // No gas cost data for exceptions/user rejections
       };
       
       setNFTBurnResults(prev => [...prev, result]);
@@ -539,6 +559,26 @@ export const useDirectBurner = useWalletInitiatedBurner;
 // export const useDirectBurner = useContractBasedBurner; // ← Uncomment to rollback
 
 
+
+/**
+ * Calculate gas cost in GWEI at time of transaction
+ * @param gasUsed Amount of gas used in the transaction
+ * @param gasPrice Gas price paid (effectiveGasPrice from receipt)
+ * @returns GWEI cost of the gas, or 0 if calculation fails
+ */
+async function calculateGasCostGwei(gasUsed: bigint, gasPrice: bigint): Promise<number> {
+  try {
+    // Calculate total gas cost in wei, then convert directly to GWEI
+    const gasCostWei = gasUsed * gasPrice;
+    const gasCostGwei = Number(gasCostWei) / Math.pow(10, 9); // Wei to GWEI conversion
+    
+    // Round to 1 decimal place for clean display
+    return Math.round(gasCostGwei * 10) / 10;
+  } catch (error) {
+    console.debug('Failed to calculate gas cost GWEI:', error);
+    return 0;
+  }
+}
 
 /**
  * Get real-time token balance from blockchain (not API cache)

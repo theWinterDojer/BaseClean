@@ -45,8 +45,6 @@ const initialBurnStatus: UniversalBurnFlowStatus = {
     userRejected: [],
     cancelled: []
   },
-  totalGasUsed: undefined,
-  totalGasEstimated: undefined,
   currentItem: null,
   currentStepMessage: null,
   currentBatch: undefined,
@@ -226,7 +224,8 @@ export function useUniversalBurnFlow(
         errorMessage: result.errorMessage,
         errorType: result.error ? categorizeError(result.error) : undefined,
         isUserRejection: result.isUserRejection || false,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        gasCostGwei: result.gasCostGwei
       };
 
       // Trigger callback
@@ -244,7 +243,8 @@ export function useUniversalBurnFlow(
         errorMessage: error instanceof Error ? error.message : 'Unknown error',
         errorType: categorizeError(error),
         isUserRejection: categorizeError(error) === 'user_rejection',
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        gasCostGwei: undefined // No gas cost data for failed transactions
       };
 
       // Trigger error callback
@@ -263,15 +263,10 @@ export function useUniversalBurnFlow(
       const cancelled = result.isCancelled ? [...prev.results.cancelled, result] : prev.results.cancelled;
       const failed = (!result.success && !result.isUserRejection && !result.isCancelled) ? [...prev.results.failed, result] : prev.results.failed;
 
-      const totalGasUsed = result.gasUsed 
-        ? (prev.totalGasUsed || BigInt(0)) + result.gasUsed 
-        : prev.totalGasUsed;
-
       return {
         ...prev,
         processedItems: processedCount,
-        results: { successful, failed, userRejected, cancelled },
-        totalGasUsed
+        results: { successful, failed, userRejected, cancelled }
       };
     });
 
@@ -304,7 +299,8 @@ export function useUniversalBurnFlow(
           success: false,
           isCancelled: true,
           isUserRejection: false,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          gasCostGwei: undefined // No gas cost for cancelled items
         }));
         
         batchResults.push(...cancelledResults);
@@ -431,7 +427,8 @@ export function useUniversalBurnFlow(
               success: false,
               isCancelled: true,
               isUserRejection: false,
-              timestamp: Date.now()
+              timestamp: Date.now(),
+              gasCostGwei: undefined // No gas cost for cancelled items
             }));
             
             // Add cancelled results and update progress
@@ -461,13 +458,28 @@ export function useUniversalBurnFlow(
 
       // Calculate completion summary - use the original context totals, not expanded array
       const duration = Date.now() - startTimeRef.current!;
+      
+      // Calculate total gas cost in GWEI from all results
+      const totalGasCostGwei = allResults.reduce((sum, result) => {
+        return sum + (result.gasCostGwei || 0);
+      }, 0);
+      
+      // Calculate total value ONLY from successfully burned tokens
+      const totalValueBurned = allResults
+        .filter(result => result.success && result.item.type === 'token')
+        .reduce((sum, result) => {
+          const token = result.item.data as Token;
+          return sum + getTokenValue(token);
+        }, 0);
+      
       const summary: BurnSummary = {
         totalItems: burnStatus.burnContext.totalItems, // Use original total from context
         successfulBurns: allResults.filter(r => r.success).length,
         failedBurns: allResults.filter(r => !r.success && !r.isUserRejection && !r.isCancelled).length,
         userRejections: allResults.filter(r => r.isUserRejection).length,
-        totalValue: burnStatus.burnContext.totalTokenValue,
-        totalGasUsed: burnStatus.totalGasUsed || BigInt(0),
+        totalValue: totalValueBurned, // Only count successfully burned token values
+        totalGasUsed: BigInt(0), // Legacy field for backwards compatibility
+        totalGasCostGwei,
         duration,
         burnType: burnStatus.burnContext.burnType
       };

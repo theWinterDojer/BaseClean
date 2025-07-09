@@ -63,8 +63,7 @@ export interface BurnResult {
   isUserRejection: boolean;
   isCancelled?: boolean; // When user cancels the burn process
   timestamp: number;
-  gasUsed?: bigint;
-  gasEstimate?: bigint;
+  gasCostGwei?: number; // Gas cost in GWEI at time of transaction
 }
 
 // Batch processing options for performance optimization
@@ -115,10 +114,6 @@ export interface UniversalBurnFlowStatus {
     cancelled: BurnResult[];
   };
   
-  // Gas tracking
-  totalGasUsed?: bigint;
-  totalGasEstimated?: bigint;
-  
   // Current operation
   currentItem: BurnFlowItem | null;
   currentStepMessage: string | null;
@@ -142,7 +137,8 @@ export interface BurnSummary {
   failedBurns: number;
   userRejections: number;
   totalValue: number;
-  totalGasUsed: bigint;
+  totalGasUsed: bigint; // Legacy field for backwards compatibility
+  totalGasCostGwei?: number; // Total gas cost in GWEI - new field
   duration: number; // milliseconds
   burnType: 'tokens-only' | 'nfts-only' | 'mixed';
 }
