@@ -319,7 +319,7 @@ Clean your wallet. Strengthen your Base 💪
               {successfulTokens.length > 0 && (
                 <div>
                   <h3 className="text-white font-medium mb-2 flex items-center">
-                    <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mr-2 text-xs">T</div>
+                    <span className="text-green-400 mr-2">✓</span>
                     Successful Token Burns ({successfulTokens.length})
                   </h3>
                   <div className="bg-gray-800 rounded-lg p-3 space-y-2">
@@ -349,9 +349,9 @@ Clean your wallet. Strengthen your Base 💪
                           href={`https://basescan.org/tx/${result.txHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-green-400 hover:text-green-300 text-sm"
+                          className="text-blue-400 hover:text-blue-300 text-sm"
                         >
-                          ✓ View TX
+                          View TX
                         </a>
                       </div>
                     ))}
@@ -363,20 +363,9 @@ Clean your wallet. Strengthen your Base 💪
               {failedTokens.length > 0 && (
                 <div>
                   <h3 className="text-white font-medium mb-2 flex items-center">
-                    <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mr-2 text-xs">T</div>
+                    <span className="text-red-400 mr-2">❌</span>
                     Failed Token Burns ({failedTokens.length})
                   </h3>
-                  <div className="bg-red-900/10 rounded-lg p-3 mb-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="text-red-400 text-sm">These transactions were reverted on-chain</span>
-                      <button
-                        onClick={() => setShowEducationModal(true)}
-                        className="text-blue-400 hover:text-blue-300 underline whitespace-nowrap flex-shrink-0 text-sm"
-                      >
-                        Learn More
-                      </button>
-                    </div>
-                  </div>
                   <div className="bg-gray-800 rounded-lg p-3 space-y-2">
                     {failedTokens.map((result) => (
                       <div key={result.item.id} className="flex items-center justify-between">
@@ -401,13 +390,12 @@ Clean your wallet. Strengthen your Base 💪
                           <span className="text-white">{result.item.metadata?.displayName || 'Unknown Token'}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
-                          <span className="text-red-400">❌</span>
                           {result.txHash && (
                             <a 
                               href={`https://basescan.org/tx/${result.txHash}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-red-400 hover:text-red-300"
+                              className="text-blue-400 hover:text-blue-300"
                             >
                               View TX
                             </a>
@@ -416,6 +404,17 @@ Clean your wallet. Strengthen your Base 💪
                       </div>
                     ))}
                   </div>
+                  <div className="mt-1 p-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-red-400 text-sm">These transactions were reverted on-chain</span>
+                      <button
+                        onClick={() => setShowEducationModal(true)}
+                        className="text-blue-400 hover:text-blue-300 underline whitespace-nowrap flex-shrink-0 text-sm"
+                      >
+                        Learn More
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -423,7 +422,7 @@ Clean your wallet. Strengthen your Base 💪
               {allCancelledTokens.length > 0 && (
                 <div>
                   <h3 className="text-white font-medium mb-2 flex items-center">
-                    <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mr-2 text-xs">T</div>
+                    <span className="text-yellow-400 mr-2">❌</span>
                     Cancelled Token Burns ({allCancelledTokens.length})
                   </h3>
                   <div className="bg-gray-800 rounded-lg p-3 space-y-2">
@@ -460,7 +459,7 @@ Clean your wallet. Strengthen your Base 💪
               {successfulNFTs.length > 0 && (
                 <div>
                   <h3 className="text-white font-medium mb-2 flex items-center">
-                    <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center mr-2 text-xs">N</div>
+                    <span className="text-green-400 mr-2">✓</span>
                     Successful NFT Burns ({successfulNFTs.length})
                   </h3>
                   <div className="bg-gray-800 rounded-lg p-3 space-y-4">
@@ -486,9 +485,9 @@ Clean your wallet. Strengthen your Base 💪
                                 href={`https://basescan.org/tx/${result.txHash}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-green-400 hover:text-green-300 text-sm"
+                                className="text-blue-400 hover:text-blue-300 text-sm"
                               >
-                                ✓ View TX
+                                View TX
                               </a>
                             </div>
                           ))}
@@ -503,20 +502,9 @@ Clean your wallet. Strengthen your Base 💪
               {failedNFTs.length > 0 && (
                 <div>
                   <h3 className="text-white font-medium mb-2 flex items-center">
-                    <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center mr-2 text-xs">N</div>
+                    <span className="text-red-400 mr-2">❌</span>
                     Failed NFT Burns ({failedNFTs.length})
                   </h3>
-                  <div className="bg-red-900/10 rounded-lg p-3 mb-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="text-red-400 text-sm">These transactions were reverted on-chain</span>
-                      <button
-                        onClick={() => setShowEducationModal(true)}
-                        className="text-blue-400 hover:text-blue-300 underline whitespace-nowrap flex-shrink-0 text-sm"
-                      >
-                        Learn More
-                      </button>
-                    </div>
-                  </div>
                   <div className="bg-gray-800 rounded-lg p-3 space-y-4">
                     {Object.entries(failedNFTsByCollection).map(([collection, collectionResults]) => (
                       <div key={collection}>
@@ -537,13 +525,12 @@ Clean your wallet. Strengthen your Base 💪
                                 <span className="text-white text-sm">{result.item.metadata?.displayName || 'Unknown NFT'}</span>
                               </div>
                               <div className="flex items-center gap-2 text-sm">
-                                <span className="text-red-400">❌</span>
                                 {result.txHash && (
                                   <a 
                                     href={`https://basescan.org/tx/${result.txHash}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-red-400 hover:text-red-300"
+                                    className="text-blue-400 hover:text-blue-300"
                                   >
                                     View TX
                                   </a>
@@ -555,6 +542,17 @@ Clean your wallet. Strengthen your Base 💪
                       </div>
                     ))}
                   </div>
+                  <div className="mt-1 p-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-red-400 text-sm">These transactions were reverted on-chain</span>
+                      <button
+                        onClick={() => setShowEducationModal(true)}
+                        className="text-blue-400 hover:text-blue-300 underline whitespace-nowrap flex-shrink-0 text-sm"
+                      >
+                        Learn More
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -562,7 +560,7 @@ Clean your wallet. Strengthen your Base 💪
               {allCancelledNFTs.length > 0 && (
                 <div>
                   <h3 className="text-white font-medium mb-2 flex items-center">
-                    <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center mr-2 text-xs">N</div>
+                    <span className="text-yellow-400 mr-2">❌</span>
                     Cancelled NFT Burns ({allCancelledNFTs.length})
                   </h3>
                   <div className="bg-gray-800 rounded-lg p-3 space-y-4">

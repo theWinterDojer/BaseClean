@@ -27,7 +27,7 @@ export interface BurnFlowContext {
   
   // Value calculations (tokens only)
   totalTokenValue: number;
-  hasHighValueTokens: boolean; // > $1.00 threshold
+  hasHighValueTokens: boolean; // > $0.10 threshold
   hasETH: boolean;
   
   // NFT specifics

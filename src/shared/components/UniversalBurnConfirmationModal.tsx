@@ -60,7 +60,7 @@ export default function UniversalBurnConfirmationModal({
               <p className="text-white font-medium">💰 Value Warning!</p>
               <p className="text-gray-300 text-sm mt-1">
                 You are about to burn tokens worth <span className="font-bold text-yellow-400">${totalTokenValue.toFixed(2)}</span>. 
-                Please double-check that you really want to destroy these valuable tokens.
+                Please double-check that you really want to destroy these tokens.
               </p>
             </div>
           )}

@@ -102,7 +102,7 @@ export function useUniversalBurnFlow(
     
     // Calculate token values and warnings
     const totalTokenValue = tokens.reduce((sum, token) => sum + getTokenValue(token), 0);
-    const hasHighValueTokens = totalTokenValue > 1.0;
+    const hasHighValueTokens = totalTokenValue > 0.10;
     const hasETH = tokens.some(token => 
       token.contract_ticker_symbol?.toLowerCase() === 'eth' ||
       token.contract_address?.toLowerCase() === '0x4200000000000000000000000000000000000006' // ETH on Base
