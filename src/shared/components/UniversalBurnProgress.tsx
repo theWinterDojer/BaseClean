@@ -320,7 +320,7 @@ Clean your wallet. Strengthen your Base 💪
                 <div>
                   <h3 className="text-white font-medium mb-2 flex items-center">
                     <span className="text-green-400 mr-2">✓</span>
-                    Successful Token Burns ({successfulTokens.length})
+                    Successful Token Burns
                   </h3>
                   <div className="bg-gray-800 rounded-lg p-3 space-y-2">
                     {successfulTokens.map((result) => (
@@ -364,7 +364,7 @@ Clean your wallet. Strengthen your Base 💪
                 <div>
                   <h3 className="text-white font-medium mb-2 flex items-center">
                     <span className="text-red-400 mr-2">❌</span>
-                    Failed Token Burns ({failedTokens.length})
+                    Failed Token Burns
                   </h3>
                   <div className="bg-gray-800 rounded-lg p-3 space-y-2">
                     {failedTokens.map((result) => (
@@ -406,10 +406,10 @@ Clean your wallet. Strengthen your Base 💪
                   </div>
                   <div className="mt-1 p-1">
                     <div className="flex items-start justify-between gap-2">
-                      <span className="text-red-400 text-sm">These transactions were reverted on-chain</span>
+                      <span className="text-red-400 text-sm">Transactions were reverted onchain</span>
                       <button
                         onClick={() => setShowEducationModal(true)}
-                        className="text-blue-400 hover:text-blue-300 underline whitespace-nowrap flex-shrink-0 text-sm"
+                        className="text-blue-400 hover:text-blue-300 whitespace-nowrap flex-shrink-0 text-sm"
                       >
                         Learn More
                       </button>
@@ -423,7 +423,7 @@ Clean your wallet. Strengthen your Base 💪
                 <div>
                   <h3 className="text-white font-medium mb-2 flex items-center">
                     <span className="text-yellow-400 mr-2">❌</span>
-                    Cancelled Token Burns ({allCancelledTokens.length})
+                    Cancelled Token Burns
                   </h3>
                   <div className="bg-gray-800 rounded-lg p-3 space-y-2">
                     {allCancelledTokens.map((result) => (
@@ -460,7 +460,7 @@ Clean your wallet. Strengthen your Base 💪
                 <div>
                   <h3 className="text-white font-medium mb-2 flex items-center">
                     <span className="text-green-400 mr-2">✓</span>
-                    Successful NFT Burns ({successfulNFTs.length})
+                    Successful NFT Burns
                   </h3>
                   <div className="bg-gray-800 rounded-lg p-3 space-y-4">
                     {Object.entries(successfulNFTsByCollection).map(([collection, collectionResults]) => (
@@ -503,7 +503,7 @@ Clean your wallet. Strengthen your Base 💪
                 <div>
                   <h3 className="text-white font-medium mb-2 flex items-center">
                     <span className="text-red-400 mr-2">❌</span>
-                    Failed NFT Burns ({failedNFTs.length})
+                    Failed NFT Burns
                   </h3>
                   <div className="bg-gray-800 rounded-lg p-3 space-y-4">
                     {Object.entries(failedNFTsByCollection).map(([collection, collectionResults]) => (
@@ -544,10 +544,10 @@ Clean your wallet. Strengthen your Base 💪
                   </div>
                   <div className="mt-1 p-1">
                     <div className="flex items-start justify-between gap-2">
-                      <span className="text-red-400 text-sm">These transactions were reverted on-chain</span>
+                      <span className="text-red-400 text-sm"> These transactions were reverted onchain</span>
                       <button
                         onClick={() => setShowEducationModal(true)}
-                        className="text-blue-400 hover:text-blue-300 underline whitespace-nowrap flex-shrink-0 text-sm"
+                        className="text-blue-400 hover:text-blue-300 whitespace-nowrap flex-shrink-0 text-sm"
                       >
                         Learn More
                       </button>
@@ -561,7 +561,7 @@ Clean your wallet. Strengthen your Base 💪
                 <div>
                   <h3 className="text-white font-medium mb-2 flex items-center">
                     <span className="text-yellow-400 mr-2">❌</span>
-                    Cancelled NFT Burns ({allCancelledNFTs.length})
+                    Cancelled NFT Burns
                   </h3>
                   <div className="bg-gray-800 rounded-lg p-3 space-y-4">
                     {Object.entries(cancelledNFTsByCollection).map(([collection, collectionResults]) => (
