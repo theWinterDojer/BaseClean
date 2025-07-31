@@ -1,3 +1,5 @@
+![Banner](https://github.com/theWinterDojer/BaseClean/blob/master/public/BaseClean-banner.png?raw=true)
+
 # 🔥 BaseClean
 
 A Web3 application for burning unwanted ERC-20 tokens and NFTs on Base network without requiring token approvals.
