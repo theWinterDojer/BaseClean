@@ -4,31 +4,31 @@
 
 A Web3 application for burning unwanted ERC-20 tokens and NFTs on Base network without requiring token approvals.
 
-## 🎯 What is BaseClean?
+## What is BaseClean?
 
 BaseClean allows users to permanently remove unwanted tokens from their wallets by transferring them directly to the burn address (`0x000000000000000000000000000000000000dEaD`). 
 
 ## ✨ Features
 
-- 🔍 **Token Discovery**: Automatically scans your wallet for ERC-20 tokens
-- 🖼️ **NFT Support**: Supports ERC-721 and ERC-1155 tokens on Base and Zora networks
-- 🛡️ **Spam Detection**: Smart filters to identify low-value and suspicious tokens
-- ⚡ **Instant Updates**: Burned assets disappear from your wallet immediately
-- 📊 **Transaction History**: Keep track of all your burn transactions (with CSV exports)
-- 🔒 **Zero Approvals**: No token approvals ever required - maximum security
-- 🏠 **Privacy-First**: All data stored locally in your browser (no external tracking)
-- 📖 **Open Source**: Complete transparency for security review and audit
+- **Token Discovery**: Automatically scans your wallet for ERC-20 tokens
+- **NFT Support**: Supports ERC-721 and ERC-1155 tokens on Base and Zora networks
+- **Spam Detection**: Smart filters to identify low-value and suspicious tokens
+- **Instant Updates**: Burned assets disappear from your wallet immediately
+- **Transaction History**: Keep track of all your burn transactions (with CSV exports)
+- **Zero Approvals**: No token approvals ever required - maximum security
+- **Privacy-First**: All data stored locally in your browser (no external tracking)
+- **Open Source**: Complete transparency for security review and audit
 
 ## 🔧 Why Zero Approvals Matter
 
-**✅ BaseClean Direct Transfer (Safe):**
+**✅ BaseClean Direct Transfer:**
 - Direct wallet-to-burn-address transfers (no intermediary contracts)
 - Zero token approvals ever required
 - Each transaction is independent and transparent  
 - Real-time balance verification prevents invalid amount errors
 - Maximum wallet compatibility with automatic gas estimation
 
-**❌ Traditional Approval Method (Risky):**
+**❌ Traditional Approval Method:**
 - Approve smart contract for each token
 - Creates permanent approval attack surface
 - Complex batch transactions that can fail
