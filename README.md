@@ -19,7 +19,7 @@ BaseClean allows users to permanently remove unwanted tokens from their wallets 
 - **Privacy-First**: All data stored locally in your browser (no external tracking)
 - **Open Source**: Complete transparency for security review and audit
 
-## 🔧 Why Zero Approvals Matter
+## Why Zero Approvals Matter
 
 ** BaseClean Direct Transfer:**
 - Direct wallet-to-burn-address transfers (no intermediary contracts)
