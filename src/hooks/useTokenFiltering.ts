@@ -139,9 +139,9 @@ export function useTokenFiltering(
     // Repeating digits (e.g., 11111, 88888)
     if (/^(.)\1{3,}$/.test(balanceNum.toString())) return true;
     
-    // Common airdrop numbers with improved tolerance to handle slight variations
+    // Common airdrop numbers - only match exact amounts (within 0.1% for floating-point rounding errors)
     if (COMMON_AIRDROP_AMOUNTS.some(num => {
-      return Math.abs(balanceNum - num) < 0.5 || Math.abs(balanceNum - num) / num < 0.01;
+      return Math.abs(balanceNum - num) / num < 0.001;
     })) return true;
     
     // Weird decimal patterns often seen in airdrops
