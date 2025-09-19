@@ -136,6 +136,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: blob: https:", // Liberal image policy (your images are already secured via next.config)
               "font-src 'self' data: https://fonts.gstatic.com",
               "connect-src 'self' https://coins.llama.fi https://base-mainnet.g.alchemy.com https://zora-mainnet.g.alchemy.com https://mainnet.base.org https://api.github.com https://raw.githubusercontent.com https://nft-cdn.alchemy.com https://res.cloudinary.com https://ipfs.io https://i.seadn.io https://i2c.seadn.io https://raw2.seadn.io https://gateway.pinata.cloud https://cloudflare-ipfs.com https://gateway.ipfs.io https://dweb.link https://nftstorage.link https://openseauserdata.com https://lh3.googleusercontent.com https://assets.coingecko.com https://assets.poap.xyz https://arweave.net https://storage.googleapis.com https://va.vercel-scripts.com https://api.web3modal.org https://pulse.walletconnect.org wss:",
+              "worker-src 'self' blob:", // Allow web workers for confetti animation
               "frame-src 'none'",
               "object-src 'none'",
               "base-uri 'self'",
