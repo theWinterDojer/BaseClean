@@ -18,7 +18,7 @@ export default function BurnFailureEducationModal({ isOpen, onClose }: BurnFailu
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold text-white">
-              📚 Why Some Burns Fail
+              Why Some Burns Fail
             </h2>
             <button
               onClick={onClose}
@@ -31,7 +31,7 @@ export default function BurnFailureEducationModal({ isOpen, onClose }: BurnFailu
           <div className="space-y-6 text-gray-300">
             <div>
               <h3 className="text-lg font-semibold text-white mb-2">
-                🚫 Common Spam Asset Behaviors
+                Common Spam Asset Behaviors
               </h3>
               <ul className="space-y-2 list-disc list-inside">
                 <li><strong>Phantom Ownership:</strong> Assets appear in your wallet but you don&apos;t actually own them</li>
@@ -43,7 +43,7 @@ export default function BurnFailureEducationModal({ isOpen, onClose }: BurnFailu
 
             <div>
               <h3 className="text-lg font-semibold text-white mb-2">
-                🎯 Why This Happens
+                Why This Happens
               </h3>
               <ul className="space-y-2 list-disc list-inside">
                 <li>They want their assets to stay visible in wallets for advertising</li>
@@ -55,7 +55,7 @@ export default function BurnFailureEducationModal({ isOpen, onClose }: BurnFailu
 
             <div>
               <h3 className="text-lg font-semibold text-white mb-2">
-                💡 TLDR;
+                TLDR;
               </h3>
               <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4">
                 <p className="text-blue-200">

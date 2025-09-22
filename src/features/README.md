@@ -1,45 +1,45 @@
-# 🎯 Feature Architecture
+# Feature Architecture
 
 BaseClean's modular feature architecture implements domain-driven design principles for maintainable Web3 application development.
 
-## 🏗️ **System Organization**
+## **System Organization**
 
-### 🪙 **Token Management Module**
+### **Token Management Module**
 - **Discovery engine**: Alchemy API integration for comprehensive token detection
 - **Filtering system**: Multi-layer spam detection with configurable thresholds
 - **Burn execution**: Uses ERC-20 `transfer()` calls directly without approvals
 - **State management**: React Context for selection and burn tracking
 
-### 🖼️ **NFT Management Module**  
+### **NFT Management Module**  
 - **Multi-network support**: Base and Zora network integration
 - **Standard compliance**: ERC-721 and ERC-1155 with quantity selection
 - **Metadata processing**: IPFS and HTTP image handling with fallbacks
 - **Burn implementation**: Uses `transferFrom()` and `safeTransferFrom()` calls without approvals
 
-## 🔧 **Technical Implementation**
+## **Technical Implementation**
 
-### 📦 **Component Structure**
+### **Component Structure**
 Each feature module contains:
 - **Scanner components**: Wallet connection and asset discovery
 - **Data managers**: API integration and state processing  
 - **UI containers**: Presentation and user interaction
 - **Utility functions**: Business logic and calculations
 
-### 🔄 **Data Flow Architecture**
+### **Data Flow Architecture**
 1. **Connection**: Wallet integration via RainbowKit/Wagmi
 2. **Discovery**: Asset scanning through blockchain APIs
 3. **Processing**: Spam detection and categorization
 4. **Selection**: User interaction and batch operations
 5. **Execution**: Contract function calls (`transfer()`, `transferFrom()`, `safeTransferFrom()`) with progress tracking
 
-## 🛡️ **Security Implementation**
+## **Security Implementation**
 
-### 🔒 **Zero-Approval Design**
+### **Zero-Approval Design**
 - **Direct transfers**: Wallet calls `transfer()`/`transferFrom()` on token contracts directly, no burner contracts
 - **User validation**: Explicit confirmation for each operation
 - **Error isolation**: Comprehensive failure handling and recovery
 
-### 📊 **State Management**
+### **State Management**
 - **Immutable updates**: React state patterns for predictable behavior
 - **Context isolation**: Feature-specific state boundaries
 - **Persistence layer**: LocalStorage for user preferences and history 

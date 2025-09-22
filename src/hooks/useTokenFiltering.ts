@@ -156,10 +156,11 @@ export function useTokenFiltering(
     // Tokens with suspicious sequential patterns
     if (/^1234|4321|2345|5432|3456|6543|4567|7654|5678|8765/.test(balanceNum.toString().replace('.', ''))) return true;
     
-    // Balances with unusual precision that aren't normal decimal divisions
+    // Balances with extremely unusual precision (15+ decimal places with non-zero trailing digits)
+    // This catches artificially crafted spam tokens while allowing normal ERC-20 precision
     if (balanceNum.toString().includes('.') && 
-        balanceNum.toString().split('.')[1].length > 8 && 
-        !(/0{5,}$/.test(balanceNum.toString()))) return true;
+        balanceNum.toString().split('.')[1].length >= 15 && 
+        !(/0{8,}$/.test(balanceNum.toString()))) return true;
     
     return false;
   }, [spamFilters.airdropSignals]);
