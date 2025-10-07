@@ -24,11 +24,11 @@ export default function TokenScanner({ showDisclaimer }: TokenScannerProps) {
     // Get burned token addresses from context
     const { burnedTokenAddresses, clearAllSelectedItems } = useSelectedItems();
 
-    // Default spam filters - enable all for best detection
+    // Default spam filters - Dust/Zero Value disabled by default to reduce false positives
     // Phase 17.2: Simplified to 3 filters (removed high risk indicators)
     const [spamFilters, setSpamFilters] = useState<SpamFilters>({
         namingIssues: true,
-        valueIssues: true,
+        valueIssues: false,
         airdropSignals: true
     });
 
