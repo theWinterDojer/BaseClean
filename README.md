@@ -1,4 +1,4 @@
-![Banner](https://github.com/theWinterDojer/BaseClean/blob/master/public/BaseClean-banner.png?raw=true)
+![Banner](https://github.com/theWinterDojer/BaseClean/blob/master/public/BaseClean.jpg?raw=true)
 
 # BaseClean
 
