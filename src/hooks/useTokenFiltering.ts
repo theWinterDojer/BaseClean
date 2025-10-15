@@ -144,9 +144,6 @@ export function useTokenFiltering(
       return Math.abs(balanceNum - num) / num < 0.001;
     })) return true;
     
-    // Weird decimal patterns often seen in airdrops
-    if (/\.\d{10,}$/.test(balanceNum.toString())) return true;
-    
     // Any token with extremely large integer balance (often junk)
     if (balanceNum > 10000000) return true;
     
@@ -155,12 +152,6 @@ export function useTokenFiltering(
     
     // Tokens with suspicious sequential patterns
     if (/^1234|4321|2345|5432|3456|6543|4567|7654|5678|8765/.test(balanceNum.toString().replace('.', ''))) return true;
-    
-    // Balances with extremely unusual precision (15+ decimal places with non-zero trailing digits)
-    // This catches artificially crafted spam tokens while allowing normal ERC-20 precision
-    if (balanceNum.toString().includes('.') && 
-        balanceNum.toString().split('.')[1].length >= 15 && 
-        !(/0{8,}$/.test(balanceNum.toString()))) return true;
     
     return false;
   }, [spamFilters.airdropSignals]);
